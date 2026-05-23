@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Canonical FedNow pacs.008.001.08 sample vector.
+
+  Synthetic test data. Derived from the message structure documented in
+  FedNow Service Operating Procedures v3.2 (June 2025), section 15
+  "FedNow ISO 20022 Messages — Customer Credit Transfer (pacs.008)".
+
+  Routing numbers (021000021, 026009593) are real JPMorgan Chase and
+  Bank of America numbers used here only because they have valid ABA
+  checksums; the account numbers and UETR are entirely synthetic.
+
+  Conformance contract: this XML must round-trip through op-iso20022
+  with byte-identical output after the first parse-and-reserialize.
+-->
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
+  <FIToFICstmrCdtTrf>
+    <GrpHdr>
+      <MsgId>20260517021000021000000001</MsgId>
+      <CreDtTm>2026-05-17T14:00:00Z</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <SttlmInf>
+        <SttlmMtd>CLRG</SttlmMtd>
+        <ClrSys>
+          <Cd>FDN</Cd>
+        </ClrSys>
+      </SttlmInf>
+    </GrpHdr>
+    <CdtTrfTxInf>
+      <PmtId>
+        <InstrId>INSTR-001</InstrId>
+        <EndToEndId>E2E-20260517-0001</EndToEndId>
+        <UETR>550e8400-e29b-41d4-a716-446655440000</UETR>
+      </PmtId>
+      <IntrBkSttlmAmt Ccy="USD">100.00</IntrBkSttlmAmt>
+      <IntrBkSttlmDt>2026-05-17</IntrBkSttlmDt>
+      <ChrgBr>SLEV</ChrgBr>
+      <Dbtr>
+        <Nm>Alice Buyer</Nm>
+      </Dbtr>
+      <DbtrAcct>
+        <Id>
+          <Othr>
+            <Id>1234567890</Id>
+          </Othr>
+        </Id>
+      </DbtrAcct>
+      <DbtrAgt>
+        <FinInstnId>
+          <ClrSysMmbId>
+            <ClrSysId>
+              <Cd>USABA</Cd>
+            </ClrSysId>
+            <MmbId>021000021</MmbId>
+          </ClrSysMmbId>
+        </FinInstnId>
+      </DbtrAgt>
+      <CdtrAgt>
+        <FinInstnId>
+          <ClrSysMmbId>
+            <ClrSysId>
+              <Cd>USABA</Cd>
+            </ClrSysId>
+            <MmbId>026009593</MmbId>
+          </ClrSysMmbId>
+        </FinInstnId>
+      </CdtrAgt>
+      <Cdtr>
+        <Nm>Bob Seller</Nm>
+      </Cdtr>
+      <CdtrAcct>
+        <Id>
+          <Othr>
+            <Id>0987654321</Id>
+          </Othr>
+        </Id>
+      </CdtrAcct>
+      <RmtInf>
+        <Ustrd>Invoice 2026-0001 payment</Ustrd>
+      </RmtInf>
+    </CdtTrfTxInf>
+  </FIToFICstmrCdtTrf>
+</Document>

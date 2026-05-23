@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
+        OpenPay is a library module; it declares no application
+        components. Consumers integrate it as a Gradle subproject or
+        AAR dependency and call its Kotlin/Java surface directly.
+
+        No permissions are required by the library itself. The
+        Keystore-backed EncryptedSharedPreferences mechanism uses the
+        Android Keystore system, which is available without manifest
+        permissions on API 23+ (Android 6.0 Marshmallow).
+    -->
+</manifest>

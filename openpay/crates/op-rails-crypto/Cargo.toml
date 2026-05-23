@@ -1,0 +1,36 @@
+[package]
+name = "op-rails-crypto"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay crypto / stablecoin rail: USDC, EURC, PYUSD on Solana / Base / Ethereum / Polygon / Arbitrum. Pluggable signer + broadcaster, sub-cent settlement."
+
+[features]
+default = []
+# Enables the live JSON-RPC EVM gateway (Ethereum / Base / Polygon /
+# Arbitrum) and the bundled `LocalKeyEvmSigner` hot-wallet signer.
+# Off by default so consumers that only want the trait surface or
+# the deterministic mock don't pull reqwest + TLS + k256.
+evm = ["dep:reqwest", "dep:sha3", "dep:hex", "dep:k256", "dep:rlp"]
+
+[dependencies]
+op-core = { path = "../op-core" }
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+# evm-only: pulled in via the `evm` feature.
+reqwest = { workspace = true, optional = true }
+sha3 = { workspace = true, optional = true }
+hex = { workspace = true, optional = true }
+# LocalKeyEvmSigner: secp256k1 ECDSA with recoverable signatures
+# (RFC 6979 deterministic nonces) plus RLP encoding for legacy txs.
+k256 = { workspace = true, optional = true }
+rlp = { workspace = true, optional = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+# In-process HTTP mock for the EVM gateway's JSON-RPC tests. Same
+# version op-rails-card / op-rails-a2a use.
+httpmock = "0.7"

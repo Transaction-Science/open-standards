@@ -1,0 +1,44 @@
+[package]
+name = "op-graph"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay graph-backed stores: IndraDB-backed implementations of LedgerStore and WebhookStore, with graph-native queries for audit, lineage, and fraud."
+publish = false
+
+[dependencies]
+op-core = { path = "../op-core" }
+op-ledger = { path = "../op-ledger" }
+op-webhook = { path = "../op-webhook" }
+op-reconciliation = { path = "../op-reconciliation" }
+op-orchestrator = { path = "../op-orchestrator" }
+op-refund = { path = "../op-refund" }
+op-dispute = { path = "../op-dispute" }
+op-settlement = { path = "../op-settlement" }
+op-subscriptions = { path = "../op-subscriptions" }
+
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+
+# Graph database — Minigraf. MIT OR Apache-2.0; the "SQLite of graph
+# databases" per its own docs: pure safe Rust (`#![forbid(unsafe_code)]`),
+# single `.graph` file, embedded (no server), Datalog queries over an
+# EAV fact store, with bi-temporal history built in. Native `Uuid`
+# entity ids align with the rest of the OpenPay stack.
+minigraf = "1.1"
+
+[dev-dependencies]
+# Temp dirs for the persistent-backend integration tests.
+tempfile = "3"
+# Pulled in by tests that wire idempotency / refunds / disputes /
+# settlement together — those types live in `dev-dependencies` so
+# we don't expose them from the lib's public surface.
+op-refund = { path = "../op-refund" }
+op-dispute = { path = "../op-dispute" }
+op-settlement = { path = "../op-settlement" }
+op-orchestrator = { path = "../op-orchestrator" }
+op-ledger = { path = "../op-ledger" }

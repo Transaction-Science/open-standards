@@ -1,0 +1,17 @@
+[package]
+name = "op-fx"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay foreign-exchange: integer-exact currency conversion, pluggable quote providers, deterministic rounding. No network clients; operators wire their own FX feed behind the QuoteProvider trait."
+
+[dependencies]
+op-core = { path = "../op-core" }
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }

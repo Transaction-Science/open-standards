@@ -1,0 +1,46 @@
+[package]
+name = "op-fraud"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "On-device fraud scoring. Pluggable Scorer trait; heuristic + ONNX + Burn implementations."
+
+[dependencies]
+op-core = { path = "../op-core" }
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+time = { workspace = true }
+# SHA-256 for hashing identifiers in features (no PII in model input).
+sha2 = "0.10"
+
+# ONNX Runtime binding for the production scorer. Pinned to 2.x.
+# `load-dynamic` lets the operator place libonnxruntime.{so,dylib,dll} at
+# a path of their choosing (App bundle on iOS, /lib on Linux kiosk, etc.).
+# We do NOT enable `download-binaries`: operators audit and ship their own.
+ort = { version = "2.0.0-rc.10", default-features = false, features = ["load-dynamic", "ndarray"], optional = true }
+ndarray = { version = "0.16", optional = true }
+
+# Burn 0.17.x is the pure-Rust ML alternative. NdArray is the only
+# backend that compiles for no_std + WASM + iOS / Android, which is
+# what the FFI layer (Phases 8-10) needs. We use Burn for operators who
+# want to avoid shipping libonnxruntime altogether — kiosk-Linux builds,
+# WASM deployments in browsers, or anywhere the binary-size budget is
+# tight. ONNX Runtime adds ~10-30 MB; Burn's NdArray backend is ~1 MB.
+burn = { version = "0.17", default-features = false, features = ["ndarray", "std"], optional = true }
+burn-ndarray = { version = "0.17", default-features = false, features = ["std"], optional = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+insta = { workspace = true }
+
+[features]
+default = ["heuristic"]
+# Pure-Rust heuristic scorer. No external runtime.
+heuristic = []
+# ONNX Runtime scorer. Requires libonnxruntime at runtime.
+onnx = ["dep:ort", "dep:ndarray"]
+# Burn pure-Rust scorer. No external runtime, no extra shared library.
+burn-backend = ["dep:burn", "dep:burn-ndarray"]

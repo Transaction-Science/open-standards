@@ -1,0 +1,45 @@
+# OpenPay — sample Caddyfile.
+#
+# Drop this in /etc/caddy/Caddyfile, replace pay.example.com with
+# your hostname, and `caddy reload`. Caddy will fetch and renew an
+# ACME (Let's Encrypt or ZeroSSL) certificate on its own; no extra
+# config needed if port 80 + 443 are reachable from the internet.
+#
+# op-server itself binds plain HTTP to 127.0.0.1:8080 (see
+# OP_BIND_ADDR in openpay.env.sample). Caddy is the only thing on
+# this host that should be exposed publicly.
+
+pay.example.com {
+    # Implicit `tls` block — Caddy resolves an ACME certificate for
+    # this hostname automatically. To pin to Let's Encrypt staging
+    # while you're testing, use `tls internal` or
+    # `tls { ca https://acme-staging-v02.api.letsencrypt.org/directory }`.
+
+    reverse_proxy 127.0.0.1:8080 {
+        # Caddy injects X-Forwarded-{For,Proto,Host} by default;
+        # op-server doesn't currently look at them, but they're
+        # there if you add a layer that does.
+
+        # Health check the upstream so Caddy returns 502 quickly
+        # when op-server is down instead of stalling.
+        health_uri /health
+        health_interval 10s
+        health_timeout 2s
+    }
+
+    # Structured access logs. Pair with the JSON tracing output
+    # from op-server (see monitoring.md) for full request-trace
+    # correlation.
+    log {
+        output file /var/log/caddy/openpay-access.log
+        format json
+    }
+
+    # Drop anything that's clearly not an OpenPay request. The API
+    # has no .php, .env, .git surfaces; bots probing those just
+    # waste cycles.
+    @junk {
+        path *.php *.env /.git/*
+    }
+    respond @junk 404
+}

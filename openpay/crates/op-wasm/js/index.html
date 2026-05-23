@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenPay Browser Demo</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 720px;
+            margin: 2em auto;
+            padding: 0 1em;
+            color: #222;
+        }
+        h1 { margin-bottom: 0.2em; }
+        .hint { color: #666; font-size: 0.9em; margin-top: 0; }
+        section { border: 1px solid #ddd; border-radius: 4px; padding: 1em; margin: 1em 0; }
+        label { display: block; margin: 0.5em 0 0.2em; font-size: 0.9em; }
+        input { width: 100%; padding: 0.5em; box-sizing: border-box; }
+        button { padding: 0.5em 1em; cursor: pointer; }
+        pre {
+            background: #f5f5f5;
+            padding: 1em;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 0.85em;
+        }
+        .error { color: #c00; }
+        .success { color: #060; }
+    </style>
+</head>
+<body>
+    <h1>OpenPay Browser Demo</h1>
+    <p class="hint">
+        Runs entirely in the browser via wasm-bindgen. Builds against
+        the bundle produced by <code>bash scripts/build-wasm.sh --target web</code>.
+        No data ever leaves the page.
+    </p>
+
+    <section>
+        <h2>1. Tokenize a card</h2>
+        <label>PAN
+            <input id="pan" type="text" value="4242424242424242" />
+        </label>
+        <label>Expiration (MM)
+            <input id="exp-month" type="number" value="12" min="1" max="12" />
+        </label>
+        <label>Expiration (YYYY)
+            <input id="exp-year" type="number" value="2030" min="2000" max="2099" />
+        </label>
+        <button id="tokenize-btn">Tokenize</button>
+        <pre id="tokenize-out">Awaiting tokenize...</pre>
+    </section>
+
+    <section>
+        <h2>2. Detokenize</h2>
+        <p class="hint">
+            Uses the token from above. The PAN is reconstructed inside
+            wasm and the safe-to-log fields are shown.
+        </p>
+        <button id="detokenize-btn">Detokenize</button>
+        <pre id="detokenize-out">Tokenize first.</pre>
+    </section>
+
+    <section>
+        <h2>3. Try an invalid PAN</h2>
+        <button id="invalid-btn">Trigger InvalidInput</button>
+        <pre id="invalid-out">—</pre>
+    </section>
+
+    <script type="module">
+        import init, {
+            CardData,
+            RustVault,
+            TokenizationPolicy,
+        } from './pkg/op_wasm.js';
+
+        await init();
+
+        // Single vault for the demo session.
+        const vault = new RustVault('demo');
+        let lastToken = null;
+
+        const $ = id => document.getElementById(id);
+
+        $('tokenize-btn').addEventListener('click', () => {
+            const out = $('tokenize-out');
+            try {
+                const card = new CardData(
+                    $('pan').value,
+                    Number($('exp-month').value),
+                    Number($('exp-year').value),
+                );
+                // Capture safe-to-log fields BEFORE tokenize consumes the
+                // card. After vault.tokenize(card) returns, the JS-side
+                // pointer is invalidated and any access to `card` throws.
+                const firstSix = card.firstSix;
+                const lastFour = card.lastFour;
+
+                if (lastToken) lastToken.free();
+                lastToken = vault.tokenize(card, TokenizationPolicy.cardOnFile());
+                out.className = 'success';
+                out.textContent =
+                    `OK\n\nToken: ${lastToken.asString}\n` +
+                    `First six: ${firstSix}\n` +
+                    `Last four: ${lastFour}\n\n` +
+                    `(Notice the token is opaque — neither the PAN nor\n` +
+                    ` even the first-six BIN is recoverable from it.)`;
+            } catch (e) {
+                out.className = 'error';
+                if (e.kind) {
+                    out.textContent = `OpenPayError [${e.code}/${e.kind}]\n  ${e.message}`;
+                } else {
+                    out.textContent = String(e);
+                }
+            }
+        });
+
+        $('detokenize-btn').addEventListener('click', () => {
+            const out = $('detokenize-out');
+            if (!lastToken) {
+                out.className = 'error';
+                out.textContent = 'Tokenize first.';
+                return;
+            }
+            try {
+                const card = vault.detokenize(lastToken);
+                out.className = 'success';
+                out.textContent =
+                    `OK\n\nFirst six: ${card.firstSix}\n` +
+                    `Last four: ${card.lastFour}\n` +
+                    `Expires: ${card.expMonth}/${card.expYear}`;
+                card.free();
+            } catch (e) {
+                out.className = 'error';
+                if (e.kind) {
+                    out.textContent = `OpenPayError [${e.code}/${e.kind}]\n  ${e.message}`;
+                } else {
+                    out.textContent = String(e);
+                }
+            }
+        });
+
+        $('invalid-btn').addEventListener('click', () => {
+            const out = $('invalid-out');
+            try {
+                new CardData('1111111111111111', 12, 2030);
+                out.className = 'error';
+                out.textContent = 'expected throw but got none';
+            } catch (e) {
+                out.className = 'success';
+                out.textContent =
+                    `Caught as expected.\n\nThis demonstrates the oracle-discipline\n` +
+                    `aligned error contract:\n\n` +
+                    `  e.code    = ${e.code}\n` +
+                    `  e.kind    = ${e.kind}\n` +
+                    `  e.message = ${e.message}`;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+[package]
+name = "demo-merchant"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+description = "Local pilot-merchant demo. Generates a fresh EVM wallet, listens for op-server webhooks, polls Base for USDC balance changes, and exits on the first observed payment."
+
+[[bin]]
+name = "demo-merchant"
+path = "src/main.rs"
+
+[dependencies]
+# Re-use the production EVM gateway's address-derivation primitives.
+op-rails-crypto = { path = "../../crates/op-rails-crypto", features = ["evm"] }
+
+# Fresh-keypair generation: secp256k1 ECDSA via k256, matching what
+# LocalKeyEvmSigner uses on the receive side of this stack.
+k256 = { workspace = true }
+sha3 = { workspace = true }
+hex = { workspace = true }
+
+# Async runtime + HTTP server for the inbound op-server webhook.
+tokio = { workspace = true }
+axum = { workspace = true }
+
+# Async HTTP client for polling the Base JSON-RPC. We bring our own
+# (non-workspace) reqwest config because the workspace pins the
+# blocking client; the demo uses async to overlap webhook + poll.
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+serde_json = { workspace = true }
+serde = { workspace = true }
+
+clap = { workspace = true }
+
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }

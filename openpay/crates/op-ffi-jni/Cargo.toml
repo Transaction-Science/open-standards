@@ -1,0 +1,35 @@
+[package]
+name = "op-ffi-jni"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay JNI bridge: exposes vault, fraud scorer, and card data to Kotlin / Java / Android via the jni crate."
+publish = false
+
+# cdylib produces the .so files that Android packages into APKs.
+# rlib lets us run Rust-side unit tests on the host without needing a JVM.
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# op-core is pulled in transitively via op-vault and op-fraud.
+op-vault = { path = "../op-vault", features = ["in-memory"] }
+op-fraud = { path = "../op-fraud" }
+
+# jni 0.21 is the stable widely-deployed version. 0.22 exists but
+# introduced breaking API changes (EnvUnowned, mandatory &mut self
+# on most JNIEnv methods) and is still settling. The Medium guides
+# from 2026 and the Android source-tree examples all use 0.21.
+jni = "0.21"
+
+thiserror = { workspace = true }
+
+[features]
+default = []
+# Build only the C ABI surface, skipping JNI symbols. Useful for
+# consumers writing custom JNI wrappers around our C functions, or
+# for non-Android JVM hosting (where the JNI surface still works but
+# the cargo-ndk toolchain isn't relevant).
+c-only = []

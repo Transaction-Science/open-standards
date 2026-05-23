@@ -1,0 +1,17 @@
+[package]
+name = "op-ledger"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay double-entry ledger: append-only, immutable, multi-currency, with pluggable storage backend."
+publish = false
+
+[dependencies]
+op-core = { path = "../op-core" }
+
+thiserror = { workspace = true }
+serde = { workspace = true }
+uuid = { workspace = true }
+tracing = { workspace = true }

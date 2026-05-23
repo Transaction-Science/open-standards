@@ -1,0 +1,54 @@
+[package]
+name = "op-server"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay HTTP API server: axum-based binary exposing the workspace surface (intents, refunds, disputes, settlement, audit) as REST endpoints."
+
+[lib]
+name = "op_server"
+path = "src/lib.rs"
+
+[[bin]]
+name = "op-server"
+path = "src/main.rs"
+
+[dependencies]
+op-core = { path = "../op-core" }
+op-ledger = { path = "../op-ledger" }
+op-orchestrator = { path = "../op-orchestrator" }
+op-refund = { path = "../op-refund" }
+op-dispute = { path = "../op-dispute" }
+op-settlement = { path = "../op-settlement" }
+op-subscriptions = { path = "../op-subscriptions" }
+op-fx = { path = "../op-fx" }
+op-graph = { path = "../op-graph" }
+op-webhook = { path = "../op-webhook" }
+op-reconciliation = { path = "../op-reconciliation" }
+# `evm` feature pulls in the JSON-RPC EVM gateway + LocalKeyEvmSigner
+# so the env-driven main can register a `usdc-base` rail when the
+# operator supplies an RPC URL and a hot-wallet key.
+op-rails-crypto = { path = "../op-rails-crypto", features = ["evm"] }
+
+axum = { workspace = true }
+tokio = { workspace = true }
+tower = { workspace = true }
+tower-http = { workspace = true }
+http = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+http-body-util = { workspace = true }
+tower = { workspace = true }
+tokio = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+op-driver-sdk = { path = "../op-driver-sdk" }
+op-rails-card = { path = "../op-rails-card" }

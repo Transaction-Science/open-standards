@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+Conformance vector: FedNow pacs.008.001.08 outbound credit transfer.
+
+Source profile: FedNow ISO 20022 Implementation Guide as published via
+the FedNow MyStandards portal at frbservices.org. This is the body
+shape that goes into the MQ payload; the BAH (head.001) travels in MQ
+headers separately.
+
+Verified scheme rules encoded in this vector:
+- Document namespace: urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08
+- NbOfTxs = 1 (single-transaction message)
+- SttlmInf.SttlmMtd = CLRG (clearing through FedNow)
+- ChrgBr = SLEV (charge bearer: shared, sender pays sender's charges)
+- ClrSysId.Cd = USABA for both agents (FedNow uses ABA RTNs)
+- UETR present and lowercase hyphenated UUID v4
+-->
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
+  <FIToFICstmrCdtTrf>
+    <GrpHdr>
+      <MsgId>FEDNOW20260517100000001</MsgId>
+      <CreDtTm>2026-05-17T10:00:00Z</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <SttlmInf><SttlmMtd>CLRG</SttlmMtd></SttlmInf>
+    </GrpHdr>
+    <CdtTrfTxInf>
+      <PmtId>
+        <InstrId>INV4242</InstrId>
+        <EndToEndId>INV4242</EndToEndId>
+        <UETR>12a345b6-7c89-4d01-23e4-567890abcdef</UETR>
+      </PmtId>
+      <IntrBkSttlmAmt Ccy="USD">123.45</IntrBkSttlmAmt>
+      <ChrgBr>SLEV</ChrgBr>
+      <InstgAgt><FinInstnId><ClrSysMmbId>
+        <ClrSysId><Cd>USABA</Cd></ClrSysId>
+        <MmbId>021000021</MmbId>
+      </ClrSysMmbId></FinInstnId></InstgAgt>
+      <InstdAgt><FinInstnId><ClrSysMmbId>
+        <ClrSysId><Cd>USABA</Cd></ClrSysId>
+        <MmbId>026009593</MmbId>
+      </ClrSysMmbId></FinInstnId></InstdAgt>
+      <Dbtr><Nm>Alice Sender</Nm></Dbtr>
+      <DbtrAcct><Id><Othr><Id>1234567890</Id></Othr></Id></DbtrAcct>
+      <DbtrAgt><FinInstnId><ClrSysMmbId>
+        <ClrSysId><Cd>USABA</Cd></ClrSysId>
+        <MmbId>021000021</MmbId>
+      </ClrSysMmbId></FinInstnId></DbtrAgt>
+      <CdtrAgt><FinInstnId><ClrSysMmbId>
+        <ClrSysId><Cd>USABA</Cd></ClrSysId>
+        <MmbId>026009593</MmbId>
+      </ClrSysMmbId></FinInstnId></CdtrAgt>
+      <Cdtr><Nm>Bob Recipient</Nm></Cdtr>
+      <CdtrAcct><Id><Othr><Id>9876543210</Id></Othr></Id></CdtrAcct>
+      <RmtInf><Ustrd>Invoice 4242</Ustrd></RmtInf>
+    </CdtTrfTxInf>
+  </FIToFICstmrCdtTrf>
+</Document>

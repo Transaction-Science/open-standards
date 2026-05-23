@@ -1,0 +1,71 @@
+[package]
+name = "op-wasm"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay WebAssembly bridge: exposes vault, fraud scorer, and card data to browsers and Node.js via wasm-bindgen."
+publish = false
+
+# cdylib is what wasm-pack consumes to emit the final .wasm + .js + .d.ts
+# bundle. rlib lets non-wasm targets run `cargo test` for the parts of
+# the code that don't depend on the JS host (the FfiError mapping
+# layer, the policy decoder, etc).
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+# The wasm_bindgen integration test only links/runs under a real wasm
+# host. Gating it behind a non-default feature keeps it out of
+# `cargo test --workspace` (where wasm-bindgen emits a hard
+# compile_error when linked into a host test binary). Run it with:
+#   wasm-pack test --node -- --features wasm-test
+[[test]]
+name = "wasm_bindgen"
+path = "tests/wasm_bindgen.rs"
+required-features = ["wasm-test"]
+
+[dependencies]
+op-vault = { path = "../op-vault", features = ["in-memory"] }
+op-fraud = { path = "../op-fraud" }
+thiserror = { workspace = true }
+
+# wasm-bindgen 0.2.118 (April 2026) is the current stable release of
+# the 0.2 line; the project commits to a 2-year MSRV which matches
+# our 1.95 toolchain. wasm-bindgen has been at 0.2.x for years and is
+# the de facto Rust→JS bridge.
+wasm-bindgen = "0.2"
+
+# console_error_panic_hook surfaces Rust panics into the browser
+# devtools console instead of an opaque RuntimeError. Optional —
+# consumers enable it via the `console-panic-hook` feature.
+console_error_panic_hook = { version = "0.1", optional = true }
+
+# getrandom requires the "js" feature for wasm32-unknown-unknown,
+# otherwise the build fails at the compile_error! in
+# `getrandom/src/lib.rs`. We don't depend on getrandom directly —
+# this is the canonical workaround: list it in the wasm-side crate
+# with the js feature enabled, and the workspace resolver unifies it
+# across the dep graph (aes-gcm-siv → rand_core → getrandom, plus
+# uuid → getrandom).
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom = { version = "0.2", features = ["js"] }
+
+# wasm-bindgen-test 0.3 is the test harness; runs on either Node.js
+# (default) or headless browsers (via wasm-pack test --headless).
+# It is wasm32-only: pulling it into a host `cargo test` build makes
+# wasm-bindgen emit a hard compile_error (it has no non-wasm shim).
+# The integration test file is `#![cfg(target_arch = "wasm32")]`, so
+# on the host it compiles to nothing and this dep is simply absent.
+[target.'cfg(target_arch = "wasm32")'.dev-dependencies]
+wasm-bindgen-test = "0.3"
+
+[features]
+default = []
+# Enables the console_error_panic_hook init in `set_panic_hook`.
+# Consumers in production should NOT enable this — they should ship
+# their own panic handler that reports to their telemetry layer.
+console-panic-hook = ["dep:console_error_panic_hook"]
+# Opt-in switch that makes the wasm_bindgen integration test target
+# visible. Only meaningful under `wasm-pack test`.
+wasm-test = []

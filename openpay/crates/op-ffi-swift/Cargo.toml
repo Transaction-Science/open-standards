@@ -1,0 +1,43 @@
+[package]
+name = "op-ffi-swift"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay Swift / iOS / macOS FFI bridge via swift-bridge + a plain C ABI fallback."
+publish = false
+
+# Build a staticlib so Xcode can link us into an .xcframework. cdylib is
+# also useful for macOS development. Both can coexist; Cargo emits both.
+[lib]
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[dependencies]
+# op-core is pulled in transitively through op-vault and op-fraud;
+# we don't depend on it directly.
+op-vault  = { path = "../op-vault", features = ["in-memory"] }
+op-fraud  = { path = "../op-fraud" }
+# Card and A2A rails are intentionally NOT pulled in here. Swift apps
+# that need them depend on the C ABI fallback and link the relevant
+# crate at the workspace level. The rails carry heavy transport deps
+# (ureq, rustls, OAuth) that aren't appropriate for every iOS bundle —
+# many merchant apps only use card-via-PSP and want the smallest
+# binary.
+
+# swift-bridge 0.1.59 is the latest stable as of 2026-05. We pin the
+# minor series since this project's MSSV (minimum supported Swift
+# version) policy is tight and we want to control upgrade timing.
+swift-bridge = "0.1"
+
+thiserror = { workspace = true }
+
+[build-dependencies]
+swift-bridge-build = "0.1"
+
+[features]
+default = []
+# Build only the C ABI surface, skipping swift-bridge codegen. Useful
+# for consumers using @_silgen_name directly or shipping a hand-written
+# Swift wrapper.
+c-only = []

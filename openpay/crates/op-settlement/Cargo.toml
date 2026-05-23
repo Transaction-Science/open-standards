@@ -1,0 +1,18 @@
+[package]
+name = "op-settlement"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay settlement and payout: batch posted ledger transactions by cutoff window, compute holdbacks, generate payout files (NACHA / pacs.008)."
+
+[dependencies]
+op-core = { path = "../op-core" }
+op-ledger = { path = "../op-ledger" }
+op-iso20022 = { path = "../op-iso20022" }
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+tracing = { workspace = true }

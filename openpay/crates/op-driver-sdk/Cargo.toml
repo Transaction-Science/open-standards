@@ -1,0 +1,18 @@
+[package]
+name = "op-driver-sdk"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay driver author SDK: deterministic mock acquirers, a conformance test harness, and the public surface driver authors target."
+
+[dependencies]
+op-core = { path = "../op-core" }
+op-orchestrator = { path = "../op-orchestrator" }
+op-rails-card = { path = "../op-rails-card" }
+op-rails-a2a = { path = "../op-rails-a2a" }
+op-rails-crypto = { path = "../op-rails-crypto" }
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }

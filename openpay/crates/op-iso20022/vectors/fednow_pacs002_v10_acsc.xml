@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  FedNow pacs.002.001.10 — payment status report, ACSC (accepted and settled).
+  Synthetic test vector. References the pacs.008 sample's UETR.
+-->
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.002.001.10">
+  <FIToFIPmtStsRpt>
+    <GrpHdr>
+      <MsgId>STS-20260517-0001</MsgId>
+      <CreDtTm>2026-05-17T14:00:02Z</CreDtTm>
+    </GrpHdr>
+    <TxInfAndSts>
+      <OrgnlEndToEndId>E2E-20260517-0001</OrgnlEndToEndId>
+      <OrgnlUETR>550e8400-e29b-41d4-a716-446655440000</OrgnlUETR>
+      <TxSts>ACSC</TxSts>
+    </TxInfAndSts>
+  </FIToFIPmtStsRpt>
+</Document>

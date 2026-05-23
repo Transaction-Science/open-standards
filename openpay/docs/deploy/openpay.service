@@ -1,0 +1,70 @@
+# OpenPay — sample systemd unit.
+#
+# Install:
+#   sudo cp openpay.service /etc/systemd/system/openpay.service
+#   sudo cp openpay.env.sample /etc/openpay/openpay.env   # edit first
+#   sudo useradd -r -s /usr/sbin/nologin -d /var/lib/openpay openpay
+#   sudo install -d -o openpay -g openpay -m 0750 /var/lib/openpay
+#   sudo install -d -o root    -g openpay -m 0750 /etc/openpay
+#   sudo install -o root -g root -m 0755 \
+#        target/release/op-server /usr/local/bin/op-server
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now openpay
+#
+# Tail logs:
+#   journalctl -u openpay -f
+
+[Unit]
+Description=OpenPay HTTP server (op-server)
+Documentation=https://github.com/openpay/openpay/tree/main/docs/deploy
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=openpay
+Group=openpay
+WorkingDirectory=/var/lib/openpay
+
+# Env vars the binary reads. OP_BIND_ADDR and RUST_LOG are the
+# only two read by the shipped main.rs; OP_GRAPH_PATH, OP_API_KEYS,
+# and OP_LOG_FORMAT are conventions this deploy guide adopts and
+# assume a patched main.rs / custom binary (see README.md §3-4).
+Environment=OP_BIND_ADDR=127.0.0.1:8080
+Environment=OP_GRAPH_PATH=/var/lib/openpay/data.graph
+EnvironmentFile=-/etc/openpay/openpay.env
+
+ExecStart=/usr/local/bin/op-server
+
+Restart=on-failure
+RestartSec=5s
+
+# Graceful shutdown: the binary installs Ctrl-C + SIGTERM handlers
+# (see crates/op-server/src/main.rs::shutdown_signal). Give it a
+# bit before SIGKILL so in-flight requests can drain.
+KillSignal=SIGTERM
+TimeoutStopSec=30s
+
+# Hardening. /var/lib/openpay is the only writable path the service
+# needs — the .graph file lives there.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/openpay
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=true
+RestrictRealtime=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
+
+# Resource limits. Tune to your traffic profile.
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

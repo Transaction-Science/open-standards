@@ -1,0 +1,38 @@
+[package]
+name = "op-rails-a2a"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay A2A / instant-payment rails. FedNow, PIX, SEPA Inst, UPI."
+
+[dependencies]
+op-core = { path = "../op-core" }
+op-iso20022 = { path = "../op-iso20022" }
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+time = { workspace = true }
+uuid = { workspace = true }
+ureq = { version = "2.10", default-features = false, features = ["tls", "json"] }
+# HMAC and Base64 for PIX OAuth client-credentials signing.
+base64 = "0.22"
+
+[dev-dependencies]
+proptest = { workspace = true }
+insta = { workspace = true }
+httpmock = "0.7"
+
+[features]
+default = ["fednow", "pix", "sepa-instant"]
+# Each driver feature-gated so deployments compile only what they intend
+# to operate. Future drivers (UPI, RTP) will follow the same pattern.
+fednow = []
+pix = []
+sepa-instant = []
+upi = []
+rtp = []
+# Live integration tests against rail sandboxes (typically need certs and
+# are ignored by default).
+live-sandbox = []

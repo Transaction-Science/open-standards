@@ -1,0 +1,44 @@
+[package]
+name = "op-rails-card"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay card-rail adapters. Generic CardAcquirer trait + Hyperswitch driver."
+
+[dependencies]
+op-core = { path = "../op-core" }
+op-emv = { path = "../op-emv" }
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+time = { workspace = true }
+uuid = { workspace = true }
+# HTTP client. ureq is sync, minimal deps, TLS via rustls. We pick it for
+# small footprint and so the same crate compiles on iOS/Android via FFI
+# without dragging in tokio.
+ureq = { version = "2.10", default-features = false, features = ["tls", "json"] }
+# Hex encoding for EMV TLV blobs forwarded in connector_metadata.
+hex = "0.4"
+
+[dev-dependencies]
+proptest = { workspace = true }
+insta = { workspace = true }
+# httpmock spins up a fake HTTP server for driver tests. Hyperswitch's
+# sandbox is reachable from the workspace network config; we use the mock
+# for offline unit tests and the real sandbox for integration tests.
+httpmock = "0.7"
+
+[features]
+default = ["hyperswitch"]
+# Concrete drivers. Each is feature-gated so a deployment can compile
+# only the PSPs it intends to use.
+hyperswitch = []
+stripe = []     # Future Phase 4.1
+adyen = []      # Future Phase 4.2
+finix = []      # Future Phase 4.3
+moov = []       # Future Phase 4.4
+
+# Enable the real-network integration tests (ignored by default).
+live-sandbox = []

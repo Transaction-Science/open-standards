@@ -1,0 +1,25 @@
+[package]
+name = "op-reconciliation"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay reconciliation: diff the ledger against PSP/bank statements (CAMT.053/.054) and settlement webhooks; emit typed discrepancies."
+
+[dependencies]
+op-core = { path = "../op-core" }
+op-ledger = { path = "../op-ledger" }
+op-webhook = { path = "../op-webhook" }
+op-iso20022 = { path = "../op-iso20022" }
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+# CAMT value/booking dates are `YYYY-MM-DD` or xsd:dateTime strings.
+# Reconciliation owns the calendar policy (which date → which window),
+# so we parse them here with `time` rather than guessing in the facade.
+time = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }

@@ -1,0 +1,39 @@
+[package]
+name = "op-vault"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay vault. Token-only storage abstraction. PCI DSS 4.0.1 scope-cutter for the rest of the stack."
+
+[dependencies]
+op-core = { path = "../op-core", features = ["pci-scope"] }
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+time = { workspace = true }
+uuid = { workspace = true }
+zeroize = { workspace = true }
+
+# AES-256-GCM-SIV is misuse-resistant per RFC 8452 — no catastrophic
+# nonce-reuse failure mode. Strictly better than plain AES-GCM for a
+# library where the operator wraps our cipher and we can't enforce
+# nonce discipline at every callsite. Used only by the in-memory
+# reference vault; production deployments use platform-supplied vaults.
+aes-gcm-siv = { version = "0.11", default-features = false, features = ["alloc", "aes", "getrandom"], optional = true }
+rand_core = { version = "0.6", features = ["getrandom"], optional = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+serde_json = { workspace = true }
+
+[features]
+# Default ships only the trait + types. No implementation, no crypto.
+# Operators bring their own vault (iOS Keychain, Android Keystore, HSM,
+# AWS KMS, HashiCorp Vault, etc.).
+default = []
+
+# Enables InMemoryVault — AES-256-GCM-SIV-backed reference implementation
+# suitable for tests and development. Not PCI-compliant on its own.
+in-memory = ["dep:aes-gcm-siv", "dep:rand_core"]

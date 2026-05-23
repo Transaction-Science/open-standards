@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Conformance vector: pacs.002.001.10 inbound status report on successful
+settlement (FedNow ACSC, PIX ACSC/ACCC, SEPA TIPS ACSC).
+
+Verified rules:
+- Document namespace: urn:iso:std:iso:20022:tech:xsd:pacs.002.001.10
+- TxSts = ACSC means "accepted, settlement completed"
+- OrgnlUETR echoes the request UETR for matching
+- OrgnlEndToEndId echoes the request EndToEndId
+- No StsRsnInf on success
+-->
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.002.001.10">
+  <FIToFIPmtStsRpt>
+    <GrpHdr>
+      <MsgId>STSRPT20260517100001001</MsgId>
+      <CreDtTm>2026-05-17T10:00:01Z</CreDtTm>
+    </GrpHdr>
+    <OrgnlGrpInfAndSts>
+      <OrgnlMsgId>FEDNOW20260517100000001</OrgnlMsgId>
+      <OrgnlMsgNmId>pacs.008.001.08</OrgnlMsgNmId>
+    </OrgnlGrpInfAndSts>
+    <TxInfAndSts>
+      <OrgnlUETR>12a345b6-7c89-4d01-23e4-567890abcdef</OrgnlUETR>
+      <OrgnlEndToEndId>INV4242</OrgnlEndToEndId>
+      <TxSts>ACSC</TxSts>
+    </TxInfAndSts>
+  </FIToFIPmtStsRpt>
+</Document>

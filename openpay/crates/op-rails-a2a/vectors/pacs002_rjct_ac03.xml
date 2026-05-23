@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Conformance vector: pacs.002.001.10 inbound rejection.
+
+Verified rules:
+- TxSts = RJCT
+- StsRsnInf is mandatory on rejection
+- Rsn.Cd carries an ExternalStatusReason1Code value (here AC03 = invalid
+  creditor account number — verified in FedNow Service Operating
+  Procedures v3.2 reason-code matrix)
+- AddtlInf carries free-text additional information
+
+This is the shape my parse_pacs002() extracts five fields from:
+TxSts, OrgnlUETR, OrgnlEndToEndId, Cd (first), AddtlInf (first).
+-->
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.002.001.10">
+  <FIToFIPmtStsRpt>
+    <GrpHdr>
+      <MsgId>STSRPT20260517100001002</MsgId>
+      <CreDtTm>2026-05-17T10:00:01Z</CreDtTm>
+    </GrpHdr>
+    <OrgnlGrpInfAndSts>
+      <OrgnlMsgId>FEDNOW20260517100000002</OrgnlMsgId>
+      <OrgnlMsgNmId>pacs.008.001.08</OrgnlMsgNmId>
+    </OrgnlGrpInfAndSts>
+    <TxInfAndSts>
+      <OrgnlUETR>87b654c2-3d21-4e09-87f6-1a2b3c4d5e6f</OrgnlUETR>
+      <OrgnlEndToEndId>INV4243</OrgnlEndToEndId>
+      <TxSts>RJCT</TxSts>
+      <StsRsnInf>
+        <Rsn><Cd>AC03</Cd></Rsn>
+        <AddtlInf>Invalid creditor account number</AddtlInf>
+      </StsRsnInf>
+    </TxInfAndSts>
+  </FIToFIPmtStsRpt>
+</Document>

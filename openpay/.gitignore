@@ -1,0 +1,31 @@
+# Rust build artifacts
+/target/
+**/target/
+
+# Cargo
+**/*.rs.bk
+Cargo.lock.bak
+
+# IDE / editor
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# Secrets / env
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+!*.pub.key
+
+# Logs / scratch
+*.log
+.scratch/
+tmp/

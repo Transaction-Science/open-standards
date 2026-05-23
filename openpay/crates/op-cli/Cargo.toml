@@ -1,0 +1,28 @@
+[package]
+name = "op-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay operator CLI: a small `op` binary that talks to a running op-server deployment over HTTP. Query health, fetch refund/dispute/subscription/batch records, register webhook endpoints, run FX quotes/conversions, pull audit reports."
+
+[lib]
+name = "op_cli"
+path = "src/lib.rs"
+
+[[bin]]
+name = "op"
+path = "src/main.rs"
+
+[dependencies]
+clap = { workspace = true }
+reqwest = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+op-server = { path = "../op-server" }
+tokio = { workspace = true }
+axum = { workspace = true }

@@ -1,0 +1,20 @@
+Transaction Science Open Standards
+Copyright (c) 2026 Transaction Science, Inc.
+
+This repository contains three open standards. The Apache License,
+Version 2.0 at the root applies to:
+
+  openpay/     — the OpenPay reference payment-acceptance stack.
+
+The following subdirectories are licensed differently. See each
+subdirectory's LICENSE file for the applicable terms:
+
+  smart-byte/  — Creative Commons Attribution 4.0 International (CC-BY-4.0)
+  eoc/         — Creative Commons Attribution 4.0 International (CC-BY-4.0)
+
+The wire format and the right to fork are public. Transaction Science
+writes the reference implementation and runs the optional hosted
+services — the protocols themselves are owned by no one.
+
+See CHARTER.md for the stewardship pattern that applies to every
+standard in this repository.

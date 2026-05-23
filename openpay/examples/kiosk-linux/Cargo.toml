@@ -1,0 +1,20 @@
+[package]
+name = "kiosk-linux"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+description = "OpenPay reference unattended-checkout kiosk wiring every layer of the stack together."
+
+[[bin]]
+name = "kiosk-linux"
+path = "src/main.rs"
+
+[dependencies]
+op-core = { path = "../../crates/op-core" }
+op-vault = { path = "../../crates/op-vault", features = ["in-memory"] }
+op-fraud = { path = "../../crates/op-fraud" }
+op-rails-card = { path = "../../crates/op-rails-card" }
+op-rails-a2a = { path = "../../crates/op-rails-a2a" }
+op-orchestrator = { path = "../../crates/op-orchestrator" }

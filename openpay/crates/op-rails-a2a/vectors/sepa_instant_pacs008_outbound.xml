@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Conformance vector: SEPA SCT Inst pacs.008.001.08 outbound credit
+transfer for RT1 / TIPS submission.
+
+Verified scheme rules per EPC SCT Inst Interbank Implementation Guide
+2019 v1.0 and TIPS UDFS:
+
+- Document namespace: urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08
+- NbOfTxs = 1 (RT1 / TIPS reject bulk pacs.008 - single tx only)
+- SttlmInf.SttlmMtd = CLRG (mandatory for RT1; TIPS accepts CLRG or INGA)
+- LclInstrm.Cd = INST (MANDATORY — this is what makes it SCT Inst)
+- SvcLvl.Cd = SEPA (mandatory)
+- ChrgBr = SLEV (only allowed value in SCT Inst)
+- Currency = EUR (only allowed)
+- Agents identified by BICFI (not ClrSysMmbId)
+- Accounts identified by IBAN (not Othr/Id)
+- UETR present, lowercase hyphenated UUID v4
+-->
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
+  <FIToFICstmrCdtTrf>
+    <GrpHdr>
+      <MsgId>SEPA20260517100000001</MsgId>
+      <CreDtTm>2026-05-17T10:00:00Z</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <SttlmInf><SttlmMtd>CLRG</SttlmMtd></SttlmInf>
+      <InstgAgt><FinInstnId><BICFI>DEUTDEFFXXX</BICFI></FinInstnId></InstgAgt>
+    </GrpHdr>
+    <CdtTrfTxInf>
+      <PmtId>
+        <InstrId>RECH4242</InstrId>
+        <EndToEndId>RECH4242</EndToEndId>
+        <UETR>12a345b6-7c89-4d01-23e4-567890abcdef</UETR>
+      </PmtId>
+      <PmtTpInf><LclInstrm><Cd>INST</Cd></LclInstrm><SvcLvl><Cd>SEPA</Cd></SvcLvl></PmtTpInf>
+      <IntrBkSttlmAmt Ccy="EUR">25.00</IntrBkSttlmAmt>
+      <ChrgBr>SLEV</ChrgBr>
+      <Dbtr><Nm>Hans Mueller</Nm></Dbtr>
+      <DbtrAcct><Id><IBAN>DE89370400440532013000</IBAN></Id></DbtrAcct>
+      <DbtrAgt><FinInstnId><BICFI>DEUTDEFFXXX</BICFI></FinInstnId></DbtrAgt>
+      <CdtrAgt><FinInstnId><BICFI>BNPAFRPPXXX</BICFI></FinInstnId></CdtrAgt>
+      <Cdtr><Nm>Marie Dupont</Nm></Cdtr>
+      <CdtrAcct><Id><IBAN>FR1420041010050500013M02606</IBAN></Id></CdtrAcct>
+      <RmtInf><Ustrd>Rechnung 4242</Ustrd></RmtInf>
+    </CdtTrfTxInf>
+  </FIToFICstmrCdtTrf>
+</Document>

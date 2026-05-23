@@ -1,0 +1,136 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/op-core",
+    "crates/op-iso20022",
+    "crates/op-emv",
+    "crates/op-vault",
+    "crates/op-fraud",
+    "crates/op-rails-card",
+    "crates/op-rails-a2a",
+    "crates/op-ffi-swift",
+    "crates/op-ffi-jni",
+    "crates/op-wasm",
+    "crates/op-orchestrator",
+    "crates/op-ledger",
+    "crates/op-webhook",
+    "crates/op-graph",
+    "crates/op-reconciliation",
+    "crates/op-refund",
+    "crates/op-dispute",
+    "crates/op-settlement",
+    "crates/op-server",
+    "crates/op-driver-sdk",
+    "crates/op-rails-crypto",
+    "crates/op-subscriptions",
+    "crates/op-fx",
+    "crates/op-cli",
+    "examples/headless-server",
+    "examples/kiosk-linux",
+    "examples/demo-merchant",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.95"
+license = "Apache-2.0"
+repository = "https://github.com/Transaction-Science/open-standards"
+authors = ["OpenPay Contributors"]
+
+[workspace.dependencies]
+# Core
+thiserror = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+zeroize = { version = "1.8", features = ["derive"] }
+subtle = "2.6"  # constant-time comparison
+
+# ISO 20022 — verified ground truth (Open-Payments/messages, Apache-2.0).
+# Pin tightly: financial message layouts must not silently change under us.
+# Main crate is at =1.0.10; the fednow companion lagged behind and
+# stopped at =1.0.9 (the two crates version independently). The fednow
+# surface we depend on is unchanged across 1.0.x, so the version skew
+# is safe.
+open-payments-iso20022 = { version = "=1.0.10", features = ["payments"] }
+open-payments-fednow = "=1.0.9"
+# XML codec — quick-xml is the de-facto choice; we use it for round-trip
+# validation against XSD-canonical sample files.
+quick-xml = { version = "0.36", features = ["serialize"] }
+
+# ML / inference
+burn = { version = "0.18", default-features = false }
+ort = { version = "2", default-features = false }
+
+# FFI
+cxx = "1"
+jni = "0.21"
+wasm-bindgen = "0.2"
+
+# Time, ids
+# `serde` for OffsetDateTime serialization in domain structs;
+# `formatting`/`parsing` for op-iso20022 dt formatters.
+time = { version = "0.3", default-features = false, features = ["std", "serde", "formatting", "parsing", "macros"] }
+# `v4` for random ids (events, attempts, idempotency tokens);
+# `v7` for time-sortable ids in ledger/webhook bookkeeping;
+# `v5` for deterministic (name-based) statement-line vertex ids so
+# re-recording the same reconciliation line reuses its vertex.
+uuid = { version = "1", features = ["v4", "v5", "v7", "serde"] }
+
+# Testing
+proptest = "1"
+insta = "1"
+
+# Observability — structured tracing. Operators wire their own
+# `tracing-subscriber` to emit JSON, OpenTelemetry, or whatever
+# their pipeline expects. `tracing` is the de-facto Rust standard;
+# emits zero-cost when no subscriber is registered.
+tracing = "0.1"
+
+# HTTP server. `axum` 0.8 atop tokio is the de-facto choice in 2026;
+# tower middleware lets operators add auth / logging / metrics
+# layers without touching our handler code.
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "signal", "sync"] }
+axum = "0.8"
+tower = { version = "0.5", features = ["util"] }
+tower-http = { version = "0.6", features = ["trace"] }
+http = "1"
+http-body-util = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "json"] }
+
+# Live HTTP client. Used by ReqwestTransport (op-webhook fanout) and
+# the JSON-RPC client in op-rails-crypto's EVM gateway. Blocking
+# client keeps the sync trait surfaces intact.
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "json", "rustls-tls"] }
+
+# CLI parsing for op-cli.
+clap = { version = "4", features = ["derive", "env"] }
+
+# Hex encoding for EVM calldata + tx hashes.
+hex = "0.4"
+
+# Keccak-256 for EVM function selectors.
+sha3 = "0.10"
+
+# secp256k1 ECDSA via k256. Pure-Rust, audited, used by the
+# LocalKeyEvmSigner so operators can launch with a hot-wallet
+# signer before wiring KMS / Fireblocks. RFC 6979 deterministic
+# nonces, recoverable signatures.
+k256 = { version = "0.13", features = ["ecdsa", "std"] }
+
+# RLP encoding for legacy / EIP-1559 EVM transactions. Used by
+# LocalKeyEvmSigner to produce the raw-tx bytes broadcast by
+# eth_sendRawTransaction.
+rlp = "0.5"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = "symbols"
+
+[profile.release-with-debug]
+inherits = "release"
+debug = true
+strip = "none"

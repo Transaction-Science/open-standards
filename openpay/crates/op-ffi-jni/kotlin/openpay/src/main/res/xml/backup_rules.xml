@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Example backup rules for apps integrating OpenPay's KeystoreVault.
+
+    The KeystoreVault persists tokenized card data to an
+    EncryptedSharedPreferences file (default name: `openpay-vault.xml`).
+    The encryption key lives in the Android Keystore, which is bound
+    to the device. When Android Auto Backup restores app data to a
+    different device, the new device's Keystore holds a different
+    master key, and any backed-up ciphertext becomes undecryptable —
+    silently producing runtime crashes the first time the app tries
+    to read the vault.
+
+    The fix is to exclude every EncryptedSharedPreferences file from
+    Auto Backup. This mirrors Apple's
+    `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly` discipline on
+    iOS.
+
+    To wire this up in your app:
+
+    1. Drop this file at `app/src/main/res/xml/backup_rules.xml`.
+    2. Reference it from your AndroidManifest:
+
+        <application
+            android:dataExtractionRules="@xml/data_extraction_rules"
+            android:fullBackupContent="@xml/backup_rules"
+            ...>
+
+    3. On Android 12+ (API 31+), use the newer
+       `data_extraction_rules.xml` schema as well. AOSP docs and the
+       Spght fork README both call this out.
+-->
+<full-backup-content>
+    <!-- The default vault filename. Adjust if you passed a custom
+         `fileName` to KeystoreVault. -->
+    <exclude domain="sharedpref" path="openpay-vault.xml" />
+
+    <!-- Also exclude any androidx.security __androidx_security_*.xml
+         metadata file that the library may write alongside. Newer
+         versions consolidate this into the main file but older
+         alphas do not. -->
+    <exclude domain="sharedpref" path="__androidx_security_crypto_encrypted_prefs__.xml" />
+</full-backup-content>

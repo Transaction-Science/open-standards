@@ -1,0 +1,12 @@
+[package]
+name = "headless-server"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+op-core = { path = "../../crates/op-core" }
+op-rails-card = { path = "../../crates/op-rails-card", features = ["hyperswitch"] }
+uuid = { workspace = true }

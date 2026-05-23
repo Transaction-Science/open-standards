@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  FedNow pacs.002.001.10 — payment status report, RJCT with reason AC04
+  (closed account number). Synthetic test vector for rejection-path tests.
+-->
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.002.001.10">
+  <FIToFIPmtStsRpt>
+    <GrpHdr>
+      <MsgId>STS-20260517-0002</MsgId>
+      <CreDtTm>2026-05-17T14:00:02Z</CreDtTm>
+    </GrpHdr>
+    <TxInfAndSts>
+      <OrgnlEndToEndId>E2E-20260517-0002</OrgnlEndToEndId>
+      <OrgnlUETR>660e8400-e29b-41d4-a716-446655440000</OrgnlUETR>
+      <TxSts>RJCT</TxSts>
+      <StsRsnInf>
+        <Rsn>
+          <Cd>AC04</Cd>
+        </Rsn>
+        <AddtlInf>Account closed 2026-05-10</AddtlInf>
+      </StsRsnInf>
+    </TxInfAndSts>
+  </FIToFIPmtStsRpt>
+</Document>

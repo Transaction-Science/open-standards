@@ -1,0 +1,26 @@
+[package]
+name = "op-emv"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay EMV BER-TLV codec. Pure parser, no std required, zero alloc on the hot path."
+
+[dependencies]
+op-core = { path = "../op-core" }
+thiserror = { workspace = true }
+serde = { workspace = true, optional = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+
+[features]
+default = ["std"]
+# Use the standard library. When disabled, the parser still works but
+# the tree builder (which needs Vec) is excluded. This is what makes
+# `op-emv` usable inside a smartcard's secure element if we ever ship
+# a no-std target.
+std = []
+# Enable serde derives on Tlv / TlvTag so trees can be logged / cached.
+serde = ["dep:serde", "op-core/default"]

@@ -1,0 +1,29 @@
+[package]
+name = "op-orchestrator"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay cross-rail orchestrator: idempotency-keyed payment intents, fraud-gated routing, retry/fallback across card and A2A rails."
+publish = false
+
+[dependencies]
+# `pci-scope` is enabled because op-vault (transitive) turns it on and
+# cargo unifies workspace features. The orchestrator only ever sees a
+# tokenized method by design, but it MUST compile the match arm for
+# `PaymentMethod::RawPan` because the variant exists in the unified
+# `op-core`. The arm errors loudly if reached — it's a design violation.
+op-core = { path = "../op-core", features = ["pci-scope"] }
+op-vault = { path = "../op-vault", features = ["in-memory"] }
+op-fraud = { path = "../op-fraud" }
+op-rails-card = { path = "../op-rails-card" }
+op-rails-a2a = { path = "../op-rails-a2a" }
+op-rails-crypto = { path = "../op-rails-crypto" }
+
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+sha2 = "0.10"
+tracing = { workspace = true }

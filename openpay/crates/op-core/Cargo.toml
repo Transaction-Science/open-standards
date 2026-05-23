@@ -1,0 +1,27 @@
+[package]
+name = "op-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay core: domain types, typestate payment machine, traits. No I/O, no network, no unsafe."
+
+[dependencies]
+thiserror = { workspace = true }
+serde = { workspace = true }
+zeroize = { workspace = true }
+subtle = { workspace = true }
+time = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+insta = { workspace = true }
+serde_json = { workspace = true }
+
+[features]
+default = []
+# Gates raw-PAN APIs behind explicit opt-in. PCI DSS scope: only enable in
+# code paths that are themselves PCI-certified (e.g. a vault service).
+pci-scope = []

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Canonical camt.053.001.12 sample vector.
+
+  Synthetic test data — synthetic IBAN, synthetic statement id.
+  Derived from ISO 20022 BankToCustomerStatementV12 structure
+  documentation; minimal valid skeleton.
+
+  Used by op-iso20022's conformance tests to verify that:
+  1. The XML parses through `Message::parse_camt053`.
+  2. The neutral statement view (`camt053_entries`) flattens the
+     nested `Stmt → Ntry → NtryDtls → TxDtls → Refs.EndToEndId`
+     traversal correctly against a real-shaped document.
+-->
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.12">
+  <BkToCstmrStmt>
+    <GrpHdr>
+      <MsgId>STMT-2026-05-21-0001</MsgId>
+      <CreDtTm>2026-05-21T00:00:00Z</CreDtTm>
+    </GrpHdr>
+    <Stmt>
+      <Id>STMT-0001</Id>
+      <CreDtTm>2026-05-21T00:00:00Z</CreDtTm>
+      <Acct>
+        <Id>
+          <IBAN>DE89370400440532013000</IBAN>
+        </Id>
+      </Acct>
+      <Bal>
+        <Tp>
+          <CdOrPrtry>
+            <Cd>CLBD</Cd>
+          </CdOrPrtry>
+        </Tp>
+        <Amt Ccy="USD">1234.56</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <Dt>
+          <Dt>2026-05-21</Dt>
+        </Dt>
+      </Bal>
+      <Ntry>
+        <NtryRef>NTRY-1</NtryRef>
+        <Amt Ccy="USD">52.50</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <Sts>
+          <Cd>BOOK</Cd>
+        </Sts>
+        <BookgDt>
+          <Dt>2026-05-21</Dt>
+        </BookgDt>
+        <ValDt>
+          <Dt>2026-05-21</Dt>
+        </ValDt>
+        <BkTxCd>
+          <Prtry>
+            <Cd>OPENPAY-TEST</Cd>
+          </Prtry>
+        </BkTxCd>
+        <NtryDtls>
+          <TxDtls>
+            <Refs>
+              <EndToEndId>ORD-77</EndToEndId>
+            </Refs>
+          </TxDtls>
+        </NtryDtls>
+        <AddtlNtryInf>coffee</AddtlNtryInf>
+      </Ntry>
+    </Stmt>
+  </BkToCstmrStmt>
+</Document>

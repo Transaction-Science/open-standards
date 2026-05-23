@@ -1,0 +1,57 @@
+[package]
+name = "op-iso20022"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay ISO 20022 facade: typed, validated wrapper over open-payments-iso20022 with FedNow, RTP, PIX, SEPA Instant profiles."
+
+[dependencies]
+op-core = { path = "../op-core" }
+# The umbrella `open-payments-iso20022` crate only re-exports types via
+# its private `document.rs` enum; the per-family sub-crates aren't
+# accessible through it. Add them as direct deps so we can reference
+# specific message versions (`pacs_008_001_08::FIToFICustomerCreditTransferV08`)
+# explicitly. All pinned to =1.0.10 except fednow companion which
+# lagged at =1.0.9.
+open-payments-iso20022 = { workspace = true }
+# The sub-crates need the `derive_*` feature set turned on at the
+# sub-crate level (the umbrella crate doesn't forward them to deps
+# we declare ourselves). `derive_all` bundles serde + debug + default
+# + partial_eq + clone, which is what every domain type in this crate
+# expects.
+open-payments-iso20022-pacs = { version = "=1.0.10", features = ["derive_all"] }
+open-payments-iso20022-pain = { version = "=1.0.10", features = ["derive_all"] }
+open-payments-iso20022-camt = { version = "=1.0.10", features = ["derive_all"] }
+open-payments-iso20022-admi = { version = "=1.0.10", features = ["derive_all"] }
+open-payments-iso20022-head = { version = "=1.0.10", features = ["derive_all"] }
+# The per-family crates `use iso20022_common::common::*` privately;
+# nested element types (ReportEntry14, CreditDebitCode, ...) live here,
+# not in the camt module. We name them directly when flattening a
+# statement, so depend on it explicitly with the same derive set.
+iso20022-common = { version = "=1.0.10", features = ["derive_all"] }
+open-payments-fednow = { workspace = true }
+quick-xml = { workspace = true }
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+time = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+insta = { workspace = true }
+proptest = { workspace = true }
+
+[features]
+default = []
+# Enable per-rail profile validators. Each profile encodes the
+# scheme-specific subset of ISO 20022 (e.g. FedNow's "Send" participant
+# requires UETR, IMAD, specific charge bearer codes, etc.)
+fednow = []
+rtp = []
+sepa-inst = []
+pix = []
+# When enabled, runs full XSD-style validation. Off by default for hot
+# paths; on for ingress to catch bad messages before they reach the rail.
+strict-validation = []

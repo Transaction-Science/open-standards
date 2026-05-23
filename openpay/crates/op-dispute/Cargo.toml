@@ -1,0 +1,19 @@
+[package]
+name = "op-dispute"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay dispute domain: chargebacks, reason codes, evidence, status workflow."
+
+[dependencies]
+op-core = { path = "../op-core" }
+op-ledger = { path = "../op-ledger" }
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
