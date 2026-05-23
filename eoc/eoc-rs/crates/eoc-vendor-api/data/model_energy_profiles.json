@@ -1,0 +1,66 @@
+{
+  "_schema_version": 1,
+  "_note": "Per-token energy coefficients (joules). Sourced where possible from the HuggingFace AI Energy Score corpus and published vendor reports. Where no public number exists the coefficient is documented as 'vendor-undisclosed' and derived from order-of-magnitude analysis (model parameter count * dense-FLOPs-per-token * datacenter PUE / per-token throughput). All numbers are ESTIMATES; the JouleCost is always tagged JouleSource::Estimated.",
+  "profiles": {
+    "claude-3-5-sonnet": {
+      "joules_per_input_token": 0.10,
+      "joules_per_output_token": 0.50,
+      "source": "HuggingFace AI Energy Score + Anthropic published reports (claude-3.5-sonnet, 2024)"
+    },
+    "claude-3-opus": {
+      "joules_per_input_token": 0.30,
+      "joules_per_output_token": 1.20,
+      "source": "vendor-undisclosed; estimator derived from parameter-count ratio vs claude-3.5-sonnet"
+    },
+    "claude-3-haiku": {
+      "joules_per_input_token": 0.03,
+      "joules_per_output_token": 0.15,
+      "source": "vendor-undisclosed; estimator derived from claude-3-haiku FLOPs/token reports"
+    },
+    "gpt-4o": {
+      "joules_per_input_token": 0.10,
+      "joules_per_output_token": 0.40,
+      "source": "HuggingFace AI Energy Score (gpt-4o, 2024)"
+    },
+    "gpt-4o-mini": {
+      "joules_per_input_token": 0.02,
+      "joules_per_output_token": 0.08,
+      "source": "HuggingFace AI Energy Score (gpt-4o-mini, 2024)"
+    },
+    "gpt-4.1": {
+      "joules_per_input_token": 0.12,
+      "joules_per_output_token": 0.48,
+      "source": "vendor-undisclosed; estimator derived from gpt-4o coefficient + OpenAI capacity disclosures"
+    },
+    "o3": {
+      "joules_per_input_token": 0.50,
+      "joules_per_output_token": 4.00,
+      "source": "vendor-undisclosed; estimator inflated for hidden reasoning-token expansion (4-8x output token amplification)"
+    },
+    "gemini-1.5-pro": {
+      "joules_per_input_token": 0.08,
+      "joules_per_output_token": 0.40,
+      "source": "Google Sustainability Report 2024 + HuggingFace AI Energy Score (gemini-1.5)"
+    },
+    "gemini-1.5-flash": {
+      "joules_per_input_token": 0.02,
+      "joules_per_output_token": 0.10,
+      "source": "Google Sustainability Report 2024"
+    },
+    "llama-3.1-70b": {
+      "joules_per_input_token": 0.07,
+      "joules_per_output_token": 0.35,
+      "source": "HuggingFace AI Energy Score (llama-3.1-70b)"
+    },
+    "llama-3.1-8b": {
+      "joules_per_input_token": 0.01,
+      "joules_per_output_token": 0.05,
+      "source": "HuggingFace AI Energy Score (llama-3.1-8b)"
+    },
+    "mixtral-8x7b": {
+      "joules_per_input_token": 0.04,
+      "joules_per_output_token": 0.20,
+      "source": "HuggingFace AI Energy Score (mixtral-8x7b) + Mistral published efficiency reports"
+    }
+  }
+}

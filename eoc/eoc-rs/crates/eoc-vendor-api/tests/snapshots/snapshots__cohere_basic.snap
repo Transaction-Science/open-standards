@@ -1,0 +1,14 @@
+---
+source: crates/eoc-vendor-api/tests/snapshots.rs
+expression: body
+---
+{
+  "messages": [
+    {
+      "content": "hello, world",
+      "role": "user"
+    }
+  ],
+  "model": "command-r-plus",
+  "stream": false
+}

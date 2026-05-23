@@ -1,0 +1,19 @@
+# EMV DE 55 minimal fixture — TLV bundle as it appears INSIDE the
+# DE 55 LLLVAR value (no length prefix; that is applied by the
+# field codec).
+#
+# Tags carried:
+#   9F26 (8)  — Application Cryptogram CAFEBABEDEADBEEF
+#   9F27 (1)  — CID 0x80 (ARQC)
+#   9F36 (2)  — ATC 0x0042
+#   95   (5)  — TVR all zeros
+#   9A   (3)  — Tx date 26-05-23
+#   9C   (1)  — Tx type 0x00 (purchase)
+#   82   (2)  — AIP 0x1C00
+9f 26 08 ca fe ba be de ad be ef
+9f 27 01 80
+9f 36 02 00 42
+95 05 00 00 00 00 00
+9a 03 26 05 23
+9c 01 00
+82 02 1c 00

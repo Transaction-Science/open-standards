@@ -8,8 +8,11 @@ members = [
     "crates/eoc-neural",
     "crates/eoc-meter",
     "crates/eoc-cascade",
+    "crates/eoc-route-learned",
     "crates/eoc",
     "crates/eoc-wasm",
+    "crates/eoc-embeddings",
+    "crates/eoc-vendor-api",
 ]
 
 [workspace.package]
@@ -55,6 +58,7 @@ eoc-graph = { path = "crates/eoc-graph" }
 eoc-neural = { path = "crates/eoc-neural" }
 eoc-meter = { path = "crates/eoc-meter" }
 eoc-cascade = { path = "crates/eoc-cascade" }
+eoc-route-learned = { path = "crates/eoc-route-learned" }
 
 [profile.release]
 opt-level = 3

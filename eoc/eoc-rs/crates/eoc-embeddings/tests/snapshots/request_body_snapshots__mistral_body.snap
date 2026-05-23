@@ -1,0 +1,11 @@
+---
+source: crates/eoc-embeddings/tests/request_body_snapshots.rs
+expression: body
+---
+{
+  "encoding_format": "float",
+  "input": [
+    "alpha"
+  ],
+  "model": "mistral-embed"
+}

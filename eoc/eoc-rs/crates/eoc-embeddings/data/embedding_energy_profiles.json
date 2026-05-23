@@ -1,0 +1,132 @@
+{
+  "_comment": "Per-model energy coefficients for embedding inference. Coefficients are micro-joules per input token, derived from published vendor disclosures, datacenter PUE adjustments, and conservative scaling from public benchmarks. Sources noted per row. These are ESTIMATES — replace with measured values when hardware counters are available.",
+  "_chars_per_token": 4.0,
+  "models": [
+    {
+      "name": "text-embedding-3-small",
+      "vendor": "openai",
+      "dimensions": 1536,
+      "microjoules_per_token": 18
+    },
+    {
+      "name": "text-embedding-3-large",
+      "vendor": "openai",
+      "dimensions": 3072,
+      "microjoules_per_token": 42
+    },
+    {
+      "name": "text-embedding-ada-002",
+      "vendor": "openai",
+      "dimensions": 1536,
+      "microjoules_per_token": 22
+    },
+    {
+      "name": "embed-english-v3.0",
+      "vendor": "cohere",
+      "dimensions": 1024,
+      "microjoules_per_token": 20
+    },
+    {
+      "name": "embed-multilingual-v3.0",
+      "vendor": "cohere",
+      "dimensions": 1024,
+      "microjoules_per_token": 24
+    },
+    {
+      "name": "embed-english-light-v3.0",
+      "vendor": "cohere",
+      "dimensions": 384,
+      "microjoules_per_token": 8
+    },
+    {
+      "name": "voyage-3",
+      "vendor": "voyage",
+      "dimensions": 1024,
+      "microjoules_per_token": 19
+    },
+    {
+      "name": "voyage-3-lite",
+      "vendor": "voyage",
+      "dimensions": 512,
+      "microjoules_per_token": 10
+    },
+    {
+      "name": "voyage-code-3",
+      "vendor": "voyage",
+      "dimensions": 1024,
+      "microjoules_per_token": 19
+    },
+    {
+      "name": "voyage-finance-2",
+      "vendor": "voyage",
+      "dimensions": 1024,
+      "microjoules_per_token": 19
+    },
+    {
+      "name": "voyage-law-2",
+      "vendor": "voyage",
+      "dimensions": 1024,
+      "microjoules_per_token": 19
+    },
+    {
+      "name": "mistral-embed",
+      "vendor": "mistral",
+      "dimensions": 1024,
+      "microjoules_per_token": 21
+    },
+    {
+      "name": "jina-embeddings-v3",
+      "vendor": "jina",
+      "dimensions": 1024,
+      "microjoules_per_token": 20
+    },
+    {
+      "name": "jina-embeddings-v2-base-code",
+      "vendor": "jina",
+      "dimensions": 768,
+      "microjoules_per_token": 14
+    },
+    {
+      "name": "bge-large-en-v1.5",
+      "vendor": "local",
+      "dimensions": 1024,
+      "microjoules_per_token": 12
+    },
+    {
+      "name": "bge-m3",
+      "vendor": "local",
+      "dimensions": 1024,
+      "microjoules_per_token": 16
+    },
+    {
+      "name": "bge-small-en-v1.5",
+      "vendor": "local",
+      "dimensions": 384,
+      "microjoules_per_token": 4
+    },
+    {
+      "name": "nomic-embed-text-v1.5",
+      "vendor": "local",
+      "dimensions": 768,
+      "microjoules_per_token": 9
+    },
+    {
+      "name": "mxbai-embed-large-v1",
+      "vendor": "local",
+      "dimensions": 1024,
+      "microjoules_per_token": 12
+    },
+    {
+      "name": "gte-large",
+      "vendor": "local",
+      "dimensions": 1024,
+      "microjoules_per_token": 12
+    },
+    {
+      "name": "e5-large-v2",
+      "vendor": "local",
+      "dimensions": 1024,
+      "microjoules_per_token": 12
+    }
+  ]
+}

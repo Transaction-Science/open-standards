@@ -1,0 +1,24 @@
+---
+source: crates/eoc-vendor-api/tests/snapshots.rs
+expression: body
+---
+{
+  "max_tokens": 2048,
+  "messages": [
+    {
+      "content": "hello, world",
+      "role": "user"
+    }
+  ],
+  "model": "claude-3-5-sonnet-20241022",
+  "stream": false,
+  "system": [
+    {
+      "cache_control": {
+        "type": "ephemeral"
+      },
+      "text": "You are helpful.",
+      "type": "text"
+    }
+  ]
+}

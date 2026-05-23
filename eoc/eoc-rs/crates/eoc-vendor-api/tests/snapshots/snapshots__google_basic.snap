@@ -1,0 +1,16 @@
+---
+source: crates/eoc-vendor-api/tests/snapshots.rs
+expression: body
+---
+{
+  "contents": [
+    {
+      "parts": [
+        {
+          "text": "hello, world"
+        }
+      ],
+      "role": "user"
+    }
+  ]
+}

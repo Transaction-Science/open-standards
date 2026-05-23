@@ -1,0 +1,16 @@
+[package]
+name = "op-iso8583"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay ISO 8583 codec: typed message frame, primary/secondary bitmaps, per-network dialects (Visa Base I, Mastercard MDS, Amex GNS, Discover, JCB, UnionPay) and direct-acquirer network-management primitives."
+
+[dependencies]
+op-core = { path = "../op-core" }
+thiserror = { workspace = true }
+serde = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }

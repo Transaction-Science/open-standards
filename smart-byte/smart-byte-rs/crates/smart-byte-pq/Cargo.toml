@@ -1,0 +1,33 @@
+[package]
+name = "smart-byte-pq"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Smart Byte post-quantum signatures: FIPS 204 (ML-DSA), FIPS 205 (SLH-DSA), draft FIPS 206 (FN-DSA, optional), and hybrid (classical + PQ) signers."
+
+[features]
+default = []
+# Enable FN-DSA (Falcon) via pqcrypto-falcon. Gated because FIPS 206 is still
+# in draft as of mid-2025; the API is provisional until the standard finalizes.
+falcon = ["dep:pqcrypto-falcon"]
+
+[dependencies]
+smart-byte-core = { workspace = true }
+ed25519-dalek = { workspace = true }
+rand = { workspace = true }
+thiserror = { workspace = true }
+zeroize = { version = "1", features = ["derive"] }
+subtle = "2"
+
+# PQ primitives. Disable AVX2/NEON SIMD-specific feature gating so the crate
+# builds on the reference toolchain across hosts (the std feature still
+# provides the standard wrapper APIs we use).
+pqcrypto-mldsa = { version = "0.1", default-features = false, features = ["std"] }
+pqcrypto-sphincsplus = { version = "0.7", default-features = false, features = ["std"] }
+pqcrypto-traits = { version = "0.3", default-features = false, features = ["std"] }
+pqcrypto-falcon = { version = "0.4", default-features = false, features = ["std"], optional = true }
+
+[dev-dependencies]
+hex = "0.4"

@@ -1,0 +1,14 @@
+---
+source: crates/eoc-embeddings/tests/request_body_snapshots.rs
+expression: body
+---
+{
+  "embedding_types": [
+    "float"
+  ],
+  "input_type": "search_document",
+  "model": "embed-english-v3.0",
+  "texts": [
+    "alpha"
+  ]
+}

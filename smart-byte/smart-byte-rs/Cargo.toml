@@ -5,6 +5,9 @@ members = [
     "crates/smart-byte-net",
     "crates/smart-byte-lockstep",
     "crates/smart-byte",
+    "crates/smart-byte-vc",
+    "crates/smart-byte-did",
+    "crates/smart-byte-pq",
 ]
 
 [workspace.package]
@@ -42,6 +45,8 @@ futures = "0.3"
 smart-byte-core = { path = "crates/smart-byte-core" }
 smart-byte-net = { path = "crates/smart-byte-net" }
 smart-byte-lockstep = { path = "crates/smart-byte-lockstep" }
+smart-byte-vc = { path = "crates/smart-byte-vc" }
+smart-byte-pq = { path = "crates/smart-byte-pq" }
 
 # CLI
 clap = { version = "4", features = ["derive"] }

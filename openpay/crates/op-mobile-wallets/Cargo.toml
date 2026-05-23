@@ -1,0 +1,44 @@
+[package]
+name = "op-mobile-wallets"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay mobile-wallet acceptance: Apple Pay, Google Pay, Samsung Pay payment-token decryption. PCI-zero — raw PAN never crosses the public API."
+
+[dependencies]
+op-core = { path = "../op-core" }
+op-rails-card = { path = "../op-rails-card" }
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+time = { workspace = true }
+zeroize = { workspace = true }
+subtle = { workspace = true }
+
+# RustCrypto stack.
+# - p256: ECDH on the NIST P-256 curve. All three wallets use P-256.
+# - hkdf: RFC 5869 KDF used by Apple Pay (X9.63-style construction
+#   implemented on top of HKDF-extract+expand) and Google Pay (HKDF
+#   directly).
+# - aes-gcm: AES-256-GCM for Apple Pay / Samsung Pay payload AEAD.
+# - aes + ctr: AES-256-CTR primitive used by Google Pay ECv2 (with a
+#   separate HMAC-SHA256 tag).
+# - hmac + sha2: HMAC-SHA256 tag + SHA-256 digests across all three.
+# - base64: payloads arrive base64-encoded from JS / native SDKs.
+p256 = { version = "0.13", default-features = false, features = ["ecdh", "ecdsa", "std", "arithmetic", "pem"] }
+hkdf = { version = "0.12", default-features = false }
+aes-gcm = { version = "0.10", default-features = false, features = ["aes", "alloc"] }
+aes = { version = "0.8", default-features = false }
+ctr = { version = "0.9", default-features = false }
+hmac = { version = "0.12", default-features = false }
+sha2 = { version = "0.10", default-features = false }
+base64 = { version = "0.22", default-features = false, features = ["std"] }
+
+[dev-dependencies]
+proptest = { workspace = true }
+hex = { workspace = true }
+
+[features]
+default = []

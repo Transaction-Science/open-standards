@@ -1,0 +1,10 @@
+---
+source: crates/eoc-embeddings/tests/request_body_snapshots.rs
+expression: body
+---
+{
+  "input": [
+    "alpha"
+  ],
+  "model": "jina-embeddings-v3"
+}
