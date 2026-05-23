@@ -1,0 +1,20 @@
+[package]
+name = "smart-byte-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Smart Byte core: envelope, SAID, sign/verify, cargo, joule-cost, provenance, ownership chain."
+
+[dependencies]
+blake3 = { workspace = true }
+ed25519-dalek = { workspace = true }
+serde = { workspace = true }
+serde_bytes = { workspace = true }
+serde_cbor = { workspace = true }
+chrono = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true }
+data-encoding = { workspace = true }
+rand = { workspace = true }

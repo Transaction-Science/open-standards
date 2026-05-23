@@ -1,0 +1,122 @@
+[
+  {
+    "id": "mt-arith-01",
+    "prompt": "What is 2+2?",
+    "expected": "4",
+    "dataset": "mt"
+  },
+  {
+    "id": "mt-arith-02",
+    "prompt": "Compute 17 times 23 and show the result.",
+    "expected": "391",
+    "dataset": "mt"
+  },
+  {
+    "id": "mt-arith-03",
+    "prompt": "If a train leaves at 09:15 and arrives 2 hours 50 minutes later, what time does it arrive?",
+    "expected": "12:05",
+    "dataset": "mt"
+  },
+  {
+    "id": "mt-reason-01",
+    "prompt": "Alice is taller than Bob. Bob is taller than Carol. Who is the shortest of the three?",
+    "expected": "Carol",
+    "dataset": "mt"
+  },
+  {
+    "id": "mt-reason-02",
+    "prompt": "A bat and a ball cost $1.10 in total. The bat costs $1.00 more than the ball. How much does the ball cost?",
+    "expected": "5 cents",
+    "dataset": "mt"
+  },
+  {
+    "id": "mt-multi-01",
+    "prompt": "I have a meeting at 3pm tomorrow.\nFollow-up: What is the local time three hours before that meeting?",
+    "expected": "12pm",
+    "dataset": "mt"
+  },
+  {
+    "id": "mt-multi-02",
+    "prompt": "Pick a fruit and a colour.\nFollow-up: Write one sentence that names both.",
+    "expected": null,
+    "dataset": "mt"
+  },
+  {
+    "id": "mt-multi-03",
+    "prompt": "Define an isosceles triangle.\nFollow-up: Give a real-world example of one.",
+    "expected": "isosceles",
+    "dataset": "mt"
+  },
+  {
+    "id": "mt-code-01",
+    "prompt": "Write a Python function that returns True if a string is a palindrome and False otherwise.",
+    "expected": "def",
+    "dataset": "mt"
+  },
+  {
+    "id": "mt-code-02",
+    "prompt": "In Rust, how do you turn a Vec<u8> into a String when the bytes are guaranteed to be valid UTF-8?",
+    "expected": "String::from_utf8",
+    "dataset": "mt"
+  },
+  {
+    "id": "mt-code-03",
+    "prompt": "Explain quicksort in two sentences.",
+    "expected": "pivot",
+    "dataset": "mt"
+  },
+  {
+    "id": "mt-writing-01",
+    "prompt": "Write a short, professional one-paragraph apology email for a late delivery.",
+    "expected": null,
+    "dataset": "mt"
+  },
+  {
+    "id": "mt-writing-02",
+    "prompt": "Compose a two-line haiku about a quiet datacenter.",
+    "expected": null,
+    "dataset": "mt"
+  },
+  {
+    "id": "mt-fact-01",
+    "prompt": "What is the capital of France?",
+    "expected": "Paris",
+    "dataset": "mt"
+  },
+  {
+    "id": "mt-fact-02",
+    "prompt": "Which planet is the fourth from the Sun?",
+    "expected": "Mars",
+    "dataset": "mt"
+  },
+  {
+    "id": "mt-fact-03",
+    "prompt": "Who wrote the novel 'Pride and Prejudice'?",
+    "expected": "Jane Austen",
+    "dataset": "mt"
+  },
+  {
+    "id": "mt-explain-01",
+    "prompt": "Explain the difference between latency and throughput in one paragraph.",
+    "expected": "latency",
+    "dataset": "mt"
+  },
+  {
+    "id": "mt-explain-02",
+    "prompt": "What is a hash table, in two sentences?",
+    "expected": "hash",
+    "dataset": "mt"
+  },
+  {
+    "id": "mt-summary-01",
+    "prompt": "Summarise the plot of 'Romeo and Juliet' in three sentences.",
+    "expected": "Romeo",
+    "dataset": "mt"
+  },
+  {
+    "id": "mt-summary-02",
+    "prompt": "In one sentence, what is the second law of thermodynamics?",
+    "expected": "entropy",
+    "dataset": "mt"
+  }
+]

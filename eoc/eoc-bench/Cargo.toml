@@ -1,0 +1,52 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/eoc-bench-runner",
+    "crates/eoc-bench-mt",
+    "crates/eoc-bench-router",
+    "crates/eoc-bench",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.95"
+license = "Apache-2.0"
+repository = "https://github.com/Transaction-Science/open-standards"
+authors = ["EOC Benchmark Contributors"]
+description = "EOC benchmark harness — joules per MT-Bench point. Apache-2.0."
+
+[workspace.dependencies]
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Runtime
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "fs", "time"] }
+anyhow = "1"
+thiserror = "2"
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+# EOC reference implementation (path dependency on the sibling workspace
+# delivered by issue #7). Per-crate `optional = true` is set at the
+# crate that imports these, not here at the workspace level.
+eoc-core = { path = "../eoc-rs/crates/eoc-core" }
+eoc-cascade = { path = "../eoc-rs/crates/eoc-cascade" }
+eoc-cache = { path = "../eoc-rs/crates/eoc-cache" }
+eoc-kv = { path = "../eoc-rs/crates/eoc-kv" }
+eoc-graph = { path = "../eoc-rs/crates/eoc-graph" }
+eoc-neural = { path = "../eoc-rs/crates/eoc-neural" }
+
+# Workspace internals
+eoc-bench-runner = { path = "crates/eoc-bench-runner" }
+eoc-bench-mt = { path = "crates/eoc-bench-mt" }
+eoc-bench-router = { path = "crates/eoc-bench-router" }
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+panic = "abort"
+strip = "symbols"

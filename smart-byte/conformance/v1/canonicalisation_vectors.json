@@ -1,0 +1,54 @@
+[
+  {
+    "name": "canon-001-sorted-map-keys",
+    "description": "Map keys must be sorted lexicographically in canonical CBOR. The input is given with keys out of order; the canonical encoding sorts them.",
+    "input": {
+      "z": 1,
+      "a": 2,
+      "m": 3
+    },
+    "expected_cbor_hex": "a361610261186d036179016101"
+  },
+  {
+    "name": "canon-002-shortest-form-integers",
+    "description": "Integers must be encoded in their shortest form. No leading zeros, no over-large width selection. 0, 23, 24, 255, 256, 65535, 65536 cover the boundaries of CBOR's minor-info encoding.",
+    "input": {
+      "i0": 0,
+      "i23": 23,
+      "i24": 24,
+      "i255": 255,
+      "i256": 256,
+      "i65535": 65535,
+      "i65536": 65536
+    },
+    "expected_cbor_hex": "a76269300062693017636932341818636932351818ff63693235361901006935363533361903e8676935363533362ffffeeeebbbbcccc"
+  },
+  {
+    "name": "canon-003-no-tags",
+    "description": "Canonical Smart Byte CBOR never uses CBOR tags. Application semantics carried in cargo fields are interpreted by layer-2 protocols; the substrate's wire format treats all values as untagged primitives. The input here is a plain byte string that an implementer might be tempted to wrap in tag 21 (expected base64url encoding) — the canonical form drops the tag.",
+    "input": {
+      "payload": "AAECAwQFBgc="
+    },
+    "expected_cbor_hex": "a16770617964c6c6164480001020304050607"
+  },
+  {
+    "name": "canon-004-deterministic-float-encoding",
+    "description": "Floating-point values are encoded in the shortest representation that preserves the value exactly. The spec recommends avoiding floats in cargo where possible (use fixed-point integers), but where they appear, the canonical encoding selects f16/f32/f64 by the round-trip test.",
+    "input": {
+      "exact_half": 1.5,
+      "needs_f32": 3.4028234663852886e38,
+      "needs_f64": 1.7976931348623157e308
+    },
+    "expected_cbor_hex": "a36a657861637421682dbcb1a96f3df9006a6e656564735f66333367fa7f7fffff6a6e656564735f6636341b7fefffffffffffff"
+  },
+  {
+    "name": "canon-005-bytes-not-text-for-byte-arrays",
+    "description": "Byte arrays MUST be encoded as CBOR major-type 2 (byte string), never as major-type 3 (text string). This matters for SAIDs, pubkeys, signatures, and any raw cryptographic material. The input shows three fields that look textual on the wire but are bytes by the spec: a SAID, a pubkey, a signature placeholder.",
+    "input": {
+      "said":  "0000000000000000000000000000000000000000000000000000000000000000",
+      "key":   "1111111111111111111111111111111111111111111111111111111111111111",
+      "sig":   "22222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222"
+    },
+    "expected_cbor_hex": "a3637361696458200000000000000000000000000000000000000000000000000000000000000000636b657958201111111111111111111111111111111111111111111111111111111111111111637369675840222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222"
+  }
+]

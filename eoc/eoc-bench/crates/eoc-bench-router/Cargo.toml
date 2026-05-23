@@ -1,0 +1,18 @@
+[package]
+name = "eoc-bench-router"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Router-shaped case set — exercises all four cascade stages."
+
+[features]
+default = []
+eoc-rs = ["eoc-bench-runner/eoc-rs"]
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+eoc-bench-runner = { workspace = true }

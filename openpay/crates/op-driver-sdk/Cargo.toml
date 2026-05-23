@@ -16,3 +16,7 @@ op-rails-crypto = { path = "../op-rails-crypto" }
 thiserror = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
+# Network-token conformance harness builds lifecycle events with
+# timestamps; we use the workspace `time` crate to stay consistent
+# with the rest of the workspace.
+time = { workspace = true }

@@ -1,0 +1,29 @@
+[package]
+name = "pci-zero"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+description = "OpenPay PCI-zero topology demo: vault tokenization → orchestrator → card rail with no raw PAN crossing the merchant code path."
+
+[[bin]]
+name = "pci-zero"
+path = "src/main.rs"
+
+[dependencies]
+# Domain types. The `pci-scope` feature is unified across the workspace
+# anyway (op-vault turns it on); we don't import RawPan here on purpose.
+op-core = { path = "../../crates/op-core" }
+
+# The CDE in code. We use the reference InMemoryVault to keep the demo
+# self-contained; production deployments swap this for a KMS-/HSM-backed
+# vault per compliance/hsm-kms-guidance.md.
+op-vault = { path = "../../crates/op-vault", features = ["in-memory"] }
+
+# Connected-to-scope. The merchant code path holds VaultRef only.
+op-orchestrator = { path = "../../crates/op-orchestrator" }
+op-rails-card = { path = "../../crates/op-rails-card", default-features = false }
+op-fraud = { path = "../../crates/op-fraud" }
+
+uuid = { workspace = true }

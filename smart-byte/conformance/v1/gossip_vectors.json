@@ -1,0 +1,65 @@
+[
+  {
+    "name": "gossip-001-cross-node-propagation",
+    "description": "An envelope published at node A is observed at node B after a single round of gossip. The envelope's SAID is identical at both observation points; the gossip layer does not modify the wire bytes.",
+    "scenario": {
+      "publisher": "node_A",
+      "publish_frame": 184300,
+      "envelope_said": "EBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+      "envelope_canonical_cbor_hex": "a6677665727369",
+      "gossip_rounds": 1,
+      "observers": ["node_B"]
+    },
+    "expected_observations": [
+      {
+        "observer": "node_B",
+        "observed_said": "EBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+        "observation_frame": 184301,
+        "outcome": "accepted"
+      }
+    ]
+  },
+  {
+    "name": "gossip-002-said-conflict-rejected",
+    "description": "Two different envelopes are gossiped under the same SAID. The receiving node MUST reject the second envelope. The SAID is content-addressed (BLAKE3 of the canonical CBOR); two structurally-different envelopes producing the same SAID is either a collision (cryptographically negligible) or an adversarial substitution attempt. Either way, the receiver keeps the first observation and rejects the second.",
+    "scenario": {
+      "publisher_a": "node_A",
+      "publisher_b": "node_B",
+      "publish_frame": 184310,
+      "envelope_a_said": "ECCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
+      "envelope_a_canonical_cbor_hex": "a6677665727369aaaa",
+      "envelope_b_said": "ECCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
+      "envelope_b_canonical_cbor_hex": "a6677665727369bbbb",
+      "receiver": "node_C"
+    },
+    "expected_outcome": {
+      "accepted": "envelope_a",
+      "rejected": "envelope_b",
+      "rejection_reason": "said_collision_envelope_a_already_observed",
+      "alert_class": "potential_substitution_attack"
+    }
+  },
+  {
+    "name": "gossip-003-sequence-gap-detection",
+    "description": "An envelope arrives at node B referencing a previous-history-hash that node B has not seen. Node B MUST detect the gap, request the missing history via gossip backfill, and not commit the envelope's transition until the gap is closed. The expected behaviour is *not* to reject the envelope — it is to defer acceptance pending backfill.",
+    "scenario": {
+      "publisher": "node_A",
+      "publish_frame": 184320,
+      "envelope_said": "EDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+      "envelope_previous_history_hash": "EFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+      "receiver": "node_B",
+      "receiver_known_history_heads": [
+        "EAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "EBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"
+      ]
+    },
+    "expected_outcome": {
+      "observer": "node_B",
+      "outcome": "deferred_pending_backfill",
+      "missing_history_hash": "EFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+      "backfill_request_targets": ["node_A"],
+      "backfill_max_frames": 256,
+      "alert_class": "history_gap_detected"
+    }
+  }
+]

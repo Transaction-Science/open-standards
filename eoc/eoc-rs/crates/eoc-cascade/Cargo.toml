@@ -1,0 +1,19 @@
+[package]
+name = "eoc-cascade"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "EOC cascade — wires the four stages and the joule meter."
+
+[dependencies]
+eoc-core.workspace = true
+eoc-cache.workspace = true
+eoc-kv.workspace = true
+eoc-graph.workspace = true
+eoc-neural.workspace = true
+eoc-meter.workspace = true
+tokio.workspace = true
+async-trait.workspace = true

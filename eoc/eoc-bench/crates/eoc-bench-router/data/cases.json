@@ -1,0 +1,182 @@
+[
+  {
+    "id": "rt-cache-01",
+    "prompt": "ping",
+    "expected": "pong",
+    "dataset": "router"
+  },
+  {
+    "id": "rt-cache-02",
+    "prompt": "health check",
+    "expected": "ok",
+    "dataset": "router"
+  },
+  {
+    "id": "rt-cache-03",
+    "prompt": "version",
+    "expected": "0.1.0",
+    "dataset": "router"
+  },
+  {
+    "id": "rt-cache-04",
+    "prompt": "echo: hello",
+    "expected": "hello",
+    "dataset": "router"
+  },
+  {
+    "id": "rt-cache-05",
+    "prompt": "ping",
+    "expected": "pong",
+    "dataset": "router"
+  },
+  {
+    "id": "rt-cache-06",
+    "prompt": "health check",
+    "expected": "ok",
+    "dataset": "router"
+  },
+  {
+    "id": "rt-kv-01",
+    "prompt": "speed of light in m/s",
+    "expected": "299792458",
+    "dataset": "router"
+  },
+  {
+    "id": "rt-kv-02",
+    "prompt": "default port for HTTPS",
+    "expected": "443",
+    "dataset": "router"
+  },
+  {
+    "id": "rt-kv-03",
+    "prompt": "default port for SSH",
+    "expected": "22",
+    "dataset": "router"
+  },
+  {
+    "id": "rt-kv-04",
+    "prompt": "atomic number of carbon",
+    "expected": "6",
+    "dataset": "router"
+  },
+  {
+    "id": "rt-kv-05",
+    "prompt": "ISO 3166-1 alpha-2 code for Japan",
+    "expected": "JP",
+    "dataset": "router"
+  },
+  {
+    "id": "rt-kv-06",
+    "prompt": "number of bytes in a TCP/IPv4 header (no options)",
+    "expected": "20",
+    "dataset": "router"
+  },
+  {
+    "id": "rt-kv-07",
+    "prompt": "SI prefix for 10^-6",
+    "expected": "micro",
+    "dataset": "router"
+  },
+  {
+    "id": "rt-graph-01",
+    "prompt": "Mars is the fourth planet from what?",
+    "expected": "the Sun",
+    "dataset": "router"
+  },
+  {
+    "id": "rt-graph-02",
+    "prompt": "Who wrote Hamlet?",
+    "expected": "Shakespeare",
+    "dataset": "router"
+  },
+  {
+    "id": "rt-graph-03",
+    "prompt": "What is the capital of Japan?",
+    "expected": "Tokyo",
+    "dataset": "router"
+  },
+  {
+    "id": "rt-graph-04",
+    "prompt": "Which element has the chemical symbol Au?",
+    "expected": "gold",
+    "dataset": "router"
+  },
+  {
+    "id": "rt-graph-05",
+    "prompt": "Which river runs through Paris?",
+    "expected": "Seine",
+    "dataset": "router"
+  },
+  {
+    "id": "rt-graph-06",
+    "prompt": "In what year did the Apollo 11 mission land on the Moon?",
+    "expected": "1969",
+    "dataset": "router"
+  },
+  {
+    "id": "rt-graph-07",
+    "prompt": "Who is the author of 'The Origin of Species'?",
+    "expected": "Darwin",
+    "dataset": "router"
+  },
+  {
+    "id": "rt-graph-08",
+    "prompt": "Which company designs the M1 chip?",
+    "expected": "Apple",
+    "dataset": "router"
+  },
+  {
+    "id": "rt-neural-01",
+    "prompt": "Draft a four-sentence product update announcing a new energy-aware scheduler.",
+    "expected": null,
+    "dataset": "router"
+  },
+  {
+    "id": "rt-neural-02",
+    "prompt": "Compare in two paragraphs the trade-offs between event sourcing and CRUD persistence for an audit-heavy domain.",
+    "expected": null,
+    "dataset": "router"
+  },
+  {
+    "id": "rt-neural-03",
+    "prompt": "Critique the following one-sentence claim and propose a sharper rewrite: 'AI will revolutionize everything.'",
+    "expected": null,
+    "dataset": "router"
+  },
+  {
+    "id": "rt-neural-04",
+    "prompt": "Explain to a smart non-engineer why memoization can dominate inference cost in a deployed LLM service.",
+    "expected": null,
+    "dataset": "router"
+  },
+  {
+    "id": "rt-neural-05",
+    "prompt": "Imagine a thirty-second voice-over script that introduces a benchmark called 'joules-per-MT-Bench-point'. Tone: confident, technical, friendly.",
+    "expected": null,
+    "dataset": "router"
+  },
+  {
+    "id": "rt-neural-06",
+    "prompt": "Walk through the steps you would take to debug a cascade reporting near-zero joules for an obviously novel query.",
+    "expected": null,
+    "dataset": "router"
+  },
+  {
+    "id": "rt-neural-07",
+    "prompt": "Write three contrasting one-line product taglines for an energy-metered AI platform.",
+    "expected": null,
+    "dataset": "router"
+  },
+  {
+    "id": "rt-neural-08",
+    "prompt": "Outline a five-section technical RFC for adding a fifth cascade stage that handles structured tool calls.",
+    "expected": null,
+    "dataset": "router"
+  },
+  {
+    "id": "rt-neural-09",
+    "prompt": "Describe, in plain language, why caching cannot help with a one-off creative writing prompt the system has never seen.",
+    "expected": null,
+    "dataset": "router"
+  }
+]

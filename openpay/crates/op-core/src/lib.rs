@@ -21,6 +21,8 @@
 //! - [`payment`] — `Payment<S>` typestate machine.
 //! - [`error`] — sealed error enum, one per crate convention.
 //! - [`rails`] — rail-agnostic `Acquirer` trait that adapter crates implement.
+//! - [`network_token`] — `Tokenized<Card>` / `Vaulted<Card>` typestates
+//!   and network-token primitives (VTS / MDES surrogate credentials).
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
@@ -31,12 +33,17 @@
 pub mod error;
 pub mod method;
 pub mod money;
+pub mod network_token;
 pub mod payment;
 pub mod rails;
 
 pub use error::Error;
 pub use method::{A2aKey, CryptoAddress, PaymentMethod, Token, VaultRef};
 pub use money::{Currency, Money};
+pub use network_token::{
+    Card, CardNetwork, NetworkToken, NetworkTokenLifecycleEvent, PaymentMethodKind, Tokenized,
+    Vaulted,
+};
 pub use payment::{Authorized, Captured, Created, Failed, Payment, Refunded, Voided};
 pub use rails::{Acquirer, AcquirerResponse, RailKind};
 

@@ -42,3 +42,10 @@ moov = []       # Future Phase 4.4
 
 # Enable the real-network integration tests (ignored by default).
 live-sandbox = []
+
+# Enable real HTTP integrations against card-network tokenization
+# services (VTS, MDES). Default builds use deterministic stubs only;
+# this feature pulls in the live HTTP code paths and is intended for
+# deployments that have completed the Visa / Mastercard token
+# requestor onboarding.
+live = []

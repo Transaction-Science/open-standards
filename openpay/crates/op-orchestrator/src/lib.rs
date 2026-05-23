@@ -84,6 +84,7 @@ pub mod intent;
 pub mod outcome;
 pub mod router;
 pub mod signals;
+pub mod telemetry;
 
 pub use adapters::{A2aAdapter, CardAdapter, CryptoAdapter, MerchantBankProfile};
 pub use circuit_breaker::{CircuitBreaker, CircuitState, InMemoryCircuitBreaker};

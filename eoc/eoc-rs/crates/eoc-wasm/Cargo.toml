@@ -1,0 +1,24 @@
+[package]
+name = "eoc-wasm"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "EOC cascade — browser-runnable wasm-bindgen wrapper."
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+eoc-core.workspace = true
+eoc-cache.workspace = true
+eoc-kv.workspace = true
+eoc-graph.workspace = true
+eoc-neural.workspace = true
+eoc-cascade.workspace = true
+wasm-bindgen.workspace = true
+wasm-bindgen-futures.workspace = true
+serde-wasm-bindgen.workspace = true
+serde.workspace = true

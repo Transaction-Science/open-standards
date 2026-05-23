@@ -1,0 +1,25 @@
+[package]
+name = "eoc"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "EOC reference command-line tool."
+
+[[bin]]
+name = "eoc"
+path = "src/main.rs"
+
+[dependencies]
+eoc-core.workspace = true
+eoc-cache.workspace = true
+eoc-kv.workspace = true
+eoc-graph.workspace = true
+eoc-neural.workspace = true
+eoc-meter.workspace = true
+eoc-cascade.workspace = true
+clap.workspace = true
+anyhow.workspace = true
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"] }

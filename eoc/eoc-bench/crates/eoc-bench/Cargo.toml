@@ -1,0 +1,51 @@
+[package]
+name = "eoc-bench"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "CLI for the EOC benchmark harness — run suites, aggregate reports, compare runs."
+
+[[bin]]
+name = "eoc-bench"
+path = "src/main.rs"
+
+[features]
+# The CLI defaults to using the sibling eoc-rs workspace because the
+# `run` subcommand has no meaningful behaviour without a cascade. Users
+# integrating the harness against a custom cascade can disable default
+# features and wire their own.
+default = ["eoc-rs"]
+# Build the CLI against the sibling eoc-rs workspace.
+eoc-rs = [
+    "dep:eoc-core",
+    "dep:eoc-cascade",
+    "dep:eoc-cache",
+    "dep:eoc-kv",
+    "dep:eoc-graph",
+    "dep:eoc-neural",
+    "eoc-bench-runner/eoc-rs",
+    "eoc-bench-mt/eoc-rs",
+    "eoc-bench-router/eoc-rs",
+]
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+anyhow = { workspace = true }
+clap = { workspace = true }
+
+eoc-bench-runner = { workspace = true }
+eoc-bench-mt = { workspace = true }
+eoc-bench-router = { workspace = true }
+
+# eoc-rs path deps — gated behind the `eoc-rs` feature.
+eoc-core = { workspace = true, optional = true }
+eoc-cascade = { workspace = true, optional = true }
+eoc-cache = { workspace = true, optional = true }
+eoc-kv = { workspace = true, optional = true }
+eoc-graph = { workspace = true, optional = true }
+eoc-neural = { workspace = true, optional = true }

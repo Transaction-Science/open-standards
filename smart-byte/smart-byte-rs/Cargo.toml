@@ -1,0 +1,54 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/smart-byte-core",
+    "crates/smart-byte-net",
+    "crates/smart-byte-lockstep",
+    "crates/smart-byte",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.95"
+license = "Apache-2.0"
+repository = "https://github.com/Transaction-Science/open-standards"
+authors = ["Smart Byte Contributors"]
+description = "Smart Byte substrate — Apache-2.0 Rust reference implementation."
+
+[workspace.dependencies]
+# Core crypto + serialization
+blake3 = "1"
+ed25519-dalek = { version = "2", features = ["rand_core"] }
+serde = { version = "1", features = ["derive"] }
+serde_bytes = "0.11"
+serde_cbor = "0.11"
+chrono = { version = "0.4", default-features = false, features = ["clock", "serde", "std"] }
+thiserror = "2"
+uuid = { version = "1", features = ["v4", "serde"] }
+data-encoding = "2"
+rand = "0.8"
+
+# Networking
+iroh = "1.0.0-rc.0"
+iroh-blobs = "0.101"
+
+# Runtime
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "io-util", "net"] }
+anyhow = "1"
+futures = "0.3"
+
+# Workspace internals
+smart-byte-core = { path = "crates/smart-byte-core" }
+smart-byte-net = { path = "crates/smart-byte-net" }
+smart-byte-lockstep = { path = "crates/smart-byte-lockstep" }
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+panic = "abort"
+strip = "symbols"

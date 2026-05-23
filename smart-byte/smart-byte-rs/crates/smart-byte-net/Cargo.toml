@@ -1,0 +1,17 @@
+[package]
+name = "smart-byte-net"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Smart Byte networking: thin Iroh transport wrapper for envelope replication."
+
+[dependencies]
+smart-byte-core = { workspace = true }
+iroh = { workspace = true }
+iroh-blobs = { workspace = true }
+tokio = { workspace = true }
+serde_cbor = { workspace = true }
+anyhow = { workspace = true }
+futures = { workspace = true }

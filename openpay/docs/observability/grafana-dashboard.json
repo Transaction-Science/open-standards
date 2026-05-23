@@ -1,0 +1,131 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": true,
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "ops" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        { "expr": "sum by (from_state, to_state) (rate(openpay_payment_state_transition_total{rail=~\"$rail\",currency=~\"$currency\"}[5m]))", "refId": "A", "legendFormat": "{{from_state}} → {{to_state}}" }
+      ],
+      "title": "State-transition rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        { "expr": "openpay_payment_in_flight{state=\"Created\",rail=~\"$rail\"}",   "refId": "A", "legendFormat": "Created" },
+        { "expr": "openpay_payment_in_flight{state=\"Authorized\",rail=~\"$rail\"}","refId": "B", "legendFormat": "Authorized" },
+        { "expr": "openpay_payment_in_flight{state=\"Captured\",rail=~\"$rail\"}",  "refId": "C", "legendFormat": "Captured" }
+      ],
+      "title": "In-flight payments by state",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "percentunit" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "id": 3,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        { "expr": "sum(rate(openpay_payment_state_transition_total{to_state=\"Refunded\",rail=~\"$rail\"}[1h])) / sum(rate(openpay_payment_state_transition_total{to_state=\"Captured\",rail=~\"$rail\"}[1h]))", "refId": "A", "legendFormat": "refund/capture (1h)" }
+      ],
+      "title": "Refund vs capture ratio (1h trailing)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "ops" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "id": 4,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        { "expr": "sum by (rail) (rate(openpay_payment_state_transition_total{currency=~\"$currency\"}[5m]))", "refId": "A", "legendFormat": "{{rail}}" }
+      ],
+      "title": "Rail split (card · a2a · crypto)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "ms" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "id": 5,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum by (le, from_state, to_state) (rate(openpay_payment_state_transition_duration_ms_bucket{rail=~\"$rail\"}[5m])))", "refId": "A", "legendFormat": "p50 {{from_state}}→{{to_state}}" },
+        { "expr": "histogram_quantile(0.95, sum by (le, from_state, to_state) (rate(openpay_payment_state_transition_duration_ms_bucket{rail=~\"$rail\"}[5m])))", "refId": "B", "legendFormat": "p95 {{from_state}}→{{to_state}}" },
+        { "expr": "histogram_quantile(0.99, sum by (le, from_state, to_state) (rate(openpay_payment_state_transition_duration_ms_bucket{rail=~\"$rail\"}[5m])))", "refId": "C", "legendFormat": "p99 {{from_state}}→{{to_state}}" }
+      ],
+      "title": "Transition latency p50 / p95 / p99",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "ops" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "id": 6,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        { "expr": "sum by (state, error_class, rail) (rate(openpay_payment_transition_error_total{rail=~\"$rail\"}[5m]))", "refId": "A", "legendFormat": "{{rail}} · {{state}} · {{error_class}}" }
+      ],
+      "title": "Error rate per state",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "tags": ["openpay", "payments", "ledger"],
+  "templating": {
+    "list": [
+      {
+        "name": "rail",
+        "type": "custom",
+        "label": "Rail",
+        "options": [
+          { "text": "All",    "value": ".*",   "selected": true },
+          { "text": "card",   "value": "card" },
+          { "text": "a2a",    "value": "a2a" },
+          { "text": "crypto", "value": "crypto" }
+        ],
+        "current": { "text": "All", "value": ".*" },
+        "query": ".*,card,a2a,crypto",
+        "includeAll": false,
+        "multi": false
+      },
+      {
+        "name": "currency",
+        "type": "custom",
+        "label": "Currency",
+        "options": [
+          { "text": "All", "value": ".*", "selected": true },
+          { "text": "USD", "value": "USD" },
+          { "text": "EUR", "value": "EUR" },
+          { "text": "GBP", "value": "GBP" }
+        ],
+        "current": { "text": "All", "value": ".*" },
+        "query": ".*,USD,EUR,GBP",
+        "includeAll": false,
+        "multi": false
+      }
+    ]
+  },
+  "time":      { "from": "now-1h", "to": "now" },
+  "timepicker":{},
+  "timezone":  "",
+  "title":     "OpenPay — Bi-temporal Ledger Lens",
+  "uid":       "openpay-ledger-lens",
+  "version":   1,
+  "weekStart": ""
+}

@@ -27,3 +27,28 @@ serde_json = { workspace = true }
 uuid = { workspace = true }
 sha2 = "0.10"
 tracing = { workspace = true }
+
+# Optional OpenTelemetry export. Gated behind the `telemetry`
+# feature so headless deployments that don't ship spans aren't
+# forced to compile the OTel stack. When the feature is off
+# `instrument_transition` still emits a plain `tracing::span!` —
+# subscribers downstream pick it up via the standard
+# `tracing-subscriber` layers.
+tracing-opentelemetry = { version = "0.32", optional = true }
+opentelemetry = { version = "0.31", optional = true }
+opentelemetry-otlp = { version = "0.31", features = ["grpc-tonic"], optional = true }
+opentelemetry_sdk = { version = "0.31", features = ["rt-tokio"], optional = true }
+tracing-subscriber = { workspace = true, optional = true }
+
+[features]
+default = []
+# Wires `init_telemetry` to push spans over OTLP to a collector
+# (Jaeger, Tempo, Honeycomb, etc.). Off by default so the orchestrator
+# stays a pure compute crate.
+telemetry = [
+    "dep:tracing-opentelemetry",
+    "dep:opentelemetry",
+    "dep:opentelemetry-otlp",
+    "dep:opentelemetry_sdk",
+    "dep:tracing-subscriber",
+]

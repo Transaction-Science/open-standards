@@ -1,0 +1,109 @@
+[
+  {
+    "name": "lockstep-001-unanimous-commit",
+    "description": "All 4 nodes in the cluster agree on the post-frame state hash. The BFT threshold is floor(2n/3)+1 = 3, so 4-of-4 trivially commits. The expected_state_hash is the hash all four nodes reported.",
+    "node_count": 4,
+    "frame_number": 184237,
+    "ordered_transitions": [
+      {
+        "byte_said": "EBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+        "from_pubkey": "1111111111111111111111111111111111111111111111111111111111111111",
+        "to_pubkey":   "3333333333333333333333333333333333333333333333333333333333333333",
+        "signature": "44444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444"
+      },
+      {
+        "byte_said": "ECCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
+        "from_pubkey": "3333333333333333333333333333333333333333333333333333333333333333",
+        "to_pubkey":   "5555555555555555555555555555555555555555555555555555555555555555",
+        "signature": "66666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666"
+      }
+    ],
+    "node_hashes": {
+      "node_1": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "node_2": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "node_3": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "node_4": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "expected_commit": true,
+    "expected_state_hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "expected_dissent": []
+  },
+  {
+    "name": "lockstep-002-supermajority-commit",
+    "description": "3 of 4 nodes agree on the post-frame state hash; the 4th node reports a different hash (either Byzantine or simply lagging on input ordering). floor(2*4/3)+1 = 3, threshold met, frame commits at the majority hash. The dissenting node's hash is recorded in the dissent log (spec §14) but does not block commit.",
+    "node_count": 4,
+    "frame_number": 184238,
+    "ordered_transitions": [
+      {
+        "byte_said": "EBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+        "from_pubkey": "5555555555555555555555555555555555555555555555555555555555555555",
+        "to_pubkey":   "7777777777777777777777777777777777777777777777777777777777777777",
+        "signature": "88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888"
+      }
+    ],
+    "node_hashes": {
+      "node_1": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+      "node_2": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+      "node_3": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+      "node_4": "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"
+    },
+    "expected_commit": true,
+    "expected_state_hash": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+    "expected_dissent": [
+      {
+        "node": "node_4",
+        "reported_hash": "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+        "majority_hash": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+        "frame": 184238
+      }
+    ]
+  },
+  {
+    "name": "lockstep-003-threshold-not-met",
+    "description": "Only 2 of 4 nodes agree on a single state hash. floor(2*4/3)+1 = 3, threshold not met, frame does NOT commit. The cluster must re-run input gathering or escalate per spec §13. The expected_state_hash is null because no single hash reached supermajority.",
+    "node_count": 4,
+    "frame_number": 184239,
+    "ordered_transitions": [
+      {
+        "byte_said": "ECCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
+        "from_pubkey": "7777777777777777777777777777777777777777777777777777777777777777",
+        "to_pubkey":   "9999999999999999999999999999999999999999999999999999999999999999",
+        "signature": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    ],
+    "node_hashes": {
+      "node_1": "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
+      "node_2": "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
+      "node_3": "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+      "node_4": "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE"
+    },
+    "expected_commit": false,
+    "expected_state_hash": null,
+    "expected_dissent": [
+      {
+        "node": "node_1",
+        "reported_hash": "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
+        "majority_hash": null,
+        "frame": 184239
+      },
+      {
+        "node": "node_2",
+        "reported_hash": "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
+        "majority_hash": null,
+        "frame": 184239
+      },
+      {
+        "node": "node_3",
+        "reported_hash": "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+        "majority_hash": null,
+        "frame": 184239
+      },
+      {
+        "node": "node_4",
+        "reported_hash": "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE",
+        "majority_hash": null,
+        "frame": 184239
+      }
+    ]
+  }
+]

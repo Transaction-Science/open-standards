@@ -1,0 +1,15 @@
+[package]
+name = "eoc-graph"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "EOC stage 3: graph / triple-store stage."
+
+[dependencies]
+eoc-core.workspace = true
+tokio.workspace = true
+async-trait.workspace = true
+eoc-cache.workspace = true

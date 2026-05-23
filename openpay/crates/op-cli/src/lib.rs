@@ -39,6 +39,8 @@ use std::time::Duration;
 use clap::{Args, Parser, Subcommand};
 use serde_json::{Value, json};
 
+pub mod ledger;
+
 /// Errors the CLI can emit. Surface in `Display` form to the user;
 /// `main` maps these to exit code 1.
 #[derive(Debug, thiserror::Error)]
@@ -123,6 +125,18 @@ pub enum Command {
     /// Audit window report.
     #[command(subcommand)]
     Audit(AuditCommand),
+    /// Bi-temporal time-travel queries against the ledger substrate.
+    #[command(subcommand)]
+    Ledger(LedgerCommand),
+}
+
+/// `op ledger ...` subcommands.
+#[derive(Debug, Subcommand)]
+pub enum LedgerCommand {
+    /// Point query at a `(valid_time, transaction_time)` coordinate.
+    ///
+    /// See [`crate::ledger::as_of`] for the bi-temporal semantics.
+    AsOf(ledger::AsOfArgs),
 }
 
 /// `op refund ...` subcommands.
@@ -341,7 +355,15 @@ impl Client {
 
 /// Execute a parsed CLI invocation. Writes pretty-printed JSON to
 /// stdout on success; returns the underlying [`Error`] otherwise.
+///
+/// Most subcommands speak HTTP to a running [`op_server`] deployment.
+/// The `ledger` family is the exception — bi-temporal queries run
+/// in-process against the local graph substrate, so they bypass
+/// [`Client`] entirely and write their own output.
 pub fn run(cli: Cli) -> Result<(), Error> {
+    if let Command::Ledger(LedgerCommand::AsOf(args)) = cli.command {
+        return ledger::run_as_of(&args);
+    }
     let client = Client::new(cli.server, cli.api_key);
     let value = dispatch(&client, cli.command)?;
     print_json(&value);
@@ -418,6 +440,12 @@ pub fn dispatch(client: &Client, command: Command) -> Result<Value, Error> {
                 "/v1/audit/report?start_tx={start_tx}&end_tx={end_tx}&generated_at_unix_secs={generated_at_unix_secs}"
             ))
         }
+        // Local-only — handled by `run` before dispatch. We never
+        // reach this arm in practice; it exists to keep the match
+        // exhaustive and clippy happy.
+        Command::Ledger(_) => Err(Error::BadPayload(
+            "ledger subcommands are dispatched in-process, not over HTTP".into(),
+        )),
     }
 }
 

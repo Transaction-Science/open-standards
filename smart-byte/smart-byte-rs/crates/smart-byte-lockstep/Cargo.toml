@@ -1,0 +1,16 @@
+[package]
+name = "smart-byte-lockstep"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Smart Byte deterministic lockstep BFT simulation."
+
+[dependencies]
+smart-byte-core = { workspace = true }
+tokio = { workspace = true }
+blake3 = { workspace = true }
+serde = { workspace = true }
+serde_cbor = { workspace = true }
+thiserror = { workspace = true }

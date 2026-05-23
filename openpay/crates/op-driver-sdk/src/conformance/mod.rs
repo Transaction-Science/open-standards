@@ -26,6 +26,12 @@
 //! pass/fail signal that the `OpenPay` project can keep in sync
 //! with trait semantics as they evolve.
 
+pub mod network_token;
+
+pub use self::network_token::{
+    NetworkTokenConformanceFailure, NetworkTokenConformanceReport, run_network_token,
+};
+
 use std::sync::Arc;
 
 use op_core::{CryptoAddress, Currency, Money, PaymentMethod, VaultRef};

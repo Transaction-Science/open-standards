@@ -1,0 +1,64 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/eoc-core",
+    "crates/eoc-cache",
+    "crates/eoc-kv",
+    "crates/eoc-graph",
+    "crates/eoc-neural",
+    "crates/eoc-meter",
+    "crates/eoc-cascade",
+    "crates/eoc",
+    "crates/eoc-wasm",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.95"
+license = "Apache-2.0"
+repository = "https://github.com/Transaction-Science/open-standards"
+authors = ["EOC Contributors"]
+description = "EOC — Energy-Optimized Compute reference implementation."
+
+[workspace.dependencies]
+# Core
+serde = { version = "1", features = ["derive"] }
+serde_cbor = "0.11"
+blake3 = "1"
+thiserror = "2"
+async-trait = "0.1"
+
+# Utility
+lru = "0.12"
+anyhow = "1"
+
+# Runtime
+tokio = { version = "1", default-features = false, features = ["macros", "sync", "rt"] }
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+# WASM
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+serde-wasm-bindgen = "0.6"
+
+# Hardware counters (optional / platform)
+nvml-wrapper = "0.10"
+
+# Workspace internals
+eoc-core = { path = "crates/eoc-core" }
+eoc-cache = { path = "crates/eoc-cache" }
+eoc-kv = { path = "crates/eoc-kv" }
+eoc-graph = { path = "crates/eoc-graph" }
+eoc-neural = { path = "crates/eoc-neural" }
+eoc-meter = { path = "crates/eoc-meter" }
+eoc-cascade = { path = "crates/eoc-cascade" }
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+panic = "abort"
+strip = "symbols"

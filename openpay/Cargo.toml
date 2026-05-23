@@ -28,6 +28,7 @@ members = [
     "examples/headless-server",
     "examples/kiosk-linux",
     "examples/demo-merchant",
+    "examples/pci-zero",
 ]
 
 [workspace.package]

@@ -1,0 +1,18 @@
+[package]
+name = "eoc-meter"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "EOC joule meter: hardware energy counters with a stub fallback."
+
+[features]
+default = []
+# CUDA / NVML support — opt-in because nvml-wrapper links to libnvidia-ml.
+cuda = ["dep:nvml-wrapper"]
+
+[dependencies]
+eoc-core.workspace = true
+nvml-wrapper = { workspace = true, optional = true }

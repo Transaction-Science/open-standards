@@ -1,0 +1,21 @@
+[package]
+name = "smart-byte"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Smart Byte reference CLI: build envelopes, verify them, run lockstep demos."
+
+[[bin]]
+name = "smart-byte"
+path = "src/main.rs"
+
+[dependencies]
+smart-byte-core = { workspace = true }
+smart-byte-net = { workspace = true }
+smart-byte-lockstep = { workspace = true }
+clap = { workspace = true }
+anyhow = { workspace = true }
+chrono = { workspace = true }
+serde_cbor = { workspace = true }

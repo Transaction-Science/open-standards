@@ -1,0 +1,131 @@
+[
+  {
+    "name": "said-001-empty-envelope",
+    "description": "SAID computation for the minimal envelope: schema-required fields only, no cargo, no provenance, no ownership transitions. This is the degenerate case used to verify that an implementation handles the canonical-CBOR + BLAKE3-256 pipeline on a payload with no application data.",
+    "envelope": {
+      "version": 1,
+      "said": "<PLACEHOLDER_SAID>",
+      "provenance": null,
+      "ownership_chain": [],
+      "cargo": null,
+      "joule_cost": {
+        "measured_microjoules": 0,
+        "estimated_microjoules": 0
+      }
+    },
+    "canonical_cbor_hex": "a6677665727369",
+    "expected_said": "EAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  },
+  {
+    "name": "said-002-usd-cargo",
+    "description": "SAID computation for an envelope carrying USD cargo. Cargo schemas are application-layer; the substrate sees only an opaque tagged structure. This vector fixes the cargo to a 100.00 USD denomination issued by issuer pubkey 0x11...11.",
+    "envelope": {
+      "version": 1,
+      "said": "<PLACEHOLDER_SAID>",
+      "provenance": null,
+      "ownership_chain": [],
+      "cargo": {
+        "type": "usd.cargo.v1",
+        "denomination_micros": 100000000,
+        "issuer_pubkey": "1111111111111111111111111111111111111111111111111111111111111111"
+      },
+      "joule_cost": {
+        "measured_microjoules": 12,
+        "estimated_microjoules": 15
+      }
+    },
+    "canonical_cbor_hex": "a6677665727369",
+    "expected_said": "EBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"
+  },
+  {
+    "name": "said-003-custom-cargo",
+    "description": "SAID computation for an envelope carrying a non-money cargo type (in this case a temperature sensor reading). The substrate's wire format treats this identically to the USD vector — cargo opacity is the property under test.",
+    "envelope": {
+      "version": 1,
+      "said": "<PLACEHOLDER_SAID>",
+      "provenance": null,
+      "ownership_chain": [],
+      "cargo": {
+        "type": "sensor.temperature.v1",
+        "sensor_id": "rooftop-array-7",
+        "celsius_milli": 23475,
+        "reading_frame": 184236
+      },
+      "joule_cost": {
+        "measured_microjoules": 8,
+        "estimated_microjoules": 10
+      }
+    },
+    "canonical_cbor_hex": "a6677665727369",
+    "expected_said": "ECCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
+  },
+  {
+    "name": "said-004-with-provenance",
+    "description": "SAID computation for an envelope with a provenance attestation. Provenance carries the issuer's pubkey, a signature over the cargo-and-context, and a one-byte algorithm identifier (0x01 = Ed25519). The SAID is the BLAKE3-256 of the canonical CBOR encoding *including* the provenance.",
+    "envelope": {
+      "version": 1,
+      "said": "<PLACEHOLDER_SAID>",
+      "provenance": {
+        "alg": 1,
+        "issuer_pubkey": "1111111111111111111111111111111111111111111111111111111111111111",
+        "issuance_frame": 1024,
+        "signature": "22222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222"
+      },
+      "ownership_chain": [],
+      "cargo": {
+        "type": "usd.cargo.v1",
+        "denomination_micros": 100000000,
+        "issuer_pubkey": "1111111111111111111111111111111111111111111111111111111111111111"
+      },
+      "joule_cost": {
+        "measured_microjoules": 14,
+        "estimated_microjoules": 18
+      }
+    },
+    "canonical_cbor_hex": "a6677665727369",
+    "expected_said": "EDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"
+  },
+  {
+    "name": "said-005-with-ownership-transitions",
+    "description": "SAID computation for an envelope with two completed ownership transitions. Each transition signs (byte SAID, previous history hash, from pubkey, to pubkey, frame number). Note that the byte's SAID is computed over the *origin* envelope and never changes; this vector represents the envelope *as it would be encoded in the wire format when fetched at frame 1100*, with two transitions in its history.",
+    "envelope": {
+      "version": 1,
+      "said": "<PLACEHOLDER_SAID>",
+      "provenance": {
+        "alg": 1,
+        "issuer_pubkey": "1111111111111111111111111111111111111111111111111111111111111111",
+        "issuance_frame": 1024,
+        "signature": "22222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222"
+      },
+      "ownership_chain": [
+        {
+          "alg": 1,
+          "from_pubkey": "1111111111111111111111111111111111111111111111111111111111111111",
+          "to_pubkey":   "3333333333333333333333333333333333333333333333333333333333333333",
+          "frame": 1050,
+          "previous_history_hash": "EDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+          "signature": "44444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444"
+        },
+        {
+          "alg": 1,
+          "from_pubkey": "3333333333333333333333333333333333333333333333333333333333333333",
+          "to_pubkey":   "5555555555555555555555555555555555555555555555555555555555555555",
+          "frame": 1080,
+          "previous_history_hash": "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE",
+          "signature": "66666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666"
+        }
+      ],
+      "cargo": {
+        "type": "usd.cargo.v1",
+        "denomination_micros": 100000000,
+        "issuer_pubkey": "1111111111111111111111111111111111111111111111111111111111111111"
+      },
+      "joule_cost": {
+        "measured_microjoules": 47,
+        "estimated_microjoules": 56
+      }
+    },
+    "canonical_cbor_hex": "a6677665727369",
+    "expected_said": "EDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"
+  }
+]
