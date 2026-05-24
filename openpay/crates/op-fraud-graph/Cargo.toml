@@ -1,0 +1,19 @@
+[package]
+name = "op-fraud-graph"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Graph-based fraud detection: entity resolution, link analysis (connected components, PageRank, Louvain), shared-instrument ring detection, velocity counters, synthetic-identity and money-laundering heuristics."
+
+[dependencies]
+thiserror = { workspace = true }
+serde = { workspace = true }
+time = { workspace = true }
+# SHA-256 for hashing raw identifiers (PAN, email, phone) before they
+# enter the graph. No raw PII is ever stored on a vertex.
+sha2 = "0.10"
+
+[dev-dependencies]
+proptest = { workspace = true }

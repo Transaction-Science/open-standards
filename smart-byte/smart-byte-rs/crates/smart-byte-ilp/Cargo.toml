@@ -1,0 +1,22 @@
+[package]
+name = "smart-byte-ilp"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Interledger Protocol (ILP) v4 adapter for Smart Byte: OER packets, SHA-256 hashlocks, STREAM, BTP, SPSP, Open Payments, connector route tables."
+
+[dependencies]
+smart-byte-core = { workspace = true }
+serde = { workspace = true }
+serde_json = "1"
+thiserror = { workspace = true }
+chrono = { workspace = true }
+sha2 = "0.10"
+data-encoding = { workspace = true }
+
+[dev-dependencies]
+hex = "0.4"
+rand = { workspace = true }

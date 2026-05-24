@@ -4120,6 +4120,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "op-fraud-graph"
+version = "0.1.0"
+dependencies = [
+ "proptest",
+ "serde",
+ "sha2",
+ "thiserror 2.0.18",
+ "time",
+]
+
+[[package]]
 name = "op-fx"
 version = "0.1.0"
 dependencies = [

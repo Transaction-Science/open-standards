@@ -19,6 +19,7 @@ members = [
     "crates/smart-byte-atproto",
     "crates/smart-byte-nostr",
     "crates/smart-byte-activitypub",
+    "crates/smart-byte-ilp",
 ]
 
 [workspace.package]

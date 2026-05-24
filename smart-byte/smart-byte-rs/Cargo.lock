@@ -5993,6 +5993,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "smart-byte-ilp"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "data-encoding",
+ "hex",
+ "rand 0.8.6",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
+ "smart-byte-core",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "smart-byte-keri-witness"
 version = "0.1.0"
 dependencies = [
