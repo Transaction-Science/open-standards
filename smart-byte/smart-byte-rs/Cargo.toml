@@ -11,6 +11,9 @@ members = [
     "crates/smart-byte-didcomm",
     "crates/smart-byte-mdl",
     "crates/smart-byte-bbs",
+    "crates/smart-byte-crdt",
+    "crates/smart-byte-keri-witness",
+    "crates/smart-byte-libp2p",
 ]
 
 [workspace.package]
@@ -50,6 +53,7 @@ smart-byte-net = { path = "crates/smart-byte-net" }
 smart-byte-lockstep = { path = "crates/smart-byte-lockstep" }
 smart-byte-vc = { path = "crates/smart-byte-vc" }
 smart-byte-pq = { path = "crates/smart-byte-pq" }
+smart-byte-crdt = { path = "crates/smart-byte-crdt" }
 
 # CLI
 clap = { version = "4", features = ["derive"] }

@@ -1,0 +1,50 @@
+[package]
+name = "op-tax"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay tax calculation: pluggable adapter surface (Avalara, Stripe Tax, CCH SureTax, Vertex, TaxJar) plus a native rate-table backend covering US sales tax, EU/UK/AU VAT, GST (CA/IN/SG/NZ), excise, reverse-charge, and exemption certificates. Economic-nexus monitoring and withholding hooks included."
+
+[dependencies]
+op-core = { path = "../op-core" }
+
+# Async-first surface: every commercial backend (Avalara, Stripe Tax,
+# CCH SureTax, Vertex, TaxJar) is a RESTful HTTPS API, and the native
+# calculator is async-trait too so callers can swap freely. async-trait
+# keeps the TaxCalculator trait dyn-compatible until the dyn-safe
+# native variant lands cleanly post-1.95.
+async-trait = "0.1"
+
+# HTTP client for commercial backends. rustls-tls keeps the build
+# OpenSSL-free; json bundles serde_json roundtrips. We omit blocking
+# because every backend here is async-first.
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"] }
+tokio = { workspace = true }
+
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# CBOR for the on-disk rate-table snapshot. ciborium is the pure-Rust
+# implementation already used by op-screening for its sanctions index.
+ciborium = "0.2"
+
+# Tax math must be exact. rust_decimal carries 28-29 significant digits
+# of decimal precision — well beyond the 4-decimal places any real-world
+# jurisdiction publishes — and supports the round-half-up rounding mode
+# every tax authority specifies.
+rust_decimal = { version = "1", features = ["serde"] }
+
+# Calendar dates for transaction_date / certificate validity / nexus
+# windows. Spec-mandated dependency.
+chrono = { version = "0.4", default-features = false, features = ["std", "clock", "serde"] }
+
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+# Async mock-server for adapter round-trip tests. Same version as op-bnpl.
+wiremock = "0.6"
+tokio = { workspace = true, features = ["rt", "macros", "test-util"] }
+proptest = { workspace = true }

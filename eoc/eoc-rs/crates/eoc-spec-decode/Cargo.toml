@@ -1,0 +1,42 @@
+[package]
+name = "eoc-spec-decode"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "EOC speculative decoding — orchestration + canonical algorithms (vanilla, EAGLE, Medusa, Lookahead, SpS-with-temperature) over any pair of NeuralBackend draft+target models, with per-stage joule attribution."
+
+[features]
+# By default the crate ships the orchestration layer + synthetic backends
+# so it can be exercised without pulling any heavy native runtime. The
+# `local-backends` feature pulls in `eoc-local` so end-to-end tests can
+# wire real on-host inference stacks as draft/target models.
+default = []
+local-backends = ["dep:eoc-local"]
+
+[dependencies]
+eoc-core.workspace = true
+eoc-neural.workspace = true
+eoc-meter.workspace = true
+async-trait.workspace = true
+serde = { workspace = true }
+serde_json = "1"
+thiserror.workspace = true
+tokio = { version = "1", default-features = false, features = ["macros", "sync", "rt", "rt-multi-thread"] }
+tracing = "0.1"
+rand = { version = "0.9", default-features = false, features = ["std", "std_rng"] }
+
+eoc-local = { path = "../eoc-local", optional = true }
+
+[dev-dependencies]
+tokio = { version = "1", default-features = false, features = ["macros", "rt-multi-thread", "test-util"] }
+proptest = "1"
+eoc-core.workspace = true
+eoc-neural.workspace = true
+eoc-meter.workspace = true
+
+[package.metadata.docs.rs]
+all-features = false
+features = []

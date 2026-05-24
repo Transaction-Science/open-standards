@@ -1,0 +1,30 @@
+[package]
+name = "op-connect"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay platform / marketplace tier: sub-merchant onboarding, KYB, beneficial-owner identification, split payments, payout orchestration, liability flows, 1099-K / 1042-S tax reporting, and ToS acceptance tracking. The Connect / MarketPay-equivalent surface."
+
+[dependencies]
+op-core = { path = "../op-core" }
+op-screening = { path = "../op-screening" }
+
+# Async + HTTP for the OnboardingProvider trait surface and adapters.
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"] }
+tokio = { workspace = true }
+async-trait = "0.1"
+
+# Serde stack.
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# The task spec mandates chrono + uuid + thiserror + tracing.
+chrono = { version = "0.4", default-features = false, features = ["std", "clock", "serde"] }
+uuid = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true }

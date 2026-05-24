@@ -1,0 +1,48 @@
+[package]
+name = "eoc-multimodal"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "EOC multi-modal extensions — vision (CLIP/SigLIP/ColPali, GPT-4o/Claude/Gemini vision), audio (Whisper/MMS), TTS (OpenAI/Bark/MMS-TTS), video frame sampling, and a modality router."
+
+[dependencies]
+eoc-core.workspace = true
+eoc-neural.workspace = true
+eoc-embeddings = { path = "../eoc-embeddings" }
+eoc-vendor-api = { path = "../eoc-vendor-api" }
+
+async-trait.workspace = true
+serde.workspace = true
+serde_json = "1"
+thiserror.workspace = true
+tokio = { version = "1", default-features = false, features = ["macros", "sync", "rt", "time"] }
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json", "stream", "multipart"] }
+
+base64 = "0.22"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
+bytes = "1"
+mime = "0.3"
+mime_guess = "2"
+tracing = "0.1"
+
+# Optional — local ONNX inference (CLIP / SigLIP / Whisper / ColPali / MMS / Bark).
+# Heavy native dep; off by default. WASM-incompatible.
+ort = { version = "2.0.0-rc.10", optional = true, default-features = false, features = ["std"] }
+tokenizers = { version = "0.20", optional = true, default-features = false, features = ["onig"] }
+
+# Optional — ffmpeg integration for video frame sampling. Pure-Rust
+# keyframe extraction is also provided when this feature is off.
+ffmpeg-next = { version = "7", optional = true, default-features = false }
+
+[dev-dependencies]
+tokio = { version = "1", default-features = false, features = ["macros", "rt-multi-thread", "test-util"] }
+wiremock = "0.6"
+insta = { version = "1", features = ["json"] }
+
+[features]
+default = []
+local = ["dep:ort", "dep:tokenizers"]
+ffmpeg = ["dep:ffmpeg-next"]

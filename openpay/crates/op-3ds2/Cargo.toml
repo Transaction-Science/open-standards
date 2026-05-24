@@ -1,0 +1,71 @@
+[package]
+name = "op-3ds2"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay 3-D Secure 2.x: full 3DS Requestor / Server / DS / ACS message stack for protocol versions 2.1.0, 2.2.0, and 2.3.0. SCA exemption evaluator covering PSD2 RTS + PSD3 (2026) update. Browser-fingerprint collection, app-based 3DS, decoupled authentication, data-only, and 3RI flows."
+publish = false
+
+[dependencies]
+op-core = { path = "../op-core" }
+
+# Core serde + JSON. EMVCo 3DS 2.x messages are JSON over HTTPS; the
+# only XML-flavoured corner is a small set of legacy 2.1.0 transitional
+# payloads which we round-trip through quick-xml when present.
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# Time handling. Chrono is the de-facto choice in 2026 for DateTime<Utc>
+# round-tripping over JSON; we use it for trusted-beneficiary
+# enrolment timestamps and challenge timeouts.
+chrono = { version = "0.4", default-features = false, features = ["clock", "serde", "std"] }
+
+# UUIDs for messageVersion / threeDSServerTransID / acsTransID /
+# dsTransID. EMVCo spec mandates UUIDv4 format for all transaction IDs.
+uuid = { workspace = true }
+
+# Base64 for CAVV, TAVV, deviceInfo, and the various opaque blobs that
+# travel inside 3DS messages.
+base64 = "0.22"
+
+# SHA-256 for the AReq -> AReq hash used in the 3DS Method invocation
+# and for CAVV verification.
+sha2 = "0.10"
+
+# AES-CBC for the encrypted deviceInfo block (SDK device data is
+# AES-CBC encrypted with a session key established via ECDH-P-256).
+aes = "0.8"
+cbc = "0.1"
+
+# RSA for legacy issuer ACS public keys, P-256 for the modern
+# ECDH-based session key establishment used by the SDK device-binding
+# flow.
+rsa = "0.9"
+p256 = { version = "0.13", features = ["ecdh", "ecdsa"] }
+
+# X.509 parsing for DS / ACS certificate chain validation. Each card
+# scheme issues its own DS certificate; we parse and pin against the
+# scheme root.
+x509-parser = "0.16"
+
+# quick-xml for the small set of legacy XML payloads (DS version-check
+# in the 2.1.0 transition window and some scheme-specific extensions).
+quick-xml = { workspace = true }
+
+# Async runtime + HTTP client for DS / ACS calls.
+tokio = { workspace = true }
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"] }
+
+# Object-safe async trait surface (DirectoryServer / AcsServer are
+# trait objects). Native async-fn-in-trait is stable on 1.95 but
+# the dyn-compat form still needs the macro shim.
+async-trait = "0.1"
+
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+serde_json = { workspace = true }

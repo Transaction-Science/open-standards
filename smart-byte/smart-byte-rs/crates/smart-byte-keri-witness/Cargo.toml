@@ -1,0 +1,30 @@
+[package]
+name = "smart-byte-keri-witness"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Smart Byte KERI key-event log: full inception/rotation/interaction/recovery/delegation cycle with witness layer, watchers, and OOBI bootstrap."
+
+[dependencies]
+smart-byte-core = { workspace = true }
+smart-byte-pq = { workspace = true }
+serde = { workspace = true }
+serde_bytes = { workspace = true }
+serde_cbor = { workspace = true }
+blake3 = { workspace = true }
+ed25519-dalek = { workspace = true }
+rand = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+thiserror = { workspace = true }
+tracing = "0.1"
+tokio = { workspace = true, features = ["fs"] }
+async-trait = "0.1"
+dashmap = "6"
+data-encoding = { workspace = true }
+
+[dev-dependencies]
+proptest = "1"
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }

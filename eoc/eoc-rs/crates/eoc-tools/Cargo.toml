@@ -1,0 +1,29 @@
+[package]
+name = "eoc-tools"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "EOC — tool-use / function-calling substrate: schema, registry, multi-vendor adapters, parallel exec, safety, builtins."
+
+[dependencies]
+eoc-core.workspace = true
+eoc-neural.workspace = true
+eoc-vendor-api = { path = "../eoc-vendor-api" }
+
+serde = { workspace = true }
+serde_json = "1"
+schemars = "0.8"
+jsonschema = { version = "0.18", default-features = false }
+tokio = { workspace = true, features = ["macros", "rt", "sync", "fs", "process", "io-util", "time"] }
+async-trait.workspace = true
+futures = "0.3"
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"] }
+thiserror.workspace = true
+tracing = "0.1"
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt-multi-thread", "test-util", "time"] }
+serde_json = "1"
