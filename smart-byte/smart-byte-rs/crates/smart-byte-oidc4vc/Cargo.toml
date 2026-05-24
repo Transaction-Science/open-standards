@@ -1,0 +1,28 @@
+[package]
+name = "smart-byte-oidc4vc"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "OpenID for Verifiable Credentials (OID4VCI draft 13 + OID4VP draft 23 + SIOPv2 + DCQL + DPoP + HAIP + EUDI ARF) ingestion for Smart Byte."
+
+[dependencies]
+smart-byte-core = { workspace = true }
+smart-byte-vc = { workspace = true }
+serde = { workspace = true }
+serde_json = "1"
+chrono = { workspace = true }
+base64 = "0.22"
+url = "2"
+uuid = { workspace = true }
+thiserror = { workspace = true }
+ed25519-dalek = { workspace = true }
+sha2 = "0.10"
+rand = { workspace = true }
+flate2 = "1"
+
+[dev-dependencies]
+hex = "0.4"
+serde_json = "1"
