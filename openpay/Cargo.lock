@@ -4220,6 +4220,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "op-openbanking"
+version = "0.1.0"
+dependencies = [
+ "op-core",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "time",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "op-orchestrator"
 version = "0.1.0"
 dependencies = [

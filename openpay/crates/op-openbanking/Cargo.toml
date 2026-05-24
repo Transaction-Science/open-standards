@@ -1,0 +1,21 @@
+[package]
+name = "op-openbanking"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay Open Banking / PSD2 / FDX adapters: UK Open Banking Read/Write v3.1.x (AISP/PISP/CBPII), Berlin Group NextGenPSD2 (XS2A), STET PSD2 (France), Australia CDR banking, Singapore SGFinDex, US FDX v6.x. Interface layer for OAuth2 + FAPI 1.0 Advanced, mTLS, JWS request signing, JWK registration. AIS / PIS / CoF / VRP (sweeping + non-sweeping). Operators bring real crypto; we ship the contracts."
+
+[dependencies]
+op-core = { path = "../op-core" }
+
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+time = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }

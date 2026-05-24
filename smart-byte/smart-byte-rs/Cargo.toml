@@ -16,6 +16,7 @@ members = [
     "crates/smart-byte-libp2p",
     "crates/smart-byte-edv",
     "crates/smart-byte-zk",
+    "crates/smart-byte-atproto",
 ]
 
 [workspace.package]

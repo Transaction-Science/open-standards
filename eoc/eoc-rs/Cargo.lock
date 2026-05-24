@@ -747,6 +747,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "eoc-distributed"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "eoc-core",
+ "eoc-meter",
+ "serde",
+ "thiserror 2.0.18",
+ "tokio",
+]
+
+[[package]]
 name = "eoc-embeddings"
 version = "0.1.0"
 dependencies = [
