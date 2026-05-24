@@ -1,0 +1,47 @@
+[package]
+name = "op-revrec"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay revenue recognition: ASC 606 / IFRS 15 five-step engine — contract + performance-obligation modelling, transaction-price allocation, recognition-schedule generation (straight-line / milestone / output / input / usage), deferred-revenue ledger tied to op-core::Payment state, variable-consideration constraint, contract-modification handling (Type I / II / III), multi-currency translation, and principal-vs-agent presentation."
+
+[dependencies]
+op-core = { path = "../op-core" }
+
+# Recognition math must be exact. rust_decimal carries ~28 significant
+# digits — well past the precision any GL or audit firm publishes — and
+# supports the rounding modes ASC 606 examples use (round-half-up for
+# allocation, banker's for translation differences).
+rust_decimal = { version = "1", features = ["serde"] }
+
+# Calendar dates for service-period bounds, recognition-date snapshots,
+# contract effective dates, modification-date arithmetic. Spec-mandated.
+chrono = { version = "0.4", default-features = false, features = ["std", "clock", "serde"] }
+
+# Async trait surface for the DeferredRevenueLedger. Keeps the ledger
+# pluggable against a Postgres / S3 / in-memory backend without
+# rewriting the recognition engine.
+async-trait = "0.1"
+
+# Serde stack.
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# Stable IDs for contracts, performance obligations, schedule entries
+# and ledger postings. v7 keeps them time-sortable.
+uuid = { workspace = true }
+
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[features]
+default = []
+# Reserved for live integrations with GL backends (NetSuite, Sage Intacct,
+# Workday Financials, QuickBooks Online). The native in-process ledger
+# does not depend on this feature.
+live = []
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt", "macros", "test-util"] }

@@ -1,0 +1,31 @@
+[package]
+name = "eoc-carbon"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "EOC carbon accounting: grid intensity ingest, PUE, region-aware scheduling, joules → gCO2e + GSF SCI bridge."
+
+[features]
+default = []
+# Pulls in reqwest for live Electricity Maps / WattTime / CO2 Signal HTTP.
+http = ["dep:reqwest"]
+# Pulls in eoc-eval to expose SCI hooks for the eval harness.
+eval-bridge = ["dep:eoc-eval"]
+
+[dependencies]
+eoc-core.workspace = true
+eoc-meter.workspace = true
+serde = { workspace = true }
+serde_json = "1"
+thiserror.workspace = true
+async-trait.workspace = true
+tokio = { workspace = true, features = ["macros", "rt", "sync", "time"] }
+chrono = { version = "0.4", default-features = false, features = ["clock", "serde"] }
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"], optional = true }
+eoc-eval = { path = "../eoc-eval", optional = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt-multi-thread", "test-util", "time"] }

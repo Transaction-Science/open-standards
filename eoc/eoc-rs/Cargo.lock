@@ -693,6 +693,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "eoc-carbon"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "eoc-core",
+ "eoc-eval",
+ "eoc-meter",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
+]
+
+[[package]]
 name = "eoc-cascade"
 version = "0.1.0"
 dependencies = [

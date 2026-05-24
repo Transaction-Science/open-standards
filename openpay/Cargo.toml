@@ -34,6 +34,7 @@ members = [
     "crates/op-cli",
     "crates/op-connect",
     "crates/op-tax",
+    "crates/op-revrec",
     "examples/headless-server",
     "examples/kiosk-linux",
     "examples/demo-merchant",

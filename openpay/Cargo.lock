@@ -4295,6 +4295,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "op-revrec"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "op-core",
+ "rust_decimal",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "op-routing"
 version = "0.1.0"
 dependencies = [

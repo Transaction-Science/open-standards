@@ -54,6 +54,7 @@ smart-byte-lockstep = { path = "crates/smart-byte-lockstep" }
 smart-byte-vc = { path = "crates/smart-byte-vc" }
 smart-byte-pq = { path = "crates/smart-byte-pq" }
 smart-byte-crdt = { path = "crates/smart-byte-crdt" }
+smart-byte-bbs = { path = "crates/smart-byte-bbs" }
 
 # CLI
 clap = { version = "4", features = ["derive"] }

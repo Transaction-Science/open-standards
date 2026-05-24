@@ -19,6 +19,7 @@ members = [
     "crates/eoc-tools",
     "crates/eoc-spec-decode",
     "crates/eoc-multimodal",
+    "crates/eoc-carbon",
 ]
 
 [workspace.package]
