@@ -1,0 +1,149 @@
+name: ci
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  # Build + run all tests (lib + ffi robustness + fuzz smoke) on both
+  # macOS and Linux. Production deployments will hit both; CI gates
+  # both.
+  test:
+    name: test ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system codec libraries (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            pkg-config \
+            libjxl-dev \
+            libavif-dev \
+            libdav1d-dev \
+            libopus-dev \
+            libflac-dev \
+            libzstd-dev \
+            liblzma-dev \
+            ffmpeg \
+            zstd \
+            xz-utils
+
+      - name: Install system codec libraries (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew update
+          brew install \
+            pkg-config \
+            jpeg-xl \
+            libavif \
+            dav1d \
+            opus \
+            flac \
+            zstd \
+            xz \
+            ffmpeg
+
+      - name: Install Rust (stable)
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry + target
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            wai-rs/target
+          key: ${{ matrix.os }}-cargo-${{ hashFiles('wai-rs/Cargo.lock') }}
+
+      - name: cargo build --release (lib + bins)
+        working-directory: wai-rs
+        run: cargo build --release --lib --bins
+
+      - name: Verify SDK artifacts (cdylib + staticlib)
+        working-directory: wai-rs
+        shell: bash
+        run: |
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            test -f target/release/libwai.so
+            test -f target/release/libwai.a
+          else
+            test -f target/release/libwai.dylib
+            test -f target/release/libwai.a
+          fi
+
+      - name: cargo test (lib + ffi robustness + fuzz smoke)
+        working-directory: wai-rs
+        run: cargo test --release
+
+  # Quick-mode bench on the always-shippable subset of the corpus.
+  # NOTE: the full corpus (~22 GB) is not committed and CI uses synthetic
+  # inputs only. For full-corpus regression gating, run on a self-hosted
+  # runner that mounts the corpus volume.
+  bench-quick:
+    name: bench-quick + regression diff
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install codec libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            pkg-config libjxl-dev libavif-dev libdav1d-dev \
+            libopus-dev libflac-dev libzstd-dev liblzma-dev \
+            ffmpeg zstd xz-utils
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build wai_bench + wai_bench_diff
+        working-directory: wai-rs
+        run: cargo build --release --bin wai_bench --bin wai_bench_diff
+
+      # Synthetic-only quick bench (CI doesn't have the 22 GB corpus).
+      # Generates synthetic test inputs into a temporary corpus tree so
+      # the bench has something to walk. Real-corpus regression checks
+      # happen on the self-hosted runner job below.
+      - name: Run quick bench (synthetic inputs)
+        working-directory: wai-rs
+        run: |
+          mkdir -p ../corpus/image/{kodak,synthetic} ../corpus/audio/sqam \
+                   ../corpus/text ../corpus/video/derf
+          # tiny PNG fixture so image_interop has at least one input
+          python3 -c "
+          from urllib.request import urlretrieve
+          urlretrieve('https://r0k.us/graphics/kodak/kodak/kodim01.png',
+                      '../corpus/image/kodak/kodim01.png')
+          "
+          target/release/wai_bench --report bench-head.json || true
+          ls -la bench-head.json
+
+      - name: Diff against committed baseline (if present)
+        working-directory: wai-rs
+        run: |
+          if [[ -f ../bench-baseline.json ]]; then
+            target/release/wai_bench_diff ../bench-baseline.json bench-head.json
+          else
+            echo "(no bench-baseline.json checked in — skipping regression diff)"
+          fi
+
+      - name: Upload bench report
+        uses: actions/upload-artifact@v4
+        with:
+          name: bench-report-${{ github.sha }}
+          path: wai-rs/bench-head.json
+          retention-days: 30

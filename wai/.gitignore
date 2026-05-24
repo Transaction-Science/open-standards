@@ -1,0 +1,38 @@
+# Test corpora — 22 GB, far over GitHub's 100 MB/file limit. Never commit.
+# Fetch scripts belong in-repo; the data does not.
+/corpus/
+
+# Rust build output
+/wai-rs/target/
+/wai-web/target/
+
+# Neural model bundles for the browser demo. These are large (~120 MB
+# per model) and regenerable: run `python3 tools/wai_encodec_export_onnx.py`
+# against a local EnCodec checkpoint to produce them. See
+# wai-web/demo/models/README.md.
+/wai-web/demo/models/**/*.onnx
+/wai-web/demo/models/**/*.bin
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Local codec output / scratch artifacts (regenerable)
+*_out.png
+/wai/i_out.png
+/wai-neural/*.png
+/wai-neural/err.log
+
+# OS noise
+.DS_Store
+
+# Raw design transcripts — kept on disk for reference, not part of the
+# repo's public surface (the coherent narrative is README.md + SPEC.md).
+/notes-1.md
+/notes-2.md
+
+# Keep: SPEC.md, README.md, LICENSE, wai/, wai-rs/ (src + tests/fixtures),
+# wai-neural/ source, the small *.wai sample bundles.

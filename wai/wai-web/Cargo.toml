@@ -1,0 +1,28 @@
+[package]
+name = "wai-web"
+version = "0.3.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "WAI envelope parser + capability dispatch for the browser. Wasm-bindgen surface over the standard's container format. NOT a codec backend — backends are pluggable, the deployer chooses (WASM / WebGPU / WebNN / native ONNX / transformers.js / etc.)."
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
+serde-wasm-bindgen = "0.6"
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+js-sys = "0.3"
+
+[profile.release]
+opt-level = "s"     # size, not speed — runtime is parse-only
+lto = true
+codegen-units = 1
+strip = "symbols"
+
+[package.metadata.wasm-pack.profile.release]
+# The host's wasm-opt (binaryen) is behind the Rust toolchain's emitted
+# wasm features; rustc already runs LTO + size opts so skipping wasm-opt
+# costs little. Re-enable when binaryen catches up.
+wasm-opt = false

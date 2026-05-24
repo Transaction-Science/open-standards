@@ -1,10 +1,10 @@
 # Transaction Science Open Standards
 
-This repository houses the three open reference protocols stewarded by [Transaction Science](https://transaction.science). Each is published as a separate top-level directory with its own README, its own licence file, and its own status.
+This repository houses the four open reference protocols stewarded by [Transaction Science](https://transaction.science). Each is published as a separate top-level directory with its own README, its own licence file, and its own status.
 
 The wire format and the right to fork are public. Transaction Science writes the reference implementation and runs the optional hosted services — the protocols themselves are owned by no one.
 
-## The three standards
+## The four standards
 
 ### [openpay/](openpay/) — Payment acceptance without the SaaS tax
 
@@ -30,6 +30,14 @@ Energy-optimised compute: every query resolves through a four-stage pipeline —
 - **Licence:** CC-BY-4.0 (see [`eoc/LICENSE`](eoc/LICENSE))
 - **Status:** Reference protocol. Specification suite published across `spec/`; reference implementation pending.
 
+### [wai/](wai/) — Web AI Media Transport & Execution
+
+A container + capability-dispatch standard for media. WAI does not re-implement codecs; it dispatches to SOTA standard libraries (PNG, FLAC, zstd as the mandatory floor; AVIF, JPEG-XL, Opus, AV1, XZ as the recommended modern set) and adds an envelope that lets a neural-shared-prior path coexist with the model-free floor. Two paths open every conforming file: the **neural condition** (sink regenerates from a shared ambient prior) and the **zeroth condition** (registered SOTA codec menu). The capability a file requires is named, not supplied.
+
+- **Site:** [wai.transaction.science](https://wai.transaction.science)
+- **Licence:** Apache-2.0 (see [`wai/LICENSE`](wai/LICENSE))
+- **Status:** v1.0 draft standard. `wai-rs/` reference implementation (Rust lib + cdylib + staticlib, C FFI) passes 11 capability + envelope round-trip tests. Known consumer: CommunicationOS.
+
 ## How this is organised
 
 Each subdirectory is self-contained: it carries its own README, its own licence, and its own contribution guidance. Cross-protocol consistency lives at this level — in this README and in [`CHARTER.md`](CHARTER.md).
@@ -40,7 +48,8 @@ open-standards/
 ├── CHARTER.md      — the stewardship pattern
 ├── openpay/        — payment-acceptance stack (Apache-2.0, Rust)
 ├── smart-byte/     — value-carrier substrate (CC-BY-4.0, spec)
-└── eoc/            — energy-optimised compute (CC-BY-4.0, spec)
+├── eoc/            — energy-optimised compute (CC-BY-4.0, spec)
+└── wai/            — media transport + capability dispatch (Apache-2.0, Rust ref impl)
 ```
 
 The three standards do not depend on one another. They share a steward, a unit of accounting (joules), and a doctrine — that the protocol is the public commitment and the operations are the offer.
@@ -52,6 +61,7 @@ Contributions are welcome at the subdirectory level. Issues, discussions, and pu
 - **OpenPay:** new driver implementations, persistence backends for the domain stores, FFI platform glue, ISO 20022 / EMV test vectors.
 - **Smart Byte:** worked examples of cargo types, additional conformance vectors, security-engineering critique.
 - **EOC:** evaluation suites, additional `eval*` worked instances, registry entries.
+- **WAI:** new capability registrations (neural codec extensions), conformance test vectors per registered capability, language bindings against the `wai-rs` C ABI (Python ctypes, Node N-API, Swift, JNI, Go cgo).
 
 A `CONTRIBUTING.md` per standard captures the specifics where they diverge.
 

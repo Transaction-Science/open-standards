@@ -1,0 +1,81 @@
+[package]
+name = "wai"
+version = "0.3.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "WAI — Web AI media transport + execution. Capability-as-requirement envelope + neural shared-prior regenerate-at-sink path + always-available zeroth-condition wrappers around SOTA standard codecs (AVIF / JPEG-XL / PNG / Opus / FLAC / AV1 / zstd / LZMA)."
+
+[lib]
+name = "wai"
+crate-type = ["lib", "cdylib", "staticlib"]   # cdylib + staticlib for FFI/SDK
+
+[dependencies]
+# Container manifest. preserve_order so JSON round-trips byte-identical.
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+
+# ---- zeroth codec wrappers: lossy + lossless across all media ----
+# Image
+image = { version = "0.25", default-features = false,
+          features = ["png", "jpeg", "webp", "avif"] }    # PNG, JPEG decode, AVIF encode (via ravif)
+jpeg-encoder = "0.7"                              # pure-Rust JPEG with optimized Huffman tables
+libavif-image = "0.14"                            # AVIF decode via system libavif (fixes silent-empty decode bug)
+jpegxl-rs = "0.14"                                # libjxl bindings (links system libjxl 0.11.x)
+# Audio
+opus = "0.3"                                      # libopus bindings (lossy)
+ogg = "0.9"                                       # Ogg container for standard .opus interop
+claxon = "0.4"                                    # FLAC decode (pure Rust)
+flac-bound = "0.5"                                # FLAC encode (libFLAC)
+# Video
+rav1e = { version = "0.8", default-features = false, features = ["threading"] }
+dav1d = "0.11"                                    # AV1 decode (libdav1d)
+# Text
+zstd = "0.13"                                     # zstd bindings
+xz2 = "0.1"                                       # liblzma bindings (XZ/LZMA)
+
+# Bytestream framing for video container (we wrap rav1e packets into a
+# minimal IVF-like sequence for self-contained .wai video payloads).
+byteorder = "1"
+
+# ---- neural runtime (optional, behind the `neural` feature) ----
+# `ort` wraps Microsoft's onnxruntime — same ORT version (1.26) the
+# browser-side wai-web demo uses, so models built with our exporters
+# load identically here. The `download-binaries` feature fetches the
+# right libonnxruntime build at compile time; no manual brew install.
+ort = { version = "2.0.0-rc.12", default-features = false,
+        features = ["std", "download-binaries", "ndarray", "tls-rustls"],
+        optional = true }
+ndarray = { version = "0.17", optional = true }
+zstd-safe = { version = "7", optional = true }   # for bmshj2018 latent unpack
+
+[features]
+default = []
+# Pulls in the ONNX runtime + zstd unpack so the native sink can
+# decode `wai.neural.<...>` envelopes. Off by default — the bare
+# container + zeroth codecs build with no ML dep chain.
+neural = ["dep:ort", "dep:ndarray", "dep:zstd-safe"]
+
+[[bin]]
+name = "wai"
+path = "src/bin/wai.rs"
+
+[[bin]]
+name = "wai_bench"
+path = "src/bin/wai_bench.rs"
+
+[[bin]]
+name = "wai_bench_diff"
+path = "src/bin/wai_bench_diff.rs"
+
+[build-dependencies]
+pkg-config = "0.3"   # locate system libflac (cross-platform; replaces
+                     # the macOS-hardcoded .cargo/config.toml rustflags)
+cbindgen = { version = "0.29", default-features = false }
+                     # generate include/wai.h from the FFI surface so
+                     # SDK consumers get a typed C header instead of
+                     # hand-writing extern decls
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
