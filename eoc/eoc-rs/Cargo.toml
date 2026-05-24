@@ -24,6 +24,7 @@ members = [
     "crates/eoc-rag",
     "crates/eoc-distributed",
     "crates/eoc-streaming",
+    "crates/eoc-observability",
 ]
 
 [workspace.package]

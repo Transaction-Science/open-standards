@@ -1,0 +1,18 @@
+[package]
+name = "op-statements"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay merchant statement generation, reconciliation feeds, and fee accounting (camt.053/054, BAI2, MT940, CSV/JSON/PDF templates)."
+publish = false
+
+[dependencies]
+op-core = { path = "../op-core" }
+
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+tracing = { workspace = true }

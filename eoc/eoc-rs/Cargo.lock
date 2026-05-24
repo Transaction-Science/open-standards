@@ -884,6 +884,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "eoc-observability"
+version = "0.1.0"
+dependencies = [
+ "eoc-core",
+ "eoc-meter",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "eoc-rag"
 version = "0.1.0"
 dependencies = [

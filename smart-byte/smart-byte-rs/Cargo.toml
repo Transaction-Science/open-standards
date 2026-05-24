@@ -18,6 +18,7 @@ members = [
     "crates/smart-byte-zk",
     "crates/smart-byte-atproto",
     "crates/smart-byte-nostr",
+    "crates/smart-byte-activitypub",
 ]
 
 [workspace.package]

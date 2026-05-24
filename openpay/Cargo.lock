@@ -4446,6 +4446,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "op-statements"
+version = "0.1.0"
+dependencies = [
+ "op-core",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "op-subscriptions"
 version = "0.1.0"
 dependencies = [
