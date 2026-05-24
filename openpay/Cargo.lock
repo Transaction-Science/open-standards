@@ -4065,6 +4065,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "op-ewallets-asia"
+version = "0.1.0"
+dependencies = [
+ "hex",
+ "hmac",
+ "op-core",
+ "serde",
+ "serde_json",
+ "sha2",
+ "subtle",
+ "thiserror 2.0.18",
+ "time",
+ "tracing",
+]
+
+[[package]]
 name = "op-ffi-jni"
 version = "0.1.0"
 dependencies = [

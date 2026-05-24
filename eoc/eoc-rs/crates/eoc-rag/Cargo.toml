@@ -1,0 +1,22 @@
+[package]
+name = "eoc-rag"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "EOC RAG orchestrator — query rewriting, retrieval fusion, reranking, self-checking, and joule accounting."
+
+[dependencies]
+eoc-core.workspace = true
+async-trait.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+blake3.workspace = true
+
+[dev-dependencies]
+tokio = { version = "1", default-features = false, features = ["macros", "rt", "rt-multi-thread"] }
+
+[features]
+default = []

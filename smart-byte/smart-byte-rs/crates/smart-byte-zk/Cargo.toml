@@ -1,0 +1,28 @@
+[package]
+name = "smart-byte-zk"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Zero-knowledge proof primitives for selective disclosure of verifiable credentials in the Smart Byte substrate (Bulletproofs range proofs over Ristretto255 + scheme-agnostic trait surface for Groth16 / PLONK / anoncreds)."
+
+[dependencies]
+# Real backend: Bulletproofs over Ristretto255.
+bulletproofs = "5"
+curve25519-dalek = { version = "4.1", default-features = false, features = ["digest", "group", "rand_core", "serde", "alloc"] }
+merlin = { version = "3", default-features = false }
+
+# Transcripts, RNG.
+rand = { workspace = true }
+rand_core = { version = "0.6", default-features = false, features = ["alloc"] }
+sha2 = "0.10"
+
+# Serialisation + errors.
+serde = { workspace = true }
+serde_bytes = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+rand_chacha = "0.3"
+serde_cbor = { workspace = true }

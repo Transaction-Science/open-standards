@@ -21,6 +21,7 @@ members = [
     "crates/eoc-multimodal",
     "crates/eoc-carbon",
     "crates/eoc-agent",
+    "crates/eoc-rag",
 ]
 
 [workspace.package]

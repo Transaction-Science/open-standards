@@ -1,0 +1,34 @@
+[package]
+name = "op-ewallets-asia"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay APAC e-wallet rail adapters: Alipay, WeChat Pay, UPI 2.0, Paytm, GrabPay, GoPay, Touch'n Go, PromptPay, PayNow, DuitNow, QRIS."
+
+[dependencies]
+op-core = { path = "../op-core" }
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+time = { workspace = true }
+tracing = { workspace = true }
+# Base32 / Base64 are not needed; QR payloads here are decimal TLV
+# (EMVCo MPM, used by PromptPay/PayNow/DuitNow/QRIS) and JSON
+# (Alipay/WeChat). hex covers UPI mandate UMN nonces.
+hex = { workspace = true }
+# HMAC-SHA256 + SHA-256: WeChat Pay v3 signs notify bodies and
+# we verify in constant time. Alipay v3 signs with RSA-SHA256, but
+# we accept the verifier as an injected closure so this crate
+# stays RustCrypto-pure without pulling in a full RSA stack.
+hmac = "0.12"
+sha2 = "0.10"
+subtle = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }
+hex = { workspace = true }
+
+[features]
+default = []
