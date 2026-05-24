@@ -27,6 +27,7 @@ members = [
     "crates/eoc-observability",
     "crates/eoc-quantize",
     "crates/eoc-safety",
+    "crates/eoc-memory",
 ]
 
 [workspace.package]

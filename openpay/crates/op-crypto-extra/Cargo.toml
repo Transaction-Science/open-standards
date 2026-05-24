@@ -1,0 +1,18 @@
+[package]
+name = "op-crypto-extra"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay extended crypto rails: stablecoin catalog, L2 topology, ERC-4337 / EIP-7702 account abstraction, Permit2 + EIP-2612, Circle CCTP v2, Lightning BOLT-11, Bitcoin PSBT v2, atomic-swap HTLC, confidential-transfer sketches."
+
+[dependencies]
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+hex = { workspace = true }
+sha3 = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }

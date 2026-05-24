@@ -1,0 +1,18 @@
+[package]
+name = "eoc-memory"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "EOC long-term memory primitives — episodic, semantic, working memory for agents."
+
+[dependencies]
+eoc-core.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+blake3.workspace = true
+
+[features]
+default = []

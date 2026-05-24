@@ -839,6 +839,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "eoc-memory"
+version = "0.1.0"
+dependencies = [
+ "blake3",
+ "eoc-core",
+ "serde",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "eoc-meter"
 version = "0.1.0"
 dependencies = [

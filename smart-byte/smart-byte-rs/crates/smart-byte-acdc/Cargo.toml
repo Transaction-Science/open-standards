@@ -1,0 +1,26 @@
+[package]
+name = "smart-byte-acdc"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Authentic Chained Data Containers (ACDC) — verifiable credential format from the KERI ecosystem, with TEL, IPEX, edge graphs, and selective disclosure."
+
+[dependencies]
+smart-byte-core = { workspace = true }
+smart-byte-keri-witness = { path = "../smart-byte-keri-witness" }
+serde = { workspace = true }
+serde_json = "1"
+serde_jcs = "0.1"
+serde_cbor = { workspace = true }
+serde_bytes = { workspace = true }
+blake3 = { workspace = true }
+ed25519-dalek = { workspace = true }
+chrono = { workspace = true }
+thiserror = { workspace = true }
+data-encoding = { workspace = true }
+rand = { workspace = true }
+
+[dev-dependencies]
+hex = "0.4"

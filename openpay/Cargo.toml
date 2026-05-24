@@ -42,6 +42,7 @@ members = [
     "crates/op-statements",
     "crates/op-fraud-graph",
     "crates/op-bin",
+    "crates/op-crypto-extra",
     "examples/headless-server",
     "examples/kiosk-linux",
     "examples/demo-merchant",

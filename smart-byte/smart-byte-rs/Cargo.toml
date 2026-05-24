@@ -21,6 +21,7 @@ members = [
     "crates/smart-byte-activitypub",
     "crates/smart-byte-ilp",
     "crates/smart-byte-tendermint",
+    "crates/smart-byte-acdc",
 ]
 
 [workspace.package]
