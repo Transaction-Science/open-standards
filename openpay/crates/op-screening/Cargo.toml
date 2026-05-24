@@ -1,0 +1,47 @@
+[package]
+name = "op-screening"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay sanctions screening: OFAC/EU/UN/HMT/DFAT/SEMA list ingestion, fuzzy name matching, BSA/FinCEN reporting helpers, signed audit log."
+
+[dependencies]
+op-core = { path = "../op-core" }
+
+# HTTP client. rustls-only to avoid linking native TLS.
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"] }
+
+# Async runtime. Same minor features op-server uses.
+tokio = { workspace = true }
+
+# Serde stack.
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# XML parsing for OFAC / EU / UN list payloads.
+quick-xml = { workspace = true }
+
+# CBOR for on-disk snapshot persistence.
+ciborium = "0.2"
+
+# The task spec mandates chrono for SanctionedEntity / list timestamps.
+# The workspace also uses `time` elsewhere; both can coexist.
+chrono = { version = "0.4", default-features = false, features = ["std", "clock", "serde"] }
+
+# Unicode normalisation: NFKD + diacritic stripping for name canonicalisation.
+unicode-normalization = "0.1"
+
+# Audit-log cryptography.
+ed25519-dalek = { version = "2", default-features = false, features = ["std", "rand_core"] }
+blake3 = "1"
+rand_core = { version = "0.6", features = ["getrandom"] }
+
+# Errors + tracing per workspace convention.
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+tokio = { workspace = true }

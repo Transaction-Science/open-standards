@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdnList>
+  <publshInformation>
+    <Publish_Date>05/22/2026</Publish_Date>
+    <Record_Count>3</Record_Count>
+  </publshInformation>
+  <sdnEntry>
+    <uid>11111</uid>
+    <firstName>Ivan</firstName>
+    <lastName>Ivanovich Ivanov</lastName>
+    <sdnType>Individual</sdnType>
+    <programList>
+      <program>RUSSIA-EO14024</program>
+    </programList>
+    <akaList>
+      <aka>
+        <lastName>I. I. Ivanov</lastName>
+      </aka>
+    </akaList>
+  </sdnEntry>
+  <sdnEntry>
+    <uid>22222</uid>
+    <lastName>Black Sea Holdings Ltd</lastName>
+    <sdnType>Entity</sdnType>
+    <programList>
+      <program>UKRAINE-EO13662</program>
+    </programList>
+  </sdnEntry>
+  <sdnEntry>
+    <uid>33333</uid>
+    <lastName>MV Caspian Trader</lastName>
+    <sdnType>Vessel</sdnType>
+    <programList>
+      <program>IRAN-EO13871</program>
+    </programList>
+  </sdnEntry>
+</sdnList>

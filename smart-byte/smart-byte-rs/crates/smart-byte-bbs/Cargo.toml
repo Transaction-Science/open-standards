@@ -1,0 +1,42 @@
+[package]
+name = "smart-byte-bbs"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "BBS+ signatures (Boneh-Boyen-Shacham) over BLS12-381 with selective disclosure for the Smart Byte substrate."
+
+[dependencies]
+smart-byte-core = { workspace = true }
+
+# BLS12-381 primitives. `bls12_381` (RustCrypto) is the well-audited
+# implementation we depend on; no unsafe code.
+bls12_381 = { version = "0.8", default-features = false, features = ["alloc", "experimental", "groups", "pairings"] }
+group = { version = "0.13", default-features = false }
+ff = { version = "0.13", default-features = false }
+pairing = { version = "0.23", default-features = false }
+
+# Hash. `bls12_381` 0.8 still binds to the `digest` 0.9 trait surface,
+# so its `hash_to_curve` API only accepts `sha2` 0.9 digests. We use
+# the workspace `sha2` 0.10 for our Fiat-Shamir transcript and
+# scalar-reduction helpers.
+sha2 = "0.10"
+sha2_v9 = { package = "sha2", version = "0.9", default-features = false }
+
+# Serialisation.
+serde = { workspace = true }
+serde_json = "1"
+serde_cbor = { workspace = true }
+serde_bytes = { workspace = true }
+
+# RNG + utilities.
+rand = { workspace = true }
+subtle = "2"
+zeroize = { version = "1", features = ["derive"] }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+hex = "0.4"
+rand_chacha = "0.3"
+chrono = { workspace = true }

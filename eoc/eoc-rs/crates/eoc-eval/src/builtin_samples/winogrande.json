@@ -1,0 +1,7 @@
+[
+  {"id":"winogrande/0","sentence":"The trophy doesn't fit into the brown suitcase because _ is too large.","option1":"the trophy","option2":"the suitcase","answer":"1"},
+  {"id":"winogrande/1","sentence":"Ann asked Mary what time the library closes, because _ had forgotten.","option1":"Ann","option2":"Mary","answer":"1"},
+  {"id":"winogrande/2","sentence":"The man could not lift his son because _ was so weak.","option1":"the man","option2":"the son","answer":"1"},
+  {"id":"winogrande/3","sentence":"The fish ate the worm. _ was hungry.","option1":"the fish","option2":"the worm","answer":"1"},
+  {"id":"winogrande/4","sentence":"Sam tried to paint a picture of shepherds with sheep, but they ended up looking more like dogs. The _ are too dog-like.","option1":"shepherds","option2":"sheep","answer":"2"}
+]

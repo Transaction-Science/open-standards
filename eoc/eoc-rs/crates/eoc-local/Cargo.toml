@@ -1,0 +1,74 @@
+[package]
+name = "eoc-local"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "EOC local-inference backends — llama.cpp (GGUF), MLX (Apple Silicon), MLC-LLM (TVM), ONNX Runtime — behind a single NeuralBackend trait with measured joule attribution."
+
+[features]
+# Default build pulls in *no* heavy native deps. The crate is usable as
+# a pure-Rust GGUF / tokenizer / sampler / registry library out of the
+# box; the actual inference backends are feature-gated because each one
+# brings its own large native dependency.
+default = []
+
+# Backend feature flags. Each one enables the matching module and its
+# associated native dependency. They are independent — operators turn
+# on whichever stacks they have installed.
+llamacpp = ["dep:llama-cpp-2"]
+mlx      = ["dep:mlx-rs"]
+# MLC enables the module surface. The tvm/mlc-llm runtime is *not*
+# pulled in as a direct crates.io dependency because the published
+# `tvm-rt = 0.1.0-alpha` has a broken transitive `heim` requirement
+# that pins ancient `memchr`. Operators using this backend should add
+# their preferred mlc-llm / tvm-rt crate to a workspace `[patch.crates-io]`
+# section and wire the calls inside `src/mlc.rs` against it.
+mlc      = []
+onnx     = ["dep:ort", "dep:tokenizers", "dep:ndarray"]
+gguf     = []
+# Convenience — pull in just the tokenizer wrapper without an inference
+# backend (handy for tooling).
+tokenizer-only = ["dep:tokenizers"]
+
+[dependencies]
+eoc-core.workspace = true
+eoc-neural.workspace = true
+eoc-meter.workspace = true
+async-trait.workspace = true
+serde.workspace = true
+serde_json = "1"
+thiserror.workspace = true
+tokio = { version = "1", default-features = false, features = ["macros", "sync", "rt", "rt-multi-thread"] }
+tracing = "0.1"
+
+# Optional native backends. Versions pinned to the latest published
+# tags on crates.io as of the EOC 0.1 cut. Operators wishing to vendor
+# a different revision can override via [patch.crates-io] in their
+# workspace root.
+llama-cpp-2  = { version = "0.1", optional = true }
+mlx-rs       = { version = "0.21", optional = true }
+ort          = { version = "2.0.0-rc.10", optional = true, default-features = false, features = ["ndarray", "std"] }
+tokenizers   = { version = "0.21", optional = true, default-features = false, features = ["onig"] }
+ndarray      = { version = "0.17", optional = true, features = ["std"] }
+
+[dev-dependencies]
+tokio = { version = "1", default-features = false, features = ["macros", "rt-multi-thread", "test-util"] }
+tempfile = "3"
+# Re-declared as dev-deps so integration tests (under `tests/`) can refer
+# to them by their public name.
+eoc-core.workspace = true
+eoc-neural.workspace = true
+eoc-meter.workspace = true
+
+# MLX is hard-gated on macOS — surface a clear build error if someone
+# tries `--features mlx` on Linux. The cfg also guards the module body.
+[target.'cfg(not(target_os = "macos"))'.dependencies]
+# (intentionally empty; mlx-rs is only depended on via the `mlx` feature
+# above, and the `mlx` module is `#[cfg(target_os = "macos")]` gated.)
+
+[package.metadata.docs.rs]
+all-features = false
+features = ["gguf", "tokenizer-only"]

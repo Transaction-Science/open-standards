@@ -8,6 +8,9 @@ members = [
     "crates/smart-byte-vc",
     "crates/smart-byte-did",
     "crates/smart-byte-pq",
+    "crates/smart-byte-didcomm",
+    "crates/smart-byte-mdl",
+    "crates/smart-byte-bbs",
 ]
 
 [workspace.package]

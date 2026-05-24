@@ -13,6 +13,9 @@ members = [
     "crates/eoc-wasm",
     "crates/eoc-embeddings",
     "crates/eoc-vendor-api",
+    "crates/eoc-local",
+    "crates/eoc-eval",
+    "crates/eoc-rerank",
 ]
 
 [workspace.package]

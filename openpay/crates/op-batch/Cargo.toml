@@ -1,0 +1,27 @@
+[package]
+name = "op-batch"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay batch payments: NACHA ACH, SEPA pain.001/pain.008, Fedwire / SWIFT MT103 / pacs.008-009, Bacs. File generation, submission orchestration, return/exception handling, reconciliation hooks."
+
+[dependencies]
+op-core = { path = "../op-core" }
+op-iso20022 = { path = "../op-iso20022" }
+chrono = { version = "0.4", default-features = false, features = ["clock", "serde", "std"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+quick-xml = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }
+
+[features]
+default = []
+# Live SFTP submission. Operators that drop files into a local
+# spool watched by their own SFTP agent do not need this.
+sftp = []

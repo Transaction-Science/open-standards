@@ -1,0 +1,7 @@
+[
+  {"id":"hellaswag/0","context":"A man is sitting at a piano. He places his hands on the keys and","choices":["begins to play a soft melody.","starts dancing across the room.","fries an egg in a pan.","drives a car down the highway."],"answer":"A"},
+  {"id":"hellaswag/1","context":"A woman is mixing ingredients in a large bowl. She picks up a whisk and","choices":["throws it out the window.","beats the mixture until it is smooth.","plants a tree in the garden.","goes to sleep on the couch."],"answer":"B"},
+  {"id":"hellaswag/2","context":"Children are gathered in a circle around a campfire. The leader takes out a guitar and","choices":["tunes it and begins a sing-along.","mows the lawn nearby.","reads a legal contract.","performs heart surgery."],"answer":"A"},
+  {"id":"hellaswag/3","context":"A skier stands at the top of a mountain run. She adjusts her goggles and","choices":["orders a pizza on her phone.","pushes off with her poles and descends.","writes a novel on her tablet.","starts knitting a scarf."],"answer":"B"},
+  {"id":"hellaswag/4","context":"A chef is in the kitchen with a sharp knife and a stack of carrots. He","choices":["argues with the dishwasher.","begins to dice the carrots quickly.","paints a watercolour landscape.","reads a poem aloud."],"answer":"B"}
+]

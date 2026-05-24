@@ -1,0 +1,49 @@
+[package]
+name = "op-bnpl"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay Buy-Now-Pay-Later rails. Affirm, Klarna, Afterpay/Clearpay acceptance with provider-specific lifecycles."
+
+[dependencies]
+op-core = { path = "../op-core" }
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+# Async surface — BNPL providers all expose RESTful HTTPS APIs. async-trait
+# lets us keep the BnplAcquirer trait dyn-compatible while methods return
+# `impl Future`. This will migrate to native async-fn-in-trait once the
+# dyn-compatible variant lands cleanly post-1.95.
+async-trait = "0.1"
+# HTTP client. rustls-tls keeps the build OpenSSL-free; the json feature
+# bundles serde_json roundtrips. blocking is intentionally NOT enabled —
+# the BNPL surface is async-first because every provider here ships a
+# multi-step interactive flow (session → consumer redirect → webhook).
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"] }
+tokio = { workspace = true }
+chrono = { version = "0.4", default-features = false, features = ["std", "clock", "serde"] }
+# HMAC-SHA256 for inbound-webhook signature verification. Each of Affirm,
+# Klarna, and Afterpay sign their webhooks with a shared secret; we
+# verify in constant time using `subtle::ConstantTimeEq`.
+hmac = "0.12"
+sha2 = "0.10"
+subtle = { workspace = true }
+hex = "0.4"
+# base64 for HTTP Basic auth headers (Klarna, Afterpay).
+base64 = "0.22"
+
+[dev-dependencies]
+# wiremock is the de-facto async mock-server in Rust. We use it to stub
+# each BNPL provider's REST API for round-trip tests without touching
+# the live sandbox.
+wiremock = "0.6"
+tokio = { workspace = true, features = ["rt", "macros", "test-util"] }
+# Integration tests sign sample payloads with the same HMAC primitives
+# the runtime uses for verification.
+hmac = "0.12"
+sha2 = "0.10"
+hex = "0.4"
+base64 = "0.22"

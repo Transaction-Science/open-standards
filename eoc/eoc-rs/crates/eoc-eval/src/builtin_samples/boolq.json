@@ -1,0 +1,7 @@
+[
+  {"id":"boolq/0","passage":"Persian (Farsi) is the official language of Iran. It is spoken by roughly 70 million people in Iran and is one of the official languages of Afghanistan and Tajikistan.","question":"Is Persian the official language of Iran?","answer":true},
+  {"id":"boolq/1","passage":"The Pacific Ocean is the largest and deepest of Earth's oceanic divisions, extending from the Arctic Ocean in the north to the Southern Ocean in the south.","question":"Is the Atlantic Ocean the largest ocean on Earth?","answer":false},
+  {"id":"boolq/2","passage":"Photosynthesis is a process used by plants to convert light energy into chemical energy that can later be released to fuel the organism's activities. The byproduct is oxygen, released into the atmosphere.","question":"Do plants release oxygen during photosynthesis?","answer":true},
+  {"id":"boolq/3","passage":"Mount Everest, in the Himalayas, is the Earth's highest mountain above sea level, with a peak at 8,848.86 meters.","question":"Is K2 the highest mountain on Earth?","answer":false},
+  {"id":"boolq/4","passage":"The human body has 206 bones in adulthood. Newborns are born with around 270 bones, which fuse over time.","question":"Do adult humans have 206 bones?","answer":true}
+]

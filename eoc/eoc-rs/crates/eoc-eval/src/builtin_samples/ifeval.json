@@ -1,0 +1,13 @@
+[
+  {"id":"ifeval/0","prompt":"Write a short paragraph about photosynthesis. Use the word 'chloroplast' at least 3 times.","constraints":[{"type":"keyword_at_least","keyword":"chloroplast","min_count":3}]},
+  {"id":"ifeval/1","prompt":"Describe the water cycle in exactly 2 paragraphs.","constraints":[{"type":"exact_paragraphs","count":2}]},
+  {"id":"ifeval/2","prompt":"In 50 to 100 words, summarise the theory of relativity.","constraints":[{"type":"word_count","min":50,"max":100}]},
+  {"id":"ifeval/3","prompt":"Write a sentence about your favourite season. Do not use any commas.","constraints":[{"type":"no_comma"}]},
+  {"id":"ifeval/4","prompt":"REPLY IN ALL CAPS: WHAT IS THE CAPITAL OF FRANCE?","constraints":[{"type":"all_caps"}]},
+  {"id":"ifeval/5","prompt":"reply in all lowercase: what is the capital of japan?","constraints":[{"type":"all_lowercase"}]},
+  {"id":"ifeval/6","prompt":"Begin your answer with 'The result is:'. Then provide the result of 12 * 8.","constraints":[{"type":"starts_with","prefix":"The result is:"}]},
+  {"id":"ifeval/7","prompt":"End your reply with the exact phrase 'That is all.'.","constraints":[{"type":"ends_with","suffix":"That is all."}]},
+  {"id":"ifeval/8","prompt":"List exactly 3 bullet points naming common fruits.","constraints":[{"type":"exact_bullets","count":3}]},
+  {"id":"ifeval/9","prompt":"Describe a tropical island. Do not mention 'beach' or 'sand'.","constraints":[{"type":"forbid_keywords","keywords":["beach","sand"]}]},
+  {"id":"ifeval/10","prompt":"Write a 2-paragraph reply that uses the word 'energy' at least twice and does not contain a comma.","constraints":[{"type":"exact_paragraphs","count":2},{"type":"keyword_at_least","keyword":"energy","min_count":2},{"type":"no_comma"}]}
+]

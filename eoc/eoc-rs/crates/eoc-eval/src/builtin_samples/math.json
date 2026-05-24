@@ -1,0 +1,8 @@
+[
+  {"id":"math/algebra/0","subject":"algebra","level":1,"question":"Find the value of x if 5x - 3 = 22.","answer":"5"},
+  {"id":"math/algebra/1","subject":"algebra","level":3,"question":"What is the sum of all positive integer solutions to x^2 - 7x + 12 = 0?","answer":"7"},
+  {"id":"math/geometry/0","subject":"geometry","level":2,"question":"What is the area of a circle with radius 3? Express your answer in terms of pi.","answer":"9\\pi"},
+  {"id":"math/number_theory/0","subject":"number_theory","level":2,"question":"What is the greatest common divisor of 84 and 132?","answer":"12"},
+  {"id":"math/counting/0","subject":"counting_and_probability","level":2,"question":"In how many ways can you arrange the letters of the word 'BOOK'?","answer":"12"},
+  {"id":"math/prealgebra/0","subject":"prealgebra","level":1,"question":"What is 2/3 + 1/6 written as a single fraction in lowest terms?","answer":"\\frac{5}{6}"}
+]

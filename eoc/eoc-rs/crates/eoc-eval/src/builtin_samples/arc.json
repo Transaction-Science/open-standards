@@ -1,0 +1,9 @@
+[
+  {"id":"arc/easy/0","subset":"easy","question":"Which of the following objects would be best to use to measure the temperature of a cup of hot tea?","choices":["a balance","a stopwatch","a thermometer","a ruler"],"answer":"C"},
+  {"id":"arc/easy/1","subset":"easy","question":"Plants need which of the following to make their own food?","choices":["sunlight","soil only","wind","clouds"],"answer":"A"},
+  {"id":"arc/easy/2","subset":"easy","question":"Which is a renewable resource?","choices":["coal","oil","natural gas","wind"],"answer":"D"},
+  {"id":"arc/easy/3","subset":"easy","question":"Which season has the shortest days in the northern hemisphere?","choices":["spring","summer","autumn","winter"],"answer":"D"},
+  {"id":"arc/challenge/0","subset":"challenge","question":"A scientist measures a sample's mass to be 20.0 g and its volume to be 10.0 mL. The density of the sample is:","choices":["0.5 g/mL","2.0 g/mL","10.0 g/mL","200.0 g/mL"],"answer":"B"},
+  {"id":"arc/challenge/1","subset":"challenge","question":"In a food chain: grass -> rabbit -> fox, the fox is best described as a","choices":["producer","primary consumer","secondary consumer","decomposer"],"answer":"C"},
+  {"id":"arc/challenge/2","subset":"challenge","question":"Which form of energy is stored in the bonds of food molecules?","choices":["thermal","kinetic","chemical","nuclear"],"answer":"C"}
+]

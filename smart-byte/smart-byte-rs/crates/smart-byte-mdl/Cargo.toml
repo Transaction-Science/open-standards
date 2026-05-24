@@ -1,0 +1,27 @@
+[package]
+name = "smart-byte-mdl"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "ISO/IEC 18013-5 + 18013-7 mobile driving licence (mDL / mDOC) ingestion for Smart Byte."
+
+[dependencies]
+smart-byte-core = { workspace = true }
+smart-byte-vc = { workspace = true }
+serde = { workspace = true }
+serde_cbor = { workspace = true }
+ciborium = "0.2"
+coset = "0.4"
+chrono = { workspace = true }
+p256 = { version = "0.14.0-rc.9", default-features = false, features = ["ecdsa", "alloc", "pem"] }
+ecdsa = { version = "0.17.0-rc.18", features = ["der"] }
+ed25519-dalek = { workspace = true }
+rand = "0.9"
+sha2 = "0.10"
+base64 = "0.22"
+thiserror = { workspace = true }
+
+[dev-dependencies]
+hex = "0.4"

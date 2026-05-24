@@ -1,0 +1,8 @@
+[
+  {"id":"gpqa/physics/0","subject":"physics","question":"A standard exoplanet transit produces a fractional change in stellar flux of (Rp/Rs)^2. For an Earth-sized planet (Rp = 6371 km) transiting a Sun-like star (Rs = 696,000 km), the approximate transit depth is closest to:","choices":["8.4 x 10^-5","8.4 x 10^-3","8.4 x 10^-1","8.4 x 10^-7"],"answer":"A"},
+  {"id":"gpqa/chemistry/0","subject":"chemistry","question":"Which of the following best describes the geometry of [Fe(CN)6]^4-?","choices":["Tetrahedral, high spin","Octahedral, high spin","Octahedral, low spin","Square planar"],"answer":"C"},
+  {"id":"gpqa/biology/0","subject":"biology","question":"During eukaryotic translation initiation, the small ribosomal subunit recognizes the 5' cap with the help of which factor?","choices":["eIF2","eIF4E","eIF3","eEF1A"],"answer":"B"},
+  {"id":"gpqa/physics/1","subject":"physics","question":"For a free electron in a uniform magnetic field of 1.0 T, the spin Larmor precession frequency is approximately:","choices":["28 GHz","2.8 GHz","280 GHz","28 MHz"],"answer":"A"},
+  {"id":"gpqa/chemistry/1","subject":"chemistry","question":"In NMR, a doublet with a J coupling of 7 Hz between two aromatic protons is most consistent with which coupling type?","choices":["Geminal","Ortho","Meta","Para (W coupling)"],"answer":"B"},
+  {"id":"gpqa/biology/1","subject":"biology","question":"Which of the following enzymes proofreads DNA during replication?","choices":["DNA polymerase delta (3'->5' exonuclease)","Topoisomerase II","Primase","Helicase"],"answer":"A"}
+]
