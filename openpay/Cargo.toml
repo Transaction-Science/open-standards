@@ -38,6 +38,7 @@ members = [
     "crates/op-revrec",
     "crates/op-ewallets-asia",
     "crates/op-openbanking",
+    "crates/op-payouts",
     "examples/headless-server",
     "examples/kiosk-linux",
     "examples/demo-merchant",

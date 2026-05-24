@@ -23,6 +23,7 @@ members = [
     "crates/eoc-agent",
     "crates/eoc-rag",
     "crates/eoc-distributed",
+    "crates/eoc-streaming",
 ]
 
 [workspace.package]

@@ -1,0 +1,33 @@
+[package]
+name = "smart-byte-nostr"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Nostr adapter for Smart Byte: NIP-01 events with secp256k1 Schnorr, NIP-04/44 encryption, NIP-17 gift-wrap, NIP-19 bech32, NIP-05/11/13/26/65, and a relay client surface."
+
+[dependencies]
+smart-byte-core = { workspace = true }
+serde = { workspace = true }
+serde_bytes = { workspace = true }
+serde_json = "1"
+thiserror = { workspace = true }
+data-encoding = { workspace = true }
+rand = { workspace = true }
+chrono = { workspace = true }
+
+# Crypto
+secp256k1 = { version = "0.30", features = ["std", "rand", "global-context"] }
+sha2 = "0.10"
+hmac = "0.12"
+hkdf = "0.12"
+chacha20 = "0.9"
+aes = "0.8"
+cbc = { version = "0.1", features = ["std"] }
+async-trait = "0.1"
+
+[dev-dependencies]
+hex = "0.4"
+rand = { workspace = true }
