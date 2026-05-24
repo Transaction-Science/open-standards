@@ -6137,6 +6137,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "smart-byte-tendermint"
+version = "0.1.0"
+dependencies = [
+ "blake3",
+ "chrono",
+ "data-encoding",
+ "ed25519-dalek 2.2.0",
+ "rand 0.8.6",
+ "serde",
+ "serde_bytes",
+ "serde_cbor",
+ "smart-byte-core",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "smart-byte-vc"
 version = "0.1.0"
 dependencies = [

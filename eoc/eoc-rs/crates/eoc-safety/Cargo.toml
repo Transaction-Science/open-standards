@@ -1,0 +1,20 @@
+[package]
+name = "eoc-safety"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "EOC — AI safety primitives: prompt-injection, jailbreak, PII redaction, toxicity, bias, NSFW, constitutional critique, structured-output validation, rate-limit, and red-team replay."
+
+[dependencies]
+eoc-core.workspace = true
+serde = { workspace = true }
+serde_json = "1"
+thiserror.workspace = true
+regex = "1"
+async-trait.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }

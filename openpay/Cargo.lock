@@ -3941,6 +3941,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "op-bin"
+version = "0.1.0"
+dependencies = [
+ "proptest",
+ "serde",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "op-bnpl"
 version = "0.1.0"
 dependencies = [

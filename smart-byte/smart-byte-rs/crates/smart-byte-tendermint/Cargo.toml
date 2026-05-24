@@ -1,0 +1,23 @@
+[package]
+name = "smart-byte-tendermint"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Tendermint / CometBFT BFT consensus adapter for Smart Byte: propose-prevote-precommit state machine, 2/3+1 voting power, validator set, blocks, commits, light client (sequential + skipping), ABCI sketch, evidence, IBC light-client adapter."
+
+[dependencies]
+smart-byte-core = { workspace = true }
+serde = { workspace = true }
+serde_bytes = { workspace = true }
+serde_cbor = { workspace = true }
+thiserror = { workspace = true }
+blake3 = { workspace = true }
+ed25519-dalek = { workspace = true }
+chrono = { workspace = true }
+data-encoding = { workspace = true }
+
+[dev-dependencies]
+rand = { workspace = true }

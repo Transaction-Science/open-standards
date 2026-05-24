@@ -1,0 +1,15 @@
+[package]
+name = "op-bin"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "OpenPay BIN/IIN database: ISO/IEC 7812 issuer-identification ranges, interval-tree lookup, card-network classification, Luhn validation, Durbin-regulated-debit flags. PCI-safe — handles only the first 6-8 digits (BIN), never the full PAN."
+
+[dependencies]
+thiserror = { workspace = true }
+serde = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }

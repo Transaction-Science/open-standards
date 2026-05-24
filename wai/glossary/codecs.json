@@ -1,0 +1,3425 @@
+{
+  "schema": "https://github.com/Transaction-Science/open-standards/blob/main/wai/glossary/SCHEMA.md",
+  "entries": [
+    {
+      "name": "BMP",
+      "year": 1990,
+      "org": "Microsoft / IBM (OS/2)",
+      "modality": "image",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Windows Bitmap. Device-independent uncompressed raster format, optionally run-length encoded. Native to Windows since 1.0. Large file sizes, broad tool support; persists in icon resources, Windows internals, and as a debug-friendly intermediate."
+    },
+    {
+      "name": "PCX",
+      "year": 1985,
+      "org": "ZSoft Corporation",
+      "modality": "image",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "PC Paintbrush. RLE-compressed indexed-color raster format. The dominant DOS-era paint format before BMP and GIF took over. Still readable in image libraries; effectively dead in workflows."
+    },
+    {
+      "name": "TGA",
+      "year": 1984,
+      "org": "Truevision",
+      "modality": "image",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Truevision Advanced Raster Adapter (Targa). Optional RLE, 24-bit color, alpha channel. Heavily used in 1990s game development and VFX texture pipelines, where its simplicity made it easier to parse than the early TIFF spec. Still common in game and VFX tooling."
+    },
+    {
+      "name": "XPM",
+      "year": 1989,
+      "org": "Groupe Bull (Lehors, Daniel)",
+      "modality": "image",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "opensource",
+      "desc": "X PixMap. Text-based image format used by the X Window System for icons and cursors. Stored as valid C source so images could be compiled directly into binaries. Persists in X11 desktop themes."
+    },
+    {
+      "name": "XBM",
+      "year": 1984,
+      "org": "MIT (X Consortium)",
+      "modality": "image",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "opensource",
+      "desc": "X BitMap. Monochrome predecessor to XPM. Same trick of being valid C source code. Used for X11 monochrome cursors and Mosaic-era web bitmaps."
+    },
+    {
+      "name": "PBM / PGM / PPM / PAM",
+      "year": 1988,
+      "org": "Jef Poskanzer (Netpbm)",
+      "modality": "image",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "opensource",
+      "desc": "Portable Bitmap, Graymap, Pixmap, Arbitrary Map. The Netpbm family of trivially-simple uncompressed formats, used as the intermediate format in Unix image processing pipelines for four decades. Easy to write a parser for in an afternoon."
+    },
+    {
+      "name": "ICO",
+      "year": 1985,
+      "org": "Microsoft",
+      "modality": "image",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Windows icon container. Holds one or more bitmaps (or PNGs in modern files) at various sizes and color depths. The format every favicon ever served has lived in."
+    },
+    {
+      "name": "CUR",
+      "year": 1985,
+      "org": "Microsoft",
+      "modality": "image",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Windows cursor format. Effectively ICO with hotspot metadata for the cursor's click point."
+    },
+    {
+      "name": "DDS",
+      "year": 1999,
+      "org": "Microsoft (DirectX)",
+      "modality": "image",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "DirectDraw Surface. Container for GPU-friendly texture compression formats (DXT/BC1–BC7). The texture format underlying most PC games, since the compressed data can be uploaded directly to the GPU without decoding."
+    },
+    {
+      "name": "BCn / DXT",
+      "year": 1998,
+      "org": "S3 Graphics (later Microsoft, Khronos)",
+      "modality": "image",
+      "era": "classical",
+      "status": "success",
+      "lineage": "industry",
+      "desc": "Block Compression family (BC1 through BC7), formerly DXT/S3TC. Fixed-ratio block-based GPU texture compression. The lossy compression used inside essentially every 3D game's texture data. Universal in GPU hardware."
+    },
+    {
+      "name": "ETC1 / ETC2",
+      "year": 2005,
+      "org": "Ericsson Research / Khronos",
+      "modality": "image",
+      "era": "classical",
+      "status": "success",
+      "lineage": "industry",
+      "desc": "Ericsson Texture Compression. GPU texture compression standardized for OpenGL ES. The mandatory format for Android textures. ETC2 added alpha support and improved quality."
+    },
+    {
+      "name": "ASTC",
+      "year": 2012,
+      "org": "ARM / Khronos",
+      "modality": "image",
+      "era": "classical",
+      "status": "success",
+      "lineage": "industry",
+      "desc": "Adaptive Scalable Texture Compression. Variable block-size GPU texture compression covering 2D and 3D textures, HDR, multiple channel formats. The modern standard texture format on mobile GPUs and increasingly on PC."
+    },
+    {
+      "name": "PVRTC",
+      "year": 2003,
+      "org": "Imagination Technologies",
+      "modality": "image",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "PowerVR Texture Compression. The texture format used on Apple's PowerVR-based iOS GPUs until ASTC took over. Specific to PowerVR hardware."
+    },
+    {
+      "name": "GIF",
+      "year": 1987,
+      "org": "CompuServe",
+      "modality": "image",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Graphics Interchange Format. LZW-compressed indexed color, 256-color palette, simple animation. Dominated the early web; persists today for short looping animations despite being technically obsolete. Patent disputes in the 1990s drove the creation of PNG."
+    },
+    {
+      "name": "JPEG",
+      "year": 1992,
+      "org": "JPEG Committee (ISO/IEC + ITU-T)",
+      "modality": "image",
+      "era": "classical",
+      "status": "success",
+      "lineage": "standards",
+      "desc": "Joint Photographic Experts Group. DCT-based lossy compression for photographs. The most widely-deployed image codec ever. Patents expired, free to use, universally supported. Still the format most images on the web use, three decades after standardization."
+    },
+    {
+      "name": "MozJPEG",
+      "year": 2014,
+      "org": "Mozilla",
+      "modality": "image",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "opensource",
+      "desc": "JPEG encoder fork producing smaller files than libjpeg-turbo while remaining bitstream-compatible with all standard JPEG decoders. The 'better JPEG without changing the format' answer."
+    },
+    {
+      "name": "JPEG 2000",
+      "year": 2000,
+      "org": "JPEG Committee",
+      "modality": "image",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "Wavelet-based successor to JPEG, supporting both lossless and lossy. Technically superior on most metrics but never adopted by browsers due to complexity and licensing concerns. Found permanent homes in medical imaging (DICOM), digital cinema (DCI), and parts of the Apple ecosystem."
+    },
+    {
+      "name": "JPEG XR",
+      "year": 2009,
+      "org": "Microsoft / JPEG Committee",
+      "modality": "image",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Originally Microsoft HD Photo, donated and standardized as JPEG XR. Better compression than JPEG with HDR and wide-gamut support. Never broke out of the Microsoft ecosystem; the open-source implementation languished and the format effectively disappeared."
+    },
+    {
+      "name": "JPEG XS",
+      "year": 2019,
+      "org": "JPEG Committee",
+      "modality": "image",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "Low-complexity, low-latency intra-frame codec. Designed for professional video production over IP, virtual reality, and other applications where latency matters more than compression ratio."
+    },
+    {
+      "name": "JPEG XT",
+      "year": 2015,
+      "org": "JPEG Committee",
+      "modality": "image",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "Backward-compatible HDR extension to JPEG. A baseline JPEG decoder ignores the HDR layer; an XT decoder reconstructs the full dynamic range. Niche adoption."
+    },
+    {
+      "name": "Ultra HDR (JPEG_R)",
+      "year": 2023,
+      "org": "Google",
+      "modality": "image",
+      "era": "classical",
+      "status": "emerging",
+      "lineage": "industry",
+      "desc": "Google's HDR image format. A standard JPEG with a gain map appended for HDR reconstruction on capable displays. Used by Android cameras and increasingly by the web."
+    },
+    {
+      "name": "WebP",
+      "year": 2010,
+      "org": "Google",
+      "modality": "image",
+      "era": "classical",
+      "status": "success",
+      "lineage": "industry",
+      "desc": "Built on the VP8 video codec, both lossless and lossy modes. Pushed onto the web by Google through Chrome and the web tooling ecosystem. Modest compression wins over JPEG; broad browser support arrived only after years of resistance."
+    },
+    {
+      "name": "WebP 2",
+      "year": 2021,
+      "org": "Google",
+      "modality": "image",
+      "era": "classical",
+      "status": "academic",
+      "lineage": "industry",
+      "desc": "Experimental successor to WebP. Better compression than the original; never positioned for production deployment. Many of its ideas ended up in AVIF and elsewhere."
+    },
+    {
+      "name": "BPG",
+      "year": 2014,
+      "org": "Fabrice Bellard",
+      "modality": "image",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Better Portable Graphics. Single-developer effort built on HEVC intra-frame coding. Strong compression but tangled in HEVC patents from day one, which killed its chances of web adoption. Often cited as a demonstration that technical merit alone isn't enough."
+    },
+    {
+      "name": "HEIC / HEIF",
+      "year": 2015,
+      "org": "MPEG (built on HEVC)",
+      "modality": "image",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "High Efficiency Image Container, the iOS default photo format since 2017. Strong compression but encumbered by HEVC patent licensing, which prevented broad web or cross-platform adoption. Successful within Apple's ecosystem."
+    },
+    {
+      "name": "AVIF",
+      "year": 2019,
+      "org": "Alliance for Open Media",
+      "modality": "image",
+      "era": "classical",
+      "status": "emerging",
+      "lineage": "industry",
+      "desc": "AV1 Image File Format. Image codec built on the AV1 video codec. Royalty-free, excellent compression at low fidelity, broad browser support arriving steadily since 2020. The de facto successor to WebP for new web content."
+    },
+    {
+      "name": "JPEG XL",
+      "year": 2021,
+      "org": "JPEG Committee (Google + Cloudinary)",
+      "modality": "image",
+      "era": "classical",
+      "status": "emerging",
+      "lineage": "standards",
+      "desc": "Modern successor to JPEG. Lossless transcoding from existing JPEGs, strong rate-distortion at high fidelity, designed for archival as well as web delivery. Adoption stalled when Chrome removed support in 2022; remains supported in Firefox and Safari with active advocacy for re-inclusion."
+    },
+    {
+      "name": "PNG",
+      "year": 1996,
+      "org": "PNG Development Group / W3C",
+      "modality": "image",
+      "era": "classical",
+      "status": "success",
+      "lineage": "opensource",
+      "desc": "Portable Network Graphics. Lossless, deflate-compressed, alpha channel support. Created as a patent-free response to GIF after the LZW disputes. The default for screenshots, UI assets, and any image that needs transparency."
+    },
+    {
+      "name": "APNG",
+      "year": 2008,
+      "org": "Mozilla",
+      "modality": "image",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "opensource",
+      "desc": "Animated PNG. Backward-compatible extension; non-APNG decoders see only the first frame. Rejected by the PNG group but adopted by Mozilla, then Apple, then most browsers. The lossless animated-image alternative to GIF."
+    },
+    {
+      "name": "MNG",
+      "year": 2001,
+      "org": "PNG Development Group",
+      "modality": "image",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "opensource",
+      "desc": "Multiple-image Network Graphics. The official animated successor to GIF backed by the PNG group. Lost to APNG. Effectively dead."
+    },
+    {
+      "name": "TIFF",
+      "year": 1986,
+      "org": "Aldus (now Adobe)",
+      "modality": "image",
+      "era": "classical",
+      "status": "success",
+      "lineage": "industry",
+      "desc": "Tagged Image File Format. Container format more than a codec — supports multiple compression schemes inside (uncompressed, LZW, deflate, JPEG, CCITT for fax). Dominant in scanning, printing, scientific imaging, and digital archives."
+    },
+    {
+      "name": "Lossless JPEG",
+      "year": 1993,
+      "org": "JPEG Committee",
+      "modality": "image",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "Predictive-coding mode within the original JPEG standard. Almost unrelated algorithmically to baseline JPEG. Used in medical imaging (DICOM) and parts of digital photography."
+    },
+    {
+      "name": "JPEG-LS",
+      "year": 1999,
+      "org": "JPEG Committee / HP Labs",
+      "modality": "image",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "ISO/IEC 14495. Based on the LOCO-I algorithm. Low-complexity lossless and near-lossless image coding. Used in medical imaging and other domains where exact preservation matters and CPU is limited."
+    },
+    {
+      "name": "LOCO-I",
+      "year": 1996,
+      "org": "HP Labs (Weinberger et al.)",
+      "modality": "image",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "academic",
+      "desc": "Low Complexity Lossless Compression for Images. The research algorithm that became JPEG-LS. Lives on through JPEG-LS deployments."
+    },
+    {
+      "name": "CCITT Group 3 / 4",
+      "year": 1980,
+      "org": "CCITT (now ITU-T)",
+      "modality": "image",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "The fax compression standards. Run-length and modified-Huffman coding optimized for 1-bit scanned documents. Built into TIFF and PDF; still in active use anywhere documents are faxed or scanned."
+    },
+    {
+      "name": "FLIF",
+      "year": 2015,
+      "org": "Jon Sneyers et al.",
+      "modality": "image",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "academic",
+      "desc": "Free Lossless Image Format. Used MANIAC entropy coding to outperform PNG and WebP losslessly. Development discontinued when its core ideas were absorbed into JPEG XL."
+    },
+    {
+      "name": "QOI",
+      "year": 2021,
+      "org": "Dominic Szablewski",
+      "modality": "image",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "opensource",
+      "desc": "Quite OK Image format. Lossless raster format designed to be trivial to implement (~300 lines of C) while compressing reasonably well. Popular in indie game development and embedded contexts."
+    },
+    {
+      "name": "OpenEXR",
+      "year": 1999,
+      "org": "Industrial Light & Magic",
+      "modality": "image",
+      "era": "classical",
+      "status": "success",
+      "lineage": "opensource",
+      "desc": "16/32-bit floating-point HDR raster format. The standard format for visual effects, ACES color, and any pipeline that needs to preserve scene-linear light values. Open-sourced in 2003."
+    },
+    {
+      "name": "Radiance HDR (.hdr)",
+      "year": 1989,
+      "org": "Greg Ward / LBNL",
+      "modality": "image",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "academic",
+      "desc": "RGBE format. 8-bit RGB + 8-bit shared exponent for HDR storage. The original HDR image format, predating OpenEXR by a decade. Still common in image-based lighting and physically-based rendering workflows."
+    },
+    {
+      "name": "DPX",
+      "year": 1994,
+      "org": "SMPTE / Kodak",
+      "modality": "image",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "Digital Picture Exchange. SMPTE 268M. The film-industry standard for storing scanned motion picture frames. 10-bit log encoding. Survives in digital intermediate workflows."
+    },
+    {
+      "name": "Cineon",
+      "year": 1992,
+      "org": "Kodak",
+      "modality": "image",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "10-bit log format for scanned film frames. The predecessor to DPX. Established the 10-bit-log workflow that DPX standardized."
+    },
+    {
+      "name": "DNG",
+      "year": 2004,
+      "org": "Adobe",
+      "modality": "image",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Digital Negative. Open raw image format derived from TIFF/EP. Adobe's attempt at a universal raw format. Adopted by some camera manufacturers (Leica, Pentax, Ricoh) but most still use proprietary raws."
+    },
+    {
+      "name": "FITS",
+      "year": 1981,
+      "org": "Astronomy community / NASA",
+      "modality": "image",
+      "era": "classical",
+      "status": "success",
+      "lineage": "academic",
+      "desc": "Flexible Image Transport System. The standard image format for astronomy. Multi-dimensional arrays, structured metadata, integer and floating-point pixel types. Still the only format the field uses."
+    },
+    {
+      "name": "Hap",
+      "year": 2012,
+      "org": "Vidvox",
+      "modality": "image",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "GPU-accelerated video codec built on DXT texture compression. Designed for VJ software and live visuals — decode happens on the GPU at high frame rates with no CPU cost."
+    },
+    {
+      "name": "Jetraw",
+      "year": 2018,
+      "org": "Dotphoton",
+      "modality": "image",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Proprietary near-lossless compression for scientific cameras. Quantizes pixel noise rather than signal. Used in microscopy and other scientific imaging pipelines."
+    },
+    {
+      "name": "LERC",
+      "year": 2015,
+      "org": "Esri",
+      "modality": "image",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Limited Error Raster Compression. Designed for geospatial raster data where bounded-error compression beats lossless on size. Open-sourced, used in GIS pipelines."
+    },
+    {
+      "name": "SVG",
+      "year": 2001,
+      "org": "W3C",
+      "modality": "image",
+      "era": "classical",
+      "status": "success",
+      "lineage": "standards",
+      "desc": "Scalable Vector Graphics. XML-based vector image format. Native to every modern browser. The format underlying icons, charts, illustrations, and design tooling output across the web."
+    },
+    {
+      "name": "EPS",
+      "year": 1987,
+      "org": "Adobe",
+      "modality": "image",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Encapsulated PostScript. The vector format of the desktop publishing era. Largely displaced by PDF and SVG for new work; still appears in legacy print pipelines."
+    },
+    {
+      "name": "PDF (as image container)",
+      "year": 1993,
+      "org": "Adobe",
+      "modality": "image",
+      "era": "classical",
+      "status": "success",
+      "lineage": "industry",
+      "desc": "When a PDF contains a single image or vector illustration, the PDF is functionally an image format. Universally readable, increasingly used for single-page deliverables."
+    },
+    {
+      "name": "Ballé 2016",
+      "year": 2016,
+      "org": "Google / NYU (Ballé, Laparra, Simoncelli)",
+      "modality": "image",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "End-to-end optimized image compression. The seminal paper that established the autoencoder-with-learned-entropy-model template. Every neural image codec since traces its lineage here."
+    },
+    {
+      "name": "Ballé hyperprior",
+      "year": 2018,
+      "org": "Google (Ballé, Minnen, Singh, Hwang, Johnston)",
+      "modality": "image",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Variational image compression with a scale hyperprior. Introduced the side-information channel that lets the entropy model adapt to local image statistics. The architecture that beat BPG on rate-distortion and became the new neural-codec baseline."
+    },
+    {
+      "name": "Minnen autoregressive",
+      "year": 2018,
+      "org": "Google (Minnen, Ballé, Toderici)",
+      "modality": "image",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Joint autoregressive and hierarchical priors. Added a PixelCNN-style context model on top of the hyperprior, further improving compression. State-of-the-art at the time, kicked off the era of context-model improvements."
+    },
+    {
+      "name": "Cheng 2020",
+      "year": 2020,
+      "org": "Cheng et al.",
+      "modality": "image",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Learned image compression with discretized Gaussian mixture likelihoods and attention modules. Tightened the entropy model further; widely used as a baseline in subsequent neural compression papers."
+    },
+    {
+      "name": "HiFiC",
+      "year": 2020,
+      "org": "Google (Mentzer, Toderici, Tschannen, Agustsson)",
+      "modality": "image",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "High-Fidelity Generative Image Compression. GAN-based decoder produces perceptually convincing reconstructions at extreme low bitrates where pixel-faithful codecs collapse. Showed that perceptual quality and pixel fidelity diverge under aggressive compression."
+    },
+    {
+      "name": "JPEG AI",
+      "year": 2024,
+      "org": "JPEG Committee",
+      "modality": "image",
+      "era": "neural",
+      "status": "emerging",
+      "lineage": "standards",
+      "desc": "The first formally standardized neural image codec. End-to-end learned, with both visual and machine-vision profiles. Roughly 21% better than VVC Intra on Kodak. The pattern for how neural codecs cross from research into standards."
+    },
+    {
+      "name": "PerCo",
+      "year": 2024,
+      "org": "Meta (Careil, Muckley, Verbeek, Lathuilière)",
+      "modality": "image",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Perceptual Compression. Diffusion-based image compression at ultra-low bitrates with perfect realism as the explicit objective. Demonstrates the generative-decode endpoint of the neural codec spectrum."
+    },
+    {
+      "name": "PixelCNN (as codec)",
+      "year": 2016,
+      "org": "Google DeepMind (van den Oord et al.)",
+      "modality": "image",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Autoregressive density model used for lossless image compression via arithmetic coding over predicted distributions. Slow but informational-theoretic-optimal-ish; the template for many later neural lossless approaches."
+    },
+    {
+      "name": "H.120",
+      "year": 1984,
+      "org": "CCITT (now ITU-T)",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "standards",
+      "desc": "The first digital video coding standard. Motion-compensated DPCM, no DCT. Video quality was too poor for practical deployment, but the development process and lessons learned shaped every subsequent ITU-T video standard."
+    },
+    {
+      "name": "H.261",
+      "year": 1988,
+      "org": "ITU-T VCEG",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "standards",
+      "desc": "The first practical digital video coding standard, designed for ISDN video telephony at 64 kbit/s multiples. Established the DCT + motion compensation + entropy coding template that every subsequent ITU-T and ISO/IEC video standard built on."
+    },
+    {
+      "name": "H.262 / MPEG-2 Video",
+      "year": 1995,
+      "org": "MPEG (ISO/IEC) + ITU-T",
+      "modality": "video",
+      "era": "classical",
+      "status": "success",
+      "lineage": "standards",
+      "desc": "The DVD codec. Also the codec of digital terrestrial broadcasting and ATSC. Massive commercial success, still in active use for broadcast TV three decades after standardization."
+    },
+    {
+      "name": "H.263",
+      "year": 1995,
+      "org": "ITU-T VCEG",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "standards",
+      "desc": "Low-bitrate video for telephony over PSTN lines and early mobile. Powered most 3G video calls in the 2000s. Also the basis of early Flash Video. Almost entirely displaced by H.264 after 2005."
+    },
+    {
+      "name": "Intel H.263",
+      "year": 1996,
+      "org": "Intel",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Intel's non-standard variant of H.263, incompatible with the official spec. A footnote in the lineage of video conferencing codecs."
+    },
+    {
+      "name": "Sorenson Spark",
+      "year": 2002,
+      "org": "Sorenson Media",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "FLV1. Modified H.263 codec used for the original Flash Video format. Powered most YouTube uploads before VP6 took over."
+    },
+    {
+      "name": "H.264 / AVC",
+      "year": 2003,
+      "org": "ITU-T VCEG + MPEG (JVT)",
+      "modality": "video",
+      "era": "classical",
+      "status": "success",
+      "lineage": "standards",
+      "desc": "The most widely-deployed video codec ever. Universal hardware decoder support across phones, TVs, browsers, set-top boxes. Powers most of YouTube, Netflix, Zoom, and effectively every Blu-ray."
+    },
+    {
+      "name": "HEVC / H.265",
+      "year": 2013,
+      "org": "ITU-T VCEG + MPEG (JCT-VC)",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "Roughly 50% better than H.264. Hardware support universal by 2018. Adoption fragmented by patent licensing across three patent pools, which drove much of the streaming industry to AV1 instead. Universal on iOS, broadcast UHD, and 4K Blu-ray."
+    },
+    {
+      "name": "VVC / H.266",
+      "year": 2020,
+      "org": "ITU-T VCEG + MPEG",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "Versatile Video Coding. Another roughly 50% improvement over HEVC. Strong technical work, but again hindered by uncertain patent licensing terms and the rise of AV1. Adoption to date is limited."
+    },
+    {
+      "name": "ECM",
+      "year": 2022,
+      "org": "JVET",
+      "modality": "video",
+      "era": "classical",
+      "status": "academic",
+      "lineage": "standards",
+      "desc": "Enhanced Compression Model. The experimental reference platform JVET is using to explore the next-generation codec after VVC. The testbed where the future H.267 will emerge from."
+    },
+    {
+      "name": "H.264 SVC",
+      "year": 2007,
+      "org": "ITU-T + MPEG",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "Scalable Video Coding extension to H.264. Encode once into a layered bitstream; decoders pick a subset matching their capabilities. Used in some video conferencing and adaptive streaming systems."
+    },
+    {
+      "name": "H.264 MVC",
+      "year": 2009,
+      "org": "ITU-T + MPEG",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "Multiview Video Coding. H.264 extension for stereoscopic 3D video. Used on Blu-ray 3D and during the brief 3D-TV era."
+    },
+    {
+      "name": "AVCHD",
+      "year": 2006,
+      "org": "Sony + Panasonic",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Application format using H.264 for consumer HD camcorders. The format that displaced DV in prosumer video capture from 2006 onward."
+    },
+    {
+      "name": "AVC-Intra",
+      "year": 2007,
+      "org": "Panasonic",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Intra-frame-only H.264 profile for professional camcorders. Used in broadcast acquisition where edit-friendliness matters more than compression ratio."
+    },
+    {
+      "name": "XAVC",
+      "year": 2012,
+      "org": "Sony",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Sony's H.264-based recording format for professional camcorders and cinema cameras. 4K and beyond."
+    },
+    {
+      "name": "LCEVC",
+      "year": 2020,
+      "org": "MPEG / V-Nova",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "Low Complexity Enhancement Video Coding. An enhancement layer that sits on top of any existing codec, adding resolution upscaling and detail enhancement. Niche adoption in streaming workflows where reducing encoder cost matters."
+    },
+    {
+      "name": "EVC",
+      "year": 2020,
+      "org": "MPEG",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "standards",
+      "desc": "Essential Video Coding. MPEG's response to the HEVC licensing fiasco: a two-profile codec where the baseline uses only royalty-free technology. The market chose AV1 for that role instead. Minimal adoption."
+    },
+    {
+      "name": "MPEG-1 Video",
+      "year": 1993,
+      "org": "MPEG (ISO/IEC)",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "standards",
+      "desc": "Designed for Video CD at roughly 1.5 Mbit/s. Brought digital video into consumer hands. Notable for spawning MP3 (its Layer III audio track) more than for its video."
+    },
+    {
+      "name": "MPEG-4 Part 2 (ASP)",
+      "year": 1999,
+      "org": "MPEG",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "standards",
+      "desc": "Advanced Simple Profile. The standard underlying DivX and Xvid. Dominated the BitTorrent-era video distribution scene and lasted on portable devices and digital cameras well into the 2010s."
+    },
+    {
+      "name": "MPEG-4 Visual SP",
+      "year": 1999,
+      "org": "MPEG",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "standards",
+      "desc": "Simple Profile of MPEG-4 Part 2. The 3GPP profile used for mobile video on early 3G phones. Replaced by H.264 baseline."
+    },
+    {
+      "name": "DivX",
+      "year": 1999,
+      "org": "DivX Networks / DivX LLC",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Originally an unauthorized hack of Microsoft's MPEG-4 implementation. Commercialized into a proprietary product. The piracy-era codec, displaced first by Xvid and then by H.264."
+    },
+    {
+      "name": "Xvid",
+      "year": 2001,
+      "org": "Xvid project (community)",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "opensource",
+      "desc": "Open-source MPEG-4 Part 2 implementation that split from DivX after the latter went proprietary. The most popular codec of the early 2000s download scene."
+    },
+    {
+      "name": "3ivx",
+      "year": 2001,
+      "org": "3ivx Technologies",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Another MPEG-4 Part 2 implementation from the early 2000s. Brief popularity in cross-platform media playback. Effectively gone."
+    },
+    {
+      "name": "Nero Digital",
+      "year": 2003,
+      "org": "Nero AG",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Nero's MPEG-4 implementation, bundled with their CD/DVD burning software. Briefly notable for high-quality H.264 encoding before x264 surpassed it."
+    },
+    {
+      "name": "VP3",
+      "year": 2000,
+      "org": "On2 Technologies (formerly Duck Corporation)",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Released as open source in 2001 and donated to Xiph as the basis for Theora. The starting point of the open-codec lineage that eventually became AV1."
+    },
+    {
+      "name": "VP4",
+      "year": 2000,
+      "org": "On2 Technologies",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "On2's incremental successor to VP3. Limited deployment outside On2's own tools."
+    },
+    {
+      "name": "VP5",
+      "year": 2002,
+      "org": "On2 Technologies",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "On2's mid-2000s video codec. Modest deployment in early streaming products."
+    },
+    {
+      "name": "VP6",
+      "year": 2003,
+      "org": "On2 Technologies",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "The codec inside Flash Video (.flv). Dominated web video distribution from 2005 to 2010, the YouTube codec of that era. Disappeared with Flash itself."
+    },
+    {
+      "name": "VP7",
+      "year": 2005,
+      "org": "On2 Technologies",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "On2's pre-acquisition codec. Used briefly by Skype for video calls. Largely a stepping stone to VP8."
+    },
+    {
+      "name": "VP8",
+      "year": 2010,
+      "org": "Google (acquired On2)",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Royalty-free codec that Google open-sourced after acquiring On2. Designed to compete with H.264 on quality with no licensing burden. Adopted as the mandatory video codec for WebRTC."
+    },
+    {
+      "name": "VP9",
+      "year": 2013,
+      "org": "Google",
+      "modality": "video",
+      "era": "classical",
+      "status": "success",
+      "lineage": "industry",
+      "desc": "Royalty-free successor to VP8, competitive with HEVC. Used by YouTube for most modern delivery, and by hardware decoders in modern Android and Chrome OS devices."
+    },
+    {
+      "name": "AV1",
+      "year": 2018,
+      "org": "Alliance for Open Media",
+      "modality": "video",
+      "era": "classical",
+      "status": "success",
+      "lineage": "industry",
+      "desc": "Royalty-free, jointly developed by Google, Mozilla, Cisco, Microsoft, Netflix, Amazon, and others. Roughly competitive with HEVC. Adopted by Netflix, YouTube, Vimeo, and major streaming providers. Hardware decoder support shipped widely by 2023."
+    },
+    {
+      "name": "TrueMotion (VPx predecessors)",
+      "year": 1994,
+      "org": "Duck Corporation",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "The original Duck Corporation codecs from before they became On2 Technologies. Used in some 1990s multimedia titles."
+    },
+    {
+      "name": "Microsoft Video 1",
+      "year": 1992,
+      "org": "Microsoft",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "MSCRAM. Vector-quantization codec built into Video for Windows 1.0. The default codec of Windows 3.1 video before Cinepak took over."
+    },
+    {
+      "name": "Microsoft RLE",
+      "year": 1991,
+      "org": "Microsoft",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "8-bit run-length encoded video codec for Video for Windows. Used for simple animations and screen captures in the early 1990s."
+    },
+    {
+      "name": "MS MPEG-4 v1/v2/v3",
+      "year": 1999,
+      "org": "Microsoft",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Microsoft's early MPEG-4 implementations. v3 was unauthorizedly hacked into ASF support, which led directly to the creation of DivX."
+    },
+    {
+      "name": "WMV 7/8/9",
+      "year": 1999,
+      "org": "Microsoft",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Windows Media Video. Microsoft's proprietary MPEG-4-based video codecs. WMV 9 was standardized as VC-1. Briefly dominant within Windows; lost to H.264."
+    },
+    {
+      "name": "VC-1",
+      "year": 2006,
+      "org": "Microsoft / SMPTE",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "SMPTE 421M. The standardized version of WMV 9. Mandatory codec for HD DVD and an optional codec for Blu-ray. Patent disputes and the rapid dominance of H.264 prevented broader adoption."
+    },
+    {
+      "name": "WMV Screen",
+      "year": 2003,
+      "org": "Microsoft",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Microsoft's screen-capture-optimized variant of WMV. Niche presentation-recording use."
+    },
+    {
+      "name": "Apple Animation (RLE)",
+      "year": 1991,
+      "org": "Apple",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "QuickTime Animation codec. Run-length encoded, lossless or near-lossless, optimized for hand-drawn animation with flat colors. Still occasionally used for sprite work and lossless intermediates."
+    },
+    {
+      "name": "Apple Video",
+      "year": 1991,
+      "org": "Apple",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Road Pizza codec. The original QuickTime 1.0 codec, vector-quantization based. The first widely-used software video codec on consumer computers, predating Cinepak slightly."
+    },
+    {
+      "name": "QuickTime Graphics (SMC)",
+      "year": 1991,
+      "org": "Apple",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Vector-quantization codec for screen captures and pixel art in early QuickTime."
+    },
+    {
+      "name": "Sorenson Video",
+      "year": 1998,
+      "org": "Sorenson Media",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "SVQ1 and SVQ3. Became the primary video codec of QuickTime through the late 1990s and early 2000s. Strong quality for its bitrate, but tied to a proprietary licensing model."
+    },
+    {
+      "name": "Cinepak",
+      "year": 1991,
+      "org": "SuperMac Technologies",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Vector-quantization codec designed for 1x CD-ROM transfer rates (150 KB/s). The primary video codec of early QuickTime and Video for Windows; shipped in Sega CD, 3DO, Atari Jaguar CD, Sega Saturn games. The first widely-deployed software video codec."
+    },
+    {
+      "name": "Apple Pixlet",
+      "year": 2003,
+      "org": "Apple",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Wavelet-based intra-frame codec from Apple. Used briefly for film previews. Effectively abandoned after ProRes took over."
+    },
+    {
+      "name": "Apple ProRes",
+      "year": 2007,
+      "org": "Apple",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Intra-frame codec for professional editing. Several quality tiers from proxy to 4444 XQ. The de facto standard for high-end post-production. Designed for editing, not delivery."
+    },
+    {
+      "name": "Apple Intermediate Codec",
+      "year": 2003,
+      "org": "Apple",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "AIC. Editing codec that preceded ProRes for HDV workflows in Final Cut Pro. Superseded by ProRes."
+    },
+    {
+      "name": "Indeo 2",
+      "year": 1992,
+      "org": "Intel",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Indeo Video Interactive 2. Vector quantization. The original Intel Video codec."
+    },
+    {
+      "name": "Indeo 3",
+      "year": 1993,
+      "org": "Intel",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Intel's mid-1990s consumer multimedia codec. Shipped on countless CD-ROM titles."
+    },
+    {
+      "name": "Indeo 4",
+      "year": 1995,
+      "org": "Intel",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Wavelet-based variant. Used in some late-1990s educational and game titles."
+    },
+    {
+      "name": "Indeo 5",
+      "year": 1997,
+      "org": "Intel",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Intel's final Indeo release. Lost out as MPEG-1 and DivX-era codecs took over."
+    },
+    {
+      "name": "RealVideo 1–4 / RV40",
+      "year": 1997,
+      "org": "RealNetworks",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "The dominant streaming video codec of the late 1990s, paired with RealPlayer. Successive versions (RV10 through RV40) shipped through 2005. Lost the streaming wars to Flash Video and then H.264 as the browser plugin model collapsed."
+    },
+    {
+      "name": "Flash Screen Video v1/v2",
+      "year": 2002,
+      "org": "Adobe / Macromedia",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Screen-recording codecs built into Flash. v1 was the format behind countless screencasts in the mid-2000s."
+    },
+    {
+      "name": "Nellymoser ASAO (video?)",
+      "year": 2002,
+      "org": "Nellymoser Inc.",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Although primarily an audio codec for Flash, included in early Flash conferencing video-plus-audio packages. Mostly forgotten."
+    },
+    {
+      "name": "Theora",
+      "year": 2004,
+      "org": "Xiph.Org Foundation",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "opensource",
+      "desc": "Open-source video codec derived from On2's VP3. Briefly considered for inclusion as the mandatory video codec in HTML5 before browser vendors couldn't agree. Effectively succeeded by VP8 and AV1."
+    },
+    {
+      "name": "Dirac",
+      "year": 2008,
+      "org": "BBC Research",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "opensource",
+      "desc": "Wavelet-based, royalty-free, open-source. Designed by the BBC for broadcast use. Used briefly by the BBC for HDTV contribution feeds. Abandoned in favor of HEVC and AV1."
+    },
+    {
+      "name": "Tarkin",
+      "year": 2001,
+      "org": "Xiph.Org Foundation",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "opensource",
+      "desc": "Wavelet-based video codec project at Xiph. Abandoned before reaching a usable state."
+    },
+    {
+      "name": "Snow",
+      "year": 2004,
+      "org": "FFmpeg (Niedermayer)",
+      "modality": "video",
+      "era": "classical",
+      "status": "academic",
+      "lineage": "opensource",
+      "desc": "Experimental wavelet-based codec inside FFmpeg. Lossless and lossy modes. Never deployed in any production format; lives as a curio in libavcodec."
+    },
+    {
+      "name": "Schrödinger",
+      "year": 2008,
+      "org": "BBC / community",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "opensource",
+      "desc": "Alternative implementation of Dirac. Shipped in libavcodec for a while; abandoned with Dirac itself."
+    },
+    {
+      "name": "Daala",
+      "year": 2013,
+      "org": "Xiph.Org Foundation / Mozilla",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "opensource",
+      "desc": "Next-generation open video codec project. Many of its ideas (lapped transforms, perceptual vector quantization) were absorbed into AV1, which then took its place."
+    },
+    {
+      "name": "Thor",
+      "year": 2015,
+      "org": "Cisco",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Royalty-free codec project from Cisco. Contributed to AV1, then discontinued."
+    },
+    {
+      "name": "DV / DVCPRO / DVCAM",
+      "year": 1995,
+      "org": "DV Consortium",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Digital Video. Intra-frame DCT codec at a fixed 25 Mbit/s. Dominated consumer and prosumer camcorders from the mid-1990s to the mid-2000s."
+    },
+    {
+      "name": "DVCPRO HD",
+      "year": 2000,
+      "org": "Panasonic",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "HD extension of DVCPRO at 100 Mbit/s. Used in broadcast acquisition."
+    },
+    {
+      "name": "HDCAM",
+      "year": 1997,
+      "org": "Sony",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Sony's HD broadcast tape format. DCT-based intra-frame codec. The HD broadcast workhorse of the 2000s."
+    },
+    {
+      "name": "DNxHD / DNxHR",
+      "year": 2004,
+      "org": "Avid",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Avid's professional intra-frame codec, the competitor to ProRes. Standardized as SMPTE VC-3. Heavily used in broadcast and post-production, particularly in non-Apple environments."
+    },
+    {
+      "name": "JPEG 2000 (DCI cinema)",
+      "year": 2005,
+      "org": "DCI",
+      "modality": "video",
+      "era": "classical",
+      "status": "success",
+      "lineage": "standards",
+      "desc": "Digital Cinema Initiatives mandated JPEG 2000 as the codec for digital cinema distribution. Every commercial DCP delivered to a movie theater uses this."
+    },
+    {
+      "name": "Cineform",
+      "year": 2003,
+      "org": "CineForm / GoPro",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Wavelet-based visually-lossless intermediate codec. Used for HD editing workflows and as the internal codec of GoPro Studio."
+    },
+    {
+      "name": "BRAW",
+      "year": 2018,
+      "org": "Blackmagic Design",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Blackmagic RAW. Partially-processed raw video codec from Blackmagic cameras. Smaller than CinemaDNG raw but with full sensor data preserved."
+    },
+    {
+      "name": "CinemaDNG",
+      "year": 2008,
+      "org": "Adobe",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Frame-sequence DNG for motion picture cameras. Used by some independent cinema cameras for raw recording."
+    },
+    {
+      "name": "RED REDCODE RAW (R3D)",
+      "year": 2007,
+      "org": "RED Digital Cinema",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Wavelet-based raw video codec for RED cinema cameras. The patent on its core technique drove litigation against other manufacturers using similar approaches."
+    },
+    {
+      "name": "ARRIRAW",
+      "year": 2009,
+      "org": "ARRI",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Uncompressed raw output of ARRI cinema cameras. Massive files, top-tier image quality. The reference cinema acquisition format."
+    },
+    {
+      "name": "Matrox MPEG-2 I-frame",
+      "year": 2001,
+      "org": "Matrox",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "MPEG-2 intra-only at high bitrates. Used as an editing intermediate in some Matrox-based broadcast workflows."
+    },
+    {
+      "name": "Vidvox Hap",
+      "year": 2012,
+      "org": "Vidvox",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "DXT-based GPU-decoded video codec for VJ software and high-frame-rate live visuals. The video version of texture-compression-as-video."
+    },
+    {
+      "name": "Resolume DXV",
+      "year": 2009,
+      "org": "Resolume",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Texture-compressed video for VJ software. Decode runs on the GPU at minimal CPU cost."
+    },
+    {
+      "name": "Forward Uncompressed (FRWU)",
+      "year": 2003,
+      "org": "Forward Solutions",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Uncompressed YUV codec from a long-defunct manufacturer. Lives in legacy archives."
+    },
+    {
+      "name": "Huffyuv",
+      "year": 2000,
+      "org": "Ben Rudiak-Gould",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "opensource",
+      "desc": "Lossless video codec using predictive coding plus Huffman entropy coding. The original lossless intermediate codec for Windows video editing. Spawned a family of descendants."
+    },
+    {
+      "name": "FFV1",
+      "year": 2003,
+      "org": "FFmpeg (Niedermayer)",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "opensource",
+      "desc": "FFmpeg's own lossless video codec. Range-coded, with strong compression. Adopted by the Library of Congress for video archival."
+    },
+    {
+      "name": "Lagarith",
+      "year": 2004,
+      "org": "Ben Greenwood",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "opensource",
+      "desc": "Lossless video codec with arithmetic coding. Slower than Huffyuv, better compression. Used in screen capture and editing workflows."
+    },
+    {
+      "name": "MagicYUV",
+      "year": 2015,
+      "org": "MagicYUV team",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Fast lossless video codec for capture and editing. Optimized for multi-core encoding."
+    },
+    {
+      "name": "Ut Video",
+      "year": 2008,
+      "org": "Takeshi Umezawa",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "opensource",
+      "desc": "Japanese-origin lossless video codec. Strong performance, broad chroma format support."
+    },
+    {
+      "name": "MSU Lossless Video Codec",
+      "year": 2005,
+      "org": "Moscow State University",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "academic",
+      "desc": "Long-running research codec from the MSU video group. Strong compression at the cost of speed. The codec MSU's annual codec comparisons benchmarked against."
+    },
+    {
+      "name": "MSU Screen Capture Lossless",
+      "year": 2007,
+      "org": "Moscow State University",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "academic",
+      "desc": "Screen-capture-specialized variant of the MSU codec family."
+    },
+    {
+      "name": "AlparySoft Lossless",
+      "year": 2003,
+      "org": "AlparySoft",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Russian lossless video codec. Median prediction plus Huffman. Brief popularity in capture workflows."
+    },
+    {
+      "name": "CamStudio Lossless",
+      "year": 2003,
+      "org": "CamStudio",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "opensource",
+      "desc": "Codec bundled with the CamStudio screen recorder. Optional delta-frame coding with LZO or deflate."
+    },
+    {
+      "name": "Canopus Lossless",
+      "year": 2001,
+      "org": "Canopus",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Editing-oriented lossless codec from the makers of EDIUS. Left prediction plus Huffman."
+    },
+    {
+      "name": "YULS / ArithYUV",
+      "year": 2004,
+      "org": "various",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "opensource",
+      "desc": "Arithmetic-coded variants of the Huffyuv concept. Better compression, slower speeds. Niche in capture workflows."
+    },
+    {
+      "name": "ScreenPressor",
+      "year": 2007,
+      "org": "Infognition",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Screen-capture-optimized codec. Developed by the original author of the MSU screen codec."
+    },
+    {
+      "name": "LCL (MSZH / ZLIB)",
+      "year": 1999,
+      "org": "various",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "opensource",
+      "desc": "LossLess Codec Library. Compressed frames with LZ77 variants. Common in late-1990s capture workflows."
+    },
+    {
+      "name": "CorePNG",
+      "year": 2003,
+      "org": "CoreCodec",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Sequence of PNG frames packaged as a video stream. Lossless. Used for animated content where transparency mattered."
+    },
+    {
+      "name": "Sheer Video",
+      "year": 2003,
+      "org": "BitJazz",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Mathematically lossless professional video codec. Used in some niche editing workflows; effectively abandoned."
+    },
+    {
+      "name": "TechSmith TSCC",
+      "year": 2002,
+      "org": "TechSmith",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "TechSmith Screen Capture Codec. The codec inside Camtasia for many years. Optimized for the slow, region-stable nature of screen recordings."
+    },
+    {
+      "name": "TechSmith TSC2",
+      "year": 2010,
+      "org": "TechSmith",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Successor to TSCC. Higher compression, still optimized for screen content."
+    },
+    {
+      "name": "TechSmith EnSharpen",
+      "year": 2008,
+      "org": "TechSmith",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "TechSmith's higher-quality screen capture codec for editing intermediates."
+    },
+    {
+      "name": "VMware Screen Codec",
+      "year": 2010,
+      "org": "VMware",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Screen codec used by VMware's remote display protocols and recording tools."
+    },
+    {
+      "name": "Fraps",
+      "year": 1999,
+      "org": "Beepa",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Codec used by the Fraps game capture utility. Lossless YV12, optimized for real-time capture of game framebuffers."
+    },
+    {
+      "name": "Dxtory",
+      "year": 2010,
+      "org": "ExKode",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Lossless RGB game capture codec, often used alongside the Dxtory game capture tool. Common in early-2010s let's-play workflows."
+    },
+    {
+      "name": "Mirillis FIC",
+      "year": 2010,
+      "org": "Mirillis",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Fast Intra Codec. Used by the Action game capture tool."
+    },
+    {
+      "name": "GoToMeeting (G2M)",
+      "year": 2006,
+      "org": "GoToMeeting",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Screen codec used by GoToMeeting for desktop sharing. Mixed lossless regions with lossy regions based on content."
+    },
+    {
+      "name": "LEAD Screen Capture",
+      "year": 2010,
+      "org": "LEAD Technologies",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Commercial screen codec from a multimedia SDK vendor."
+    },
+    {
+      "name": "Mandsoft Screen Capture",
+      "year": 2008,
+      "org": "Mandsoft",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Another commercial screen codec. Effectively gone."
+    },
+    {
+      "name": "MatchWare Screen Codec",
+      "year": 2008,
+      "org": "MatchWare",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Codec bundled with Mediator presentation software."
+    },
+    {
+      "name": "innoHeim/Rsupport Screen Capture",
+      "year": 2009,
+      "org": "innoHeim / Rsupport",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Korean-origin screen capture codec used in remote-support software."
+    },
+    {
+      "name": "Mimic",
+      "year": 2006,
+      "org": "Anchor Bay",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Commercial screen capture codec. Niche enterprise deployments."
+    },
+    {
+      "name": "CRAM (Microsoft Video 1)",
+      "year": 1992,
+      "org": "Microsoft",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Original screen-friendly codec in Video for Windows. Vector quantization, indexed color."
+    },
+    {
+      "name": "Smacker Video",
+      "year": 1994,
+      "org": "RAD Game Tools",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "8-bit palette-based video codec for game cinematics. The dominant FMV codec of 1990s PC gaming. Adaptive Huffman coding. Used in hundreds of titles from Heroes of Might and Magic to Diablo."
+    },
+    {
+      "name": "Bink Video",
+      "year": 1999,
+      "org": "RAD Game Tools (now Epic Games Tools)",
+      "modality": "video",
+      "era": "classical",
+      "status": "success",
+      "lineage": "industry",
+      "desc": "Hybrid block-transform and wavelet codec optimized for low decoder requirements across game consoles. The de facto standard for in-game cinematics for over two decades. Bink 2 is the current revision."
+    },
+    {
+      "name": "Bink 2",
+      "year": 2011,
+      "org": "RAD Game Tools",
+      "modality": "video",
+      "era": "classical",
+      "status": "success",
+      "lineage": "industry",
+      "desc": "Updated Bink with higher quality and HD-friendly performance. The cinematic codec inside almost every AAA game."
+    },
+    {
+      "name": "id RoQ",
+      "year": 1999,
+      "org": "id Software",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Quake III's cinematic video codec. Vector quantization. Also used in Jedi Knight 2 and several other id-licensed games."
+    },
+    {
+      "name": "id Quake II CIN",
+      "year": 1997,
+      "org": "id Software",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Quake II's cinematic format. Simple intra-frame compression for the game's intro and ending videos."
+    },
+    {
+      "name": "LucasArts SANM / Smush",
+      "year": 1993,
+      "org": "LucasArts",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "The video codec behind Rebel Assault, The Dig, Full Throttle, and most LucasArts CD-ROM-era titles. SMUSH frames packaged in a custom container."
+    },
+    {
+      "name": "Interplay MVE",
+      "year": 1994,
+      "org": "Interplay",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Multimedia format used in Fallout 1 & 2, Descent, and many other Interplay titles. Game-specific video codec inside."
+    },
+    {
+      "name": "Sierra VMD",
+      "year": 1996,
+      "org": "Sierra On-Line",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Sierra's in-house video format for FMV in adventure games. Used in Phantasmagoria, Police Quest, and similar titles."
+    },
+    {
+      "name": "Westwood VQA",
+      "year": 1992,
+      "org": "Westwood Studios",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Vector Quantized Animation. The video format inside Command & Conquer, Dune II, Blade Runner, and most Westwood games."
+    },
+    {
+      "name": "Interplay C93",
+      "year": 1993,
+      "org": "Interplay",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "The video format used in Cyberia. One of many one-off game-engine video codecs of the 1990s."
+    },
+    {
+      "name": "Delphine CIN",
+      "year": 1991,
+      "org": "Delphine Software",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Format used in Cruise for a Corpse and Future Wars. Delphine's in-house video format."
+    },
+    {
+      "name": "Escape 124 / 130",
+      "year": 1999,
+      "org": "EscapeMotion",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Game-engine video codecs from the early 2000s."
+    },
+    {
+      "name": "Karl Morton (Worms)",
+      "year": 1995,
+      "org": "Team17",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Codec used in the Worms games for cinematic content."
+    },
+    {
+      "name": "Kega Game Video (KGV1)",
+      "year": 2005,
+      "org": "Kega Fusion",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Screen capture codec built into the Kega Sega emulator. Used by speedrunners and game preservationists."
+    },
+    {
+      "name": "IBM UltiMotion",
+      "year": 1993,
+      "org": "IBM",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "IBM's CD-ROM-era multimedia codec for OS/2. Briefly used in IBM-published edutainment titles."
+    },
+    {
+      "name": "FLIC / FLI / FLC",
+      "year": 1991,
+      "org": "Autodesk",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Autodesk Animator's video format. Run-length encoded indexed-color animation. The default animation format for DOS-era multimedia."
+    },
+    {
+      "name": "HNM (Hello Nico)",
+      "year": 1995,
+      "org": "Cryo Interactive",
+      "modality": "video",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Video format used in Atlantis, Dune, and other Cryo Interactive titles."
+    },
+    {
+      "name": "Iterated Systems ClearVideo",
+      "year": 1996,
+      "org": "Iterated Systems",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Fractal-based video codec. Briefly considered for video conferencing; the math was elegant but performance never caught up to DCT-based codecs."
+    },
+    {
+      "name": "TruDef Fractal Video",
+      "year": 2001,
+      "org": "TruDef Technologies",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Another fractal video codec. Marketed as patentable IP; never deployed at meaningful scale."
+    },
+    {
+      "name": "MidiVid VQ / Archive",
+      "year": 2004,
+      "org": "MidiVid",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Specialized vector-quantization codec for game animation archives."
+    },
+    {
+      "name": "DXA (ScummVM)",
+      "year": 2003,
+      "org": "ScummVM",
+      "modality": "video",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "opensource",
+      "desc": "Format used by ScummVM to package video from Feeble Files and some other re-engineered games."
+    },
+    {
+      "name": "Pixel-VQ (XCF)",
+      "year": 1999,
+      "org": "various",
+      "modality": "video",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Vector quantization variants used in obscure game titles. Documented mostly by reverse-engineering projects."
+    },
+    {
+      "name": "DVC",
+      "year": 2019,
+      "org": "Lu et al.",
+      "modality": "video",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Deep Video Compression. The first end-to-end deep video compression framework. Established the residual-coding paradigm: predicted frames generated, residuals encoded by a learned image codec."
+    },
+    {
+      "name": "M-LVC",
+      "year": 2020,
+      "org": "Lin et al.",
+      "modality": "video",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Multiple-frames Learned Video Compression. Used multiple reference frames and a learned in-loop filter. One of the first neural video codecs to approach HEVC on rate-distortion."
+    },
+    {
+      "name": "FVC",
+      "year": 2021,
+      "org": "Hu et al.",
+      "modality": "video",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Feature-domain Video Compression. Moved all the major operations (motion estimation, compensation, residual coding) into a learned feature space rather than pixel space."
+    },
+    {
+      "name": "DCVC",
+      "year": 2021,
+      "org": "Microsoft Research (Li, Li, Lu)",
+      "modality": "video",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Deep Contextual Video Compression. Shifted from residual coding to conditional coding in the feature domain. Uses learned context features from previously decoded frames. The architecture that the rest of the field built on."
+    },
+    {
+      "name": "DCVC-TCM",
+      "year": 2022,
+      "org": "Microsoft Research",
+      "modality": "video",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Temporal Context Mining variant of DCVC. Used multi-scale temporal contexts for stronger compression."
+    },
+    {
+      "name": "DCVC-HEM",
+      "year": 2022,
+      "org": "Microsoft Research",
+      "modality": "video",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Hybrid Entropy Model variant of DCVC. The first end-to-end neural video codec to surpass HEVC in rate-distortion."
+    },
+    {
+      "name": "DCVC-DC",
+      "year": 2023,
+      "org": "Microsoft Research",
+      "modality": "video",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Diverse Contexts variant. The first neural video codec to surpass the ECM next-generation prototype on rate-distortion."
+    },
+    {
+      "name": "DCVC-FM",
+      "year": 2024,
+      "org": "Microsoft Research",
+      "modality": "video",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Feature Modulation variant of DCVC. Single-model variable-rate coding across the full bitrate range."
+    },
+    {
+      "name": "C2F",
+      "year": 2022,
+      "org": "Hu et al.",
+      "modality": "video",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Coarse-to-fine motion estimation with hyperprior-guided adaptive coding. An improved learned video framework predating DCVC-DC."
+    },
+    {
+      "name": "MMVC",
+      "year": 2023,
+      "org": "academic",
+      "modality": "video",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Mixed-Motion Video Coding. Adapts coding strategy per-block based on motion characteristics. One of the strands of the post-DCVC neural video research field."
+    },
+    {
+      "name": "DHVC 1.0 / 2.0",
+      "year": 2024,
+      "org": "Nanjing University / Purdue",
+      "modality": "video",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Deep Hierarchical Video Compression. Hierarchical VAE structure replacing the conditional-coding template. Real-time encoding and decoding on consumer GPUs while approaching DCVC-DC quality."
+    },
+    {
+      "name": "VCT",
+      "year": 2022,
+      "org": "Mentzer et al.",
+      "modality": "video",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Video Compression Transformer. Pure-transformer architecture for neural video compression."
+    },
+    {
+      "name": "I2VC",
+      "year": 2024,
+      "org": "academic",
+      "modality": "video",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Unified Intra and Inter-frame Video Compression. Single framework that handles I-frames, P-frames, and B-frames in one architecture."
+    },
+    {
+      "name": "GFVC",
+      "year": 2022,
+      "org": "various academic",
+      "modality": "video",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Generative Face Video Coding. Family of codecs that transmit a reference frame plus a stream of facial keypoints or 3DMM parameters, with the receiver animating the face from those primitives. Ships talking-head video at single-digit kilobits per second."
+    },
+    {
+      "name": "AVCC",
+      "year": 2024,
+      "org": "academic",
+      "modality": "video",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Audio-Visual Cross-modal Codec. Integrates audio and video into a unified low-bitrate codec, exploiting lip motion to reconstruct audio. Achieves coherent talking-head video plus audio at around 1.4 kilobits per second total."
+    },
+    {
+      "name": "CMVC",
+      "year": 2024,
+      "org": "academic",
+      "modality": "video",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Coherent Motion Video Compression. Decomposes video into semantically coherent clips, each represented as a keyframe plus a motion description. Receiver synthesizes the motion."
+    },
+    {
+      "name": "First Frame + Description",
+      "year": 2024,
+      "org": "academic",
+      "modality": "video",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Ultra-low-bitrate video transmission scheme. A still image plus a text description, with the receiver generating the motion. Achieves CLIP-similarity scores above 0.92 at channel bandwidth ratios near 0.006."
+    },
+    {
+      "name": "NVIDIA Maxine (Face)",
+      "year": 2020,
+      "org": "NVIDIA",
+      "modality": "video",
+      "era": "neural",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "GPU-accelerated AI video conferencing toolkit. Includes a generative-face codec for ultra-low-bitrate talking-head video. The first production-grade neural face codec."
+    },
+    {
+      "name": "PCM (uncompressed)",
+      "year": 1937,
+      "org": "Alec Reeves / Bell Labs",
+      "modality": "audio",
+      "era": "classical",
+      "status": "success",
+      "lineage": "academic",
+      "desc": "Pulse Code Modulation. Not a codec in the compression sense, but the foundation underneath every digital audio system. Linear PCM is what every other codec ultimately decodes back to. The container for WAV, AIFF, and most uncompressed audio."
+    },
+    {
+      "name": "ADPCM",
+      "year": 1973,
+      "org": "Bell Labs",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "academic",
+      "desc": "Adaptive Differential PCM. Predictive coding for digital telephony, halving the bandwidth of plain PCM. Used in early CD-ROM games, DECT cordless phones, and as ITU-T G.726 in telecom."
+    },
+    {
+      "name": "IMA ADPCM",
+      "year": 1992,
+      "org": "Interactive Multimedia Association",
+      "modality": "audio",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "standards",
+      "desc": "Variant of ADPCM widely used in early multimedia and game audio. 4:1 compression ratio. Used in countless CD-ROM games of the 1990s."
+    },
+    {
+      "name": "Microsoft ADPCM",
+      "year": 1991,
+      "org": "Microsoft",
+      "modality": "audio",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Microsoft's ADPCM variant in Windows WAV files. The standard compressed audio format on Windows before MP3 took over."
+    },
+    {
+      "name": "A-law / Mu-law",
+      "year": 1972,
+      "org": "ITU-T",
+      "modality": "audio",
+      "era": "classical",
+      "status": "success",
+      "lineage": "standards",
+      "desc": "Companding logarithmic PCM as defined in G.711. The fundamental encoding of analog telephony. Mu-law in North America and Japan, A-law in Europe. Still ubiquitous in circuit-switched telephony."
+    },
+    {
+      "name": "ADX",
+      "year": 1992,
+      "org": "CRI Middleware",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "ADPCM-derived format used extensively in Sega and CRI-licensed games, especially Dreamcast and PlayStation 2 titles."
+    },
+    {
+      "name": "MP1",
+      "year": 1991,
+      "org": "MPEG",
+      "modality": "audio",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "standards",
+      "desc": "MPEG-1 Audio Layer I. The simplest of the three MPEG-1 audio layers. Used in Philips Digital Compact Cassette."
+    },
+    {
+      "name": "MP2",
+      "year": 1991,
+      "org": "MPEG",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "MPEG-1 Audio Layer II. Designed for digital broadcasting and DVB-T audio. Still in use for DAB radio in much of Europe and for the audio track of MPEG-2 transport streams."
+    },
+    {
+      "name": "MP3",
+      "year": 1993,
+      "org": "Fraunhofer IIS / MPEG",
+      "modality": "audio",
+      "era": "classical",
+      "status": "success",
+      "lineage": "standards",
+      "desc": "MPEG-1 Audio Layer III. The format that defined consumer digital audio for two decades. Patents expired in 2017. Universally supported, still the most recognizable audio format name in consumer use."
+    },
+    {
+      "name": "MP3 PRO",
+      "year": 2001,
+      "org": "Coding Technologies / Thomson",
+      "modality": "audio",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "MP3 with Spectral Band Replication. Better quality at low bitrates while remaining backward-compatible (non-PRO decoders see only the base layer). Never achieved adoption."
+    },
+    {
+      "name": "AAC",
+      "year": 1997,
+      "org": "MPEG (Fraunhofer, Dolby, Sony, AT&T, Nokia)",
+      "modality": "audio",
+      "era": "classical",
+      "status": "success",
+      "lineage": "standards",
+      "desc": "Advanced Audio Coding. The successor to MP3, with better quality at lower bitrates. The default audio codec of iTunes, YouTube, the iPhone, and most modern broadcast."
+    },
+    {
+      "name": "HE-AAC",
+      "year": 2003,
+      "org": "Coding Technologies / MPEG",
+      "modality": "audio",
+      "era": "classical",
+      "status": "success",
+      "lineage": "standards",
+      "desc": "High-Efficiency AAC. Adds Spectral Band Replication to baseline AAC. The codec inside DAB+, satellite radio, and many low-bitrate streaming services."
+    },
+    {
+      "name": "HE-AAC v2",
+      "year": 2004,
+      "org": "Coding Technologies / MPEG",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "HE-AAC plus Parametric Stereo. Optimized for very-low-bitrate stereo audio (under 32 kbps). Used in some streaming radio applications."
+    },
+    {
+      "name": "AAC-LD",
+      "year": 2000,
+      "org": "Fraunhofer / MPEG",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "Low-Delay AAC. For real-time bidirectional audio (videoconferencing). Used by Apple FaceTime."
+    },
+    {
+      "name": "AAC-ELD",
+      "year": 2008,
+      "org": "Fraunhofer / MPEG",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "Enhanced Low-Delay AAC. Even lower latency than AAC-LD. Used in some professional audio-over-IP applications."
+    },
+    {
+      "name": "xHE-AAC",
+      "year": 2012,
+      "org": "MPEG / 3GPP",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "Extended HE-AAC. Combines HE-AAC v2 with USAC's unified speech-and-audio coding. Adopted by Spotify and other streaming services for low-bitrate delivery."
+    },
+    {
+      "name": "MPEG-D USAC",
+      "year": 2012,
+      "org": "MPEG",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "Unified Speech and Audio Coding. Combines AAC with speech-coding techniques in a single codec. The basis of xHE-AAC."
+    },
+    {
+      "name": "Musepack (MPC)",
+      "year": 1997,
+      "org": "Andree Buschmann / community",
+      "modality": "audio",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "opensource",
+      "desc": "Open lossy codec based on MP2. Briefly competitive with high-bitrate MP3 in the late 1990s audiophile scene. Development stalled in 2009."
+    },
+    {
+      "name": "MPEG-4 ALS",
+      "year": 2006,
+      "org": "MPEG",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "Audio Lossless Coding. ISO-standardized lossless audio compression. Used in some broadcast archival workflows; FLAC dominates consumer."
+    },
+    {
+      "name": "MPEG-4 SLS",
+      "year": 2006,
+      "org": "MPEG",
+      "modality": "audio",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "standards",
+      "desc": "Scalable to Lossless. Hybrid lossy-plus-lossless codec where a base lossy AAC layer can be augmented to perfect lossless. Also known as HD-AAC. Niche adoption."
+    },
+    {
+      "name": "HVXC",
+      "year": 1999,
+      "org": "MPEG",
+      "modality": "audio",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "standards",
+      "desc": "Harmonic Vector Excitation Coding. Very-low-bitrate parametric speech codec inside MPEG-4 Audio. Almost no deployment."
+    },
+    {
+      "name": "HILN",
+      "year": 2000,
+      "org": "MPEG",
+      "modality": "audio",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "standards",
+      "desc": "Harmonic and Individual Lines and Noise. Parametric audio codec inside MPEG-4 Audio. Effectively a research artifact."
+    },
+    {
+      "name": "Vorbis",
+      "year": 2002,
+      "org": "Xiph.Org Foundation",
+      "modality": "audio",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "opensource",
+      "desc": "Royalty-free general-purpose audio codec, the Xiph response to AAC and MP3. Slightly better than MP3 at typical bitrates. Standard audio codec inside WebM. Largely superseded by Opus."
+    },
+    {
+      "name": "Speex",
+      "year": 2003,
+      "org": "Xiph.Org Foundation / Jean-Marc Valin",
+      "modality": "speech",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "opensource",
+      "desc": "Open-source CELP-based speech codec. Royalty-free alternative to G.729 and AMR. Widely deployed in open-source VoIP and games. Officially obsoleted by Opus in 2012."
+    },
+    {
+      "name": "CELT",
+      "year": 2007,
+      "org": "Xiph.Org Foundation",
+      "modality": "audio",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "opensource",
+      "desc": "Constrained Energy Lapped Transform. Low-latency Xiph codec for music. Folded into Opus, where it provides the music-mode half."
+    },
+    {
+      "name": "FLAC",
+      "year": 2001,
+      "org": "Xiph.Org Foundation",
+      "modality": "audio",
+      "era": "classical",
+      "status": "success",
+      "lineage": "opensource",
+      "desc": "Free Lossless Audio Codec. The default lossless audio format for music archival, audiophile distribution, and library management. Royalty-free, open-source."
+    },
+    {
+      "name": "OggPCM",
+      "year": 2004,
+      "org": "Xiph.Org Foundation",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "opensource",
+      "desc": "Uncompressed PCM in an Ogg container. Niche use for raw audio with Xiph metadata support."
+    },
+    {
+      "name": "Opus",
+      "year": 2012,
+      "org": "IETF (Xiph + Skype + Mozilla)",
+      "modality": "audio",
+      "era": "classical",
+      "status": "success",
+      "lineage": "standards",
+      "desc": "RFC 6716. Hybrid of SILK and CELT covering everything from 6 kbit/s narrowband speech to 510 kbit/s music. Mandatory in WebRTC. The dominant codec of modern VoIP and the default for new low-latency audio applications."
+    },
+    {
+      "name": "WMA",
+      "year": 1999,
+      "org": "Microsoft",
+      "modality": "audio",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Windows Media Audio. Microsoft's MP3 competitor, bundled with Windows Media Player. Briefly dominant within the Windows ecosystem; lost to AAC and MP3."
+    },
+    {
+      "name": "WMA Pro",
+      "year": 2003,
+      "org": "Microsoft",
+      "modality": "audio",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Higher-quality variant of WMA. Multichannel support. Effectively dead."
+    },
+    {
+      "name": "WMA Lossless",
+      "year": 2003,
+      "org": "Microsoft",
+      "modality": "audio",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Microsoft's lossless audio format. Lost to FLAC and ALAC."
+    },
+    {
+      "name": "WMA Voice",
+      "year": 1999,
+      "org": "Microsoft",
+      "modality": "speech",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Low-bitrate speech variant of WMA. Used in some Windows-only telephony applications."
+    },
+    {
+      "name": "RealAudio",
+      "year": 1995,
+      "org": "RealNetworks",
+      "modality": "audio",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "The dominant streaming audio codec of the late 1990s, paired with the RealPlayer client. Various proprietary algorithms over the years."
+    },
+    {
+      "name": "RealAudio Lossless (RealAudio 10)",
+      "year": 2003,
+      "org": "RealNetworks",
+      "modality": "audio",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "RealNetworks' lossless variant. Niche audiophile use; gone with the rest of RealAudio."
+    },
+    {
+      "name": "ATRAC",
+      "year": 1992,
+      "org": "Sony",
+      "modality": "audio",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Adaptive Transform Acoustic Coding. The codec inside MiniDisc. Several revisions, ending with ATRAC3plus and ATRAC Advanced Lossless. Disappeared with the format that hosted it."
+    },
+    {
+      "name": "ATRAC3 / ATRAC3plus",
+      "year": 1999,
+      "org": "Sony",
+      "modality": "audio",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Successor variants of ATRAC. Used in Sony's portable players and the PSP. Outcompeted by AAC and MP3."
+    },
+    {
+      "name": "ATRAC Advanced Lossless",
+      "year": 2006,
+      "org": "Sony",
+      "modality": "audio",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Lossless hybrid extension of ATRAC. Brief use in late-stage MiniDisc and Hi-MD products."
+    },
+    {
+      "name": "QDesign Music",
+      "year": 1997,
+      "org": "QDesign",
+      "modality": "audio",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Audio codec used in QuickTime through the late 1990s and early 2000s. QDesign Music 2 was QuickTime's default music format. Replaced by AAC."
+    },
+    {
+      "name": "Qualcomm PureVoice (QCELP)",
+      "year": 1994,
+      "org": "Qualcomm",
+      "modality": "speech",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "CDMA cellular speech codec. The voice format of early CDMA phones and the .qcp file format."
+    },
+    {
+      "name": "Nellymoser ASAO",
+      "year": 2002,
+      "org": "Nellymoser Inc.",
+      "modality": "audio",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Speech and music codec used by Flash for live audio streaming and voice chat. The codec inside countless Flash-era voice apps."
+    },
+    {
+      "name": "Dolby Digital / AC-3",
+      "year": 1991,
+      "org": "Dolby Laboratories",
+      "modality": "audio",
+      "era": "classical",
+      "status": "success",
+      "lineage": "industry",
+      "desc": "The audio codec of DVDs, ATSC broadcast, and most cinema. 5.1 surround in 384–448 kbps. Universal in television broadcast and home theater."
+    },
+    {
+      "name": "E-AC-3 (Dolby Digital Plus)",
+      "year": 2004,
+      "org": "Dolby Laboratories",
+      "modality": "audio",
+      "era": "classical",
+      "status": "success",
+      "lineage": "industry",
+      "desc": "Enhanced AC-3. Higher bitrates, more channels, used for streaming surround on Netflix and similar services."
+    },
+    {
+      "name": "AC-4",
+      "year": 2014,
+      "org": "Dolby Laboratories",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Dolby's next-generation audio codec. Object-based audio support, used in some ATSC 3.0 broadcasts and Dolby Atmos Music delivery."
+    },
+    {
+      "name": "DTS",
+      "year": 1993,
+      "org": "DTS, Inc.",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "The Dolby Digital competitor. Higher bitrates and historically preferred by film enthusiasts. Available on most DVDs and Blu-rays."
+    },
+    {
+      "name": "DTS-HD Master Audio",
+      "year": 2004,
+      "org": "DTS, Inc.",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Lossless hybrid extension to DTS. The high-end audio format on Blu-ray and UHD Blu-ray."
+    },
+    {
+      "name": "DTS:X",
+      "year": 2015,
+      "org": "DTS, Inc.",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "DTS's object-based audio format. Competitor to Dolby Atmos in cinema and home theater."
+    },
+    {
+      "name": "Dolby TrueHD",
+      "year": 2005,
+      "org": "Dolby Laboratories",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Lossless audio codec used on Blu-ray and UHD Blu-ray. Based on Meridian Lossless Packing (MLP)."
+    },
+    {
+      "name": "MLP",
+      "year": 1999,
+      "org": "Meridian Audio",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Meridian Lossless Packing. The underlying algorithm of Dolby TrueHD. Originally used on DVD-Audio discs."
+    },
+    {
+      "name": "Dolby Atmos",
+      "year": 2012,
+      "org": "Dolby Laboratories",
+      "modality": "audio",
+      "era": "classical",
+      "status": "success",
+      "lineage": "industry",
+      "desc": "Object-based surround audio. Not a single codec but a feature layer carried on top of E-AC-3, AC-4, or TrueHD. The dominant immersive audio format in cinema and home."
+    },
+    {
+      "name": "Auro-3D",
+      "year": 2010,
+      "org": "Auro Technologies",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Layered immersive audio format. Niche in cinema; brief consumer presence in some Onkyo and Marantz receivers."
+    },
+    {
+      "name": "DRA",
+      "year": 2007,
+      "org": "Digital Rise",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "Chinese national audio coding standard. Used in domestic broadcast and HD radio in China."
+    },
+    {
+      "name": "Sony SDDS",
+      "year": 1993,
+      "org": "Sony",
+      "modality": "audio",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Sony Dynamic Digital Sound. Cinema audio format used on 8-track 35mm prints. Discontinued in 2006."
+    },
+    {
+      "name": "Shorten (SHN)",
+      "year": 1994,
+      "org": "Tony Robinson",
+      "modality": "audio",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "The first widely-used lossless audio codec. Predictive coding plus Rice coding. The format of choice for live-recording trading communities (Grateful Dead tapers and similar) until FLAC took over."
+    },
+    {
+      "name": "Monkey's Audio (APE)",
+      "year": 2000,
+      "org": "Matthew T. Ashland",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "opensource",
+      "desc": "Lossless audio codec with strong compression ratios. Popular in archival communities; non-permissive license has limited deployment in mainstream players."
+    },
+    {
+      "name": "WavPack",
+      "year": 1998,
+      "org": "David Bryant",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "opensource",
+      "desc": "Open-source lossless audio codec supporting hybrid lossless/lossy operation. Used in some archival and audiophile workflows."
+    },
+    {
+      "name": "OptimFROG",
+      "year": 1996,
+      "org": "Florin Ghido",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Proprietary lossless codec optimized for maximum compression at the expense of speed. Consistently among the highest-compressing lossless codecs in benchmarks. DualStream variant offers hybrid lossy-plus-correction."
+    },
+    {
+      "name": "TTA (True Audio)",
+      "year": 2002,
+      "org": "True Audio team",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "opensource",
+      "desc": "Fast lossless codec, performance similar to FLAC. Niche but stable; in active maintenance."
+    },
+    {
+      "name": "TAK",
+      "year": 2006,
+      "org": "Thomas Becker",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Tom's verlustfreier Audiokompressor. Closed-source lossless codec known for combining high compression with high speed. Audiophile-community favorite."
+    },
+    {
+      "name": "ALAC",
+      "year": 2004,
+      "org": "Apple",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Apple Lossless Audio Codec. Apple's parallel lossless format, open-sourced in 2011. The lossless format inside the Apple Music ecosystem."
+    },
+    {
+      "name": "lossyWAV",
+      "year": 2007,
+      "org": "Nick Currie",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "opensource",
+      "desc": "Preprocessor that increases the compressibility of audio under lossless codecs by zeroing inaudible bits. Used to make smaller FLAC, TAK, or WavPack files."
+    },
+    {
+      "name": "RKAU",
+      "year": 1999,
+      "org": "Malcolm Taylor",
+      "modality": "audio",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "RK Audio. Niche lossless codec from the late 1990s. Effectively gone."
+    },
+    {
+      "name": "Impulse Tracker / MOD / S3M / XM",
+      "year": 1987,
+      "org": "various",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "opensource",
+      "desc": "Module music formats. Not codecs in the conventional sense, but compressed audio representations consisting of small sample data plus pattern sequencing data. The audio formats of demoscene productions."
+    },
+    {
+      "name": "Direct Stream Transfer (DST)",
+      "year": 2003,
+      "org": "Philips / Sony",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Lossless compression for DSD (Direct Stream Digital, the format of SACD). The mandatory compression scheme on multichannel SACD."
+    },
+    {
+      "name": "DSD",
+      "year": 1999,
+      "org": "Sony / Philips",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Direct Stream Digital. 1-bit pulse-density modulation at 2.8224 MHz. The recording format of SACD. Niche audiophile use; not strictly a codec but a representation format."
+    },
+    {
+      "name": "Adaptive Rate-Distortion Optimized (ARDOR)",
+      "year": 2002,
+      "org": "various",
+      "modality": "audio",
+      "era": "classical",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Adaptive Rate-Distortion Optimized sound codeR. Research codec from the early 2000s."
+    },
+    {
+      "name": "Impala",
+      "year": 2006,
+      "org": "Forbidden / FORscene",
+      "modality": "audio",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Audio codec used in the FORscene web-based video editing platform."
+    },
+    {
+      "name": "Original Sound Quality (OSQ)",
+      "year": 2003,
+      "org": "RealNetworks",
+      "modality": "audio",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Lossless audio format used in some RealNetworks products. Niche and effectively gone."
+    },
+    {
+      "name": "Siren",
+      "year": 1999,
+      "org": "PictureTel",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Wideband audio codec for video conferencing. Polycom's Siren 7 (G.722.1) and Siren 14 became ITU-T standards (G.722.1, G.722.1 Annex C)."
+    },
+    {
+      "name": "Bluetooth SBC",
+      "year": 1999,
+      "org": "Bluetooth SIG",
+      "modality": "audio",
+      "era": "classical",
+      "status": "success",
+      "lineage": "standards",
+      "desc": "Sub-Band Codec. The mandatory codec for Bluetooth A2DP audio. Everyone with wireless headphones uses this when no better codec is negotiated."
+    },
+    {
+      "name": "aptX",
+      "year": 1989,
+      "org": "APT (acquired by Qualcomm)",
+      "modality": "audio",
+      "era": "classical",
+      "status": "success",
+      "lineage": "industry",
+      "desc": "Adaptive Transform Coding. Bluetooth audio codec offering higher quality than SBC. Several variants (aptX HD, aptX Adaptive, aptX Lossless) for higher fidelity and lower latency."
+    },
+    {
+      "name": "LDAC",
+      "year": 2014,
+      "org": "Sony",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Sony's high-bitrate Bluetooth audio codec. Up to 990 kbps for hi-res audio over Bluetooth. Native support in Android since 8.0."
+    },
+    {
+      "name": "LC3",
+      "year": 2020,
+      "org": "Bluetooth SIG / Fraunhofer / Ericsson",
+      "modality": "audio",
+      "era": "classical",
+      "status": "emerging",
+      "lineage": "standards",
+      "desc": "Low Complexity Communications Codec. The mandatory codec for Bluetooth LE Audio. Designed to replace SBC across the Bluetooth ecosystem."
+    },
+    {
+      "name": "Samsung Scalable Codec",
+      "year": 2019,
+      "org": "Samsung",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Bluetooth codec used by Samsung Galaxy Buds. Adapts bitrate to channel conditions."
+    },
+    {
+      "name": "G.711",
+      "year": 1972,
+      "org": "ITU-T",
+      "modality": "speech",
+      "era": "classical",
+      "status": "success",
+      "lineage": "standards",
+      "desc": "PCM telephony codec at 64 kbit/s. The toll-quality reference for fifty years. Still the standard for circuit-switched telephony and many SIP/VoIP deployments."
+    },
+    {
+      "name": "G.711.0",
+      "year": 2009,
+      "org": "ITU-T",
+      "modality": "speech",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "Lossless compression of G.711 streams. Used in some VoIP applications to save bandwidth on G.711 calls."
+    },
+    {
+      "name": "G.711.1",
+      "year": 2008,
+      "org": "ITU-T",
+      "modality": "speech",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "Wideband extension of G.711. Backward-compatible enhancement layer for wideband audio."
+    },
+    {
+      "name": "G.721",
+      "year": 1984,
+      "org": "CCITT (now ITU-T)",
+      "modality": "speech",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "standards",
+      "desc": "Early ADPCM at 32 kbit/s. Superseded by G.726."
+    },
+    {
+      "name": "G.722",
+      "year": 1988,
+      "org": "ITU-T",
+      "modality": "speech",
+      "era": "classical",
+      "status": "success",
+      "lineage": "standards",
+      "desc": "7 kHz wideband ADPCM at 64 kbit/s. The first HD voice codec, embedded in essentially every desk VoIP phone. Patents long expired."
+    },
+    {
+      "name": "G.722.1",
+      "year": 1999,
+      "org": "ITU-T",
+      "modality": "speech",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "PictureTel/Polycom Siren 7. Wideband audio at 24 or 32 kbit/s. Used in business video conferencing."
+    },
+    {
+      "name": "G.722.1 Annex C (Siren 14)",
+      "year": 2005,
+      "org": "ITU-T / Polycom",
+      "modality": "speech",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "Super-wideband variant of G.722.1. 14 kHz audio bandwidth. Used in high-end conferencing systems."
+    },
+    {
+      "name": "G.722.2 / AMR-WB",
+      "year": 2002,
+      "org": "ETSI / 3GPP / ITU-T",
+      "modality": "speech",
+      "era": "classical",
+      "status": "success",
+      "lineage": "standards",
+      "desc": "Adaptive Multi-Rate Wideband. The codec branded as HD Voice on most carriers. Standard wideband codec on most 4G voice deployments via VoLTE."
+    },
+    {
+      "name": "G.723.1",
+      "year": 1995,
+      "org": "ITU-T",
+      "modality": "speech",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "Low-bitrate speech codec at 5.3 or 6.3 kbit/s. Used in some video conferencing and VoIP gateways."
+    },
+    {
+      "name": "G.726",
+      "year": 1990,
+      "org": "ITU-T",
+      "modality": "speech",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "ADPCM at 16, 24, 32, or 40 kbit/s. The successor to G.721 and G.723. Used in DECT cordless phones and some satellite telephony."
+    },
+    {
+      "name": "G.728",
+      "year": 1992,
+      "org": "ITU-T",
+      "modality": "speech",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "16 kbit/s low-delay CELP. Designed for ISDN and high-quality videoconferencing audio. Niche in specialized telephony equipment."
+    },
+    {
+      "name": "G.729",
+      "year": 1995,
+      "org": "ITU-T",
+      "modality": "speech",
+      "era": "classical",
+      "status": "success",
+      "lineage": "standards",
+      "desc": "8 kbit/s CS-ACELP. The workhorse codec of corporate VoIP for two decades. Patents expired in 2017. Still widely deployed in business telephony."
+    },
+    {
+      "name": "G.729A",
+      "year": 1996,
+      "org": "ITU-T",
+      "modality": "speech",
+      "era": "classical",
+      "status": "success",
+      "lineage": "standards",
+      "desc": "Annex A. Reduced-complexity variant of G.729, bit-stream compatible with full G.729."
+    },
+    {
+      "name": "G.729.1",
+      "year": 2006,
+      "org": "ITU-T",
+      "modality": "speech",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "Wideband and scalable extension of G.729. Backward compatible with G.729 base layer."
+    },
+    {
+      "name": "G.718",
+      "year": 2008,
+      "org": "ITU-T",
+      "modality": "speech",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "Embedded scalable codec covering narrowband and wideband at 8 to 32 kbit/s. Niche adoption in next-generation network voice."
+    },
+    {
+      "name": "G.719",
+      "year": 2008,
+      "org": "ITU-T / Polycom / Ericsson",
+      "modality": "audio",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "Low-complexity full-band audio codec. 20 kHz bandwidth at 32 to 128 kbit/s. Used in some conferencing systems."
+    },
+    {
+      "name": "LPC-10",
+      "year": 1984,
+      "org": "US Department of Defense",
+      "modality": "speech",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "academic",
+      "desc": "FS-1015. 2.4 kbps military speech codec based on linear predictive coding. Highly intelligible but unnatural-sounding. The reference low-bitrate speech codec for two decades."
+    },
+    {
+      "name": "MELP / MELPe",
+      "year": 1996,
+      "org": "US Department of Defense",
+      "modality": "speech",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "academic",
+      "desc": "Mixed Excitation Linear Prediction. Military low-bitrate speech codec at 2.4 kbps. Used by NATO and US military communications."
+    },
+    {
+      "name": "GSM-FR",
+      "year": 1991,
+      "org": "ETSI",
+      "modality": "speech",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "standards",
+      "desc": "The first digital speech codec in the GSM mobile system. 13 kbit/s RPE-LTP. Defined what cellular voice sounded like for the better part of a decade."
+    },
+    {
+      "name": "GSM-HR",
+      "year": 1994,
+      "org": "ETSI",
+      "modality": "speech",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "standards",
+      "desc": "Half-Rate GSM codec. 5.6 kbit/s VSELP. Designed to double network capacity by halving codec bitrate. Audibly worse than FR."
+    },
+    {
+      "name": "GSM-EFR",
+      "year": 1996,
+      "org": "ETSI",
+      "modality": "speech",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "standards",
+      "desc": "Enhanced Full Rate GSM codec. 12.2 kbit/s ACELP. Significantly better than GSM-FR; deployed in most 2G GSM networks."
+    },
+    {
+      "name": "AMR-NB",
+      "year": 1999,
+      "org": "ETSI / 3GPP",
+      "modality": "speech",
+      "era": "classical",
+      "status": "success",
+      "lineage": "standards",
+      "desc": "Adaptive Multi-Rate Narrowband. The 3GPP successor to GSM-FR, used by essentially every 3G voice call. Still in deployment as a fallback codec on most mobile networks."
+    },
+    {
+      "name": "EVRC",
+      "year": 1996,
+      "org": "Qualcomm / CDG",
+      "modality": "speech",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Enhanced Variable Rate Codec. The CDMA equivalent to AMR. Used in Verizon and Sprint cellular networks in the 2000s."
+    },
+    {
+      "name": "EVRC-B / EVRC-WB / EVRC-NW",
+      "year": 2006,
+      "org": "Qualcomm / CDG",
+      "modality": "speech",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Successor variants of EVRC. Wideband and narrowband-wideband versions for CDMA voice."
+    },
+    {
+      "name": "SMV",
+      "year": 2001,
+      "org": "CDG",
+      "modality": "speech",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Selectable Mode Vocoder. Competed with EVRC for CDMA voice. Limited deployment."
+    },
+    {
+      "name": "VMR-WB",
+      "year": 2004,
+      "org": "3GPP2",
+      "modality": "speech",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "standards",
+      "desc": "Variable-Rate Multimode Wideband. The CDMA equivalent of AMR-WB."
+    },
+    {
+      "name": "EVS",
+      "year": 2014,
+      "org": "3GPP",
+      "modality": "speech",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "standards",
+      "desc": "Enhanced Voice Services. The 4G/VoLTE successor to AMR-WB. Up to 20 kHz full-band audio at 13.2 kbit/s. Adoption fragmented by carriers."
+    },
+    {
+      "name": "CELP",
+      "year": 1985,
+      "org": "Bell Labs (Schroeder, Atal)",
+      "modality": "speech",
+      "era": "classical",
+      "status": "success",
+      "lineage": "academic",
+      "desc": "Code-Excited Linear Prediction. Not a single codec but the algorithmic family underlying nearly every speech codec deployed from 1990 to 2010."
+    },
+    {
+      "name": "iLBC",
+      "year": 2004,
+      "org": "Global IP Solutions (later Google)",
+      "modality": "speech",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Internet Low Bitrate Codec. Designed for packet-loss-resilient internet telephony. The original codec in early Skype. Patents released to public domain in 2011."
+    },
+    {
+      "name": "iSAC",
+      "year": 2003,
+      "org": "Global IP Solutions / Google",
+      "modality": "speech",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Internet Speech Audio Codec. Variable bitrate, low latency, designed for VoIP over IP. The original Skype wideband codec. Superseded by Opus in WebRTC."
+    },
+    {
+      "name": "SILK",
+      "year": 2009,
+      "org": "Skype",
+      "modality": "speech",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Skype's wideband CELP-derived codec. Released as open source in 2009 and ultimately folded into Opus."
+    },
+    {
+      "name": "Codec2",
+      "year": 2010,
+      "org": "David Rowe",
+      "modality": "speech",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "opensource",
+      "desc": "Ultra-low-bitrate speech codec for amateur radio and HF digital voice, down to 700 bit/s. Used in FreeDV and several digital amateur radio modes."
+    },
+    {
+      "name": "AMBE",
+      "year": 1993,
+      "org": "Digital Voice Systems (DVSI)",
+      "modality": "speech",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Advanced Multi-Band Excitation. Patented low-bitrate vocoder used in Inmarsat satellite phones, P25 public safety radio, DMR, D-STAR amateur radio, and more."
+    },
+    {
+      "name": "IMBE",
+      "year": 1991,
+      "org": "DVSI",
+      "modality": "speech",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Improved Multi-Band Excitation. Predecessor to AMBE. Used in early Inmarsat-M and APCO Project 25 systems."
+    },
+    {
+      "name": "RPE-LTP",
+      "year": 1988,
+      "org": "GSM committee",
+      "modality": "speech",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "standards",
+      "desc": "Regular Pulse Excitation - Long Term Prediction. The algorithm inside GSM-FR."
+    },
+    {
+      "name": "VSELP",
+      "year": 1989,
+      "org": "Motorola",
+      "modality": "speech",
+      "era": "classical",
+      "status": "superseded",
+      "lineage": "industry",
+      "desc": "Vector Sum Excited Linear Prediction. Used in IS-54 TDMA cellular and GSM-HR."
+    },
+    {
+      "name": "MELP",
+      "year": 1996,
+      "org": "Texas Instruments / DOD",
+      "modality": "speech",
+      "era": "classical",
+      "status": "niche",
+      "lineage": "academic",
+      "desc": "Mixed Excitation Linear Prediction. See MELPe entry above. Foundational for low-bitrate military speech."
+    },
+    {
+      "name": "TwinVQ",
+      "year": 1995,
+      "org": "NTT",
+      "modality": "audio",
+      "era": "classical",
+      "status": "failed",
+      "lineage": "industry",
+      "desc": "Transform-domain Weighted Interleave Vector Quantization. Audio codec from NTT, used briefly in early Yamaha synthesizers and some Japanese broadcast tests."
+    },
+    {
+      "name": "WaveNet (codec)",
+      "year": 2018,
+      "org": "Google DeepMind (Kleijn et al.)",
+      "modality": "speech",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "WaveNet-based low-rate speech coding. The first proof that a deep generative model could decode high-quality speech from extremely low bitrate parameters."
+    },
+    {
+      "name": "VQ-VAE speech codec",
+      "year": 2019,
+      "org": "Gârbacea et al.",
+      "modality": "speech",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Low bit-rate speech coding with VQ-VAE and a WaveNet decoder. Another foundational neural speech compression paper."
+    },
+    {
+      "name": "LPCNet",
+      "year": 2019,
+      "org": "Mozilla / Xiph (Valin, Skoglund)",
+      "modality": "speech",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Improved neural speech synthesis through linear prediction. The bridge from classical CELP to neural decoding. Practical real-time neural speech synthesis on CPU."
+    },
+    {
+      "name": "WaveRNN",
+      "year": 2018,
+      "org": "Google DeepMind (Kalchbrenner et al.)",
+      "modality": "speech",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Recurrent neural vocoder. Smaller and faster than WaveNet. The model architecture inside LPCNet and many follow-on works."
+    },
+    {
+      "name": "WaveNetEQ",
+      "year": 2020,
+      "org": "Google",
+      "modality": "speech",
+      "era": "neural",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "WaveRNN-based packet loss concealment in Google Duo. Generates plausible audio when packets are lost. One of the first production deployments of neural audio generation."
+    },
+    {
+      "name": "MelGAN",
+      "year": 2019,
+      "org": "academic",
+      "modality": "audio",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "GAN-based mel-spectrogram vocoder. Faster than WaveNet, comparable quality. Often used as the decoder backend in neural audio pipelines."
+    },
+    {
+      "name": "HiFi-GAN",
+      "year": 2020,
+      "org": "Kong et al.",
+      "modality": "audio",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "GAN-based vocoder achieving high-fidelity audio from mel-spectrograms. The most commonly used GAN vocoder in TTS and neural audio research."
+    },
+    {
+      "name": "SSMGAN",
+      "year": 2021,
+      "org": "Mustafa et al.",
+      "modality": "audio",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "GAN-based vocoder variant. Refinements over HiFi-GAN for specific audio types."
+    },
+    {
+      "name": "Lyra",
+      "year": 2021,
+      "org": "Google",
+      "modality": "speech",
+      "era": "neural",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "Neural speech codec at 3 kbps and below. Shipped inside Google Duo (now Meet) for low-bandwidth voice calls. The first production deployment of a neural speech codec at consumer scale."
+    },
+    {
+      "name": "Lyra v2",
+      "year": 2022,
+      "org": "Google",
+      "modality": "speech",
+      "era": "neural",
+      "status": "niche",
+      "lineage": "industry",
+      "desc": "SoundStream-based redesign of Lyra at 3.2, 6, and 9.2 kbps. Quality approaching Opus at half the bitrate. Open-sourced."
+    },
+    {
+      "name": "SoundStream",
+      "year": 2021,
+      "org": "Google (Zeghidour, Luebs, Omran, Skoglund, Tagliasacchi)",
+      "modality": "audio",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "End-to-end neural audio codec with residual vector quantization. The first practical neural codec covering speech, music, and general audio at competitive bitrates."
+    },
+    {
+      "name": "Encodec",
+      "year": 2022,
+      "org": "Meta (Défossez, Copet, Synnaeve, Adi)",
+      "modality": "audio",
+      "era": "neural",
+      "status": "emerging",
+      "lineage": "industry",
+      "desc": "High-fidelity neural audio compression at 1.5 to 24 kbps. The most widely-used open neural audio codec, the discrete-tokenizer backbone for AudioCraft and MusicGen."
+    },
+    {
+      "name": "HiFi-Codec",
+      "year": 2023,
+      "org": "academic",
+      "modality": "audio",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Pushed neural audio coding to 2 kbps with acceptable quality. Group-residual vector quantization, refining the RVQ formula introduced by SoundStream."
+    },
+    {
+      "name": "DAC",
+      "year": 2023,
+      "org": "Descript (Kumar et al.)",
+      "modality": "audio",
+      "era": "neural",
+      "status": "emerging",
+      "lineage": "industry",
+      "desc": "Descript Audio Codec. High-fidelity audio compression with improved RVQ-GAN training. Considered transparent at 6–8 kbps; the current open-source reference for high-quality neural audio."
+    },
+    {
+      "name": "SNAC",
+      "year": 2024,
+      "org": "Hubert Siuzdak",
+      "modality": "audio",
+      "era": "neural",
+      "status": "emerging",
+      "lineage": "opensource",
+      "desc": "Multi-Scale Neural Audio Codec. Hierarchical token rates — coarse tokens sampled less frequently than fine ones. Used in several open-source TTS models."
+    },
+    {
+      "name": "SpeechTokenizer",
+      "year": 2023,
+      "org": "Fudan University (Zhang, Li, et al.)",
+      "modality": "speech",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Disentangled speech codec where the first RVQ codebook is regularized toward phonetic units. Cleanly separates content from acoustic detail."
+    },
+    {
+      "name": "AudioDec",
+      "year": 2023,
+      "org": "academic (Wu et al.)",
+      "modality": "audio",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Modular neural codec with separately-trained encoder, quantizer, and vocoder stages. Designed to reduce training instability."
+    },
+    {
+      "name": "FunCodec",
+      "year": 2024,
+      "org": "Alibaba (Du et al.)",
+      "modality": "audio",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "industry",
+      "desc": "Frequency-domain neural speech codec from Alibaba's speech team. Strong performance per parameter."
+    },
+    {
+      "name": "TiCodec",
+      "year": 2024,
+      "org": "Ren et al.",
+      "modality": "audio",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Hierarchical codec with separate timbre and content token streams. Useful for voice conversion and TTS."
+    },
+    {
+      "name": "LMCodec",
+      "year": 2023,
+      "org": "Jenrungrot et al.",
+      "modality": "audio",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Codec design optimized for downstream language modeling. One of several codecs in the audio-LM-friendly tokenizer race."
+    },
+    {
+      "name": "HILCodec",
+      "year": 2024,
+      "org": "academic",
+      "modality": "audio",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Adaptive streaming neural codec. Designed for real-time deployment with variable channel conditions."
+    },
+    {
+      "name": "Mimi",
+      "year": 2024,
+      "org": "Kyutai",
+      "modality": "audio",
+      "era": "neural",
+      "status": "emerging",
+      "lineage": "opensource",
+      "desc": "Low-frame-rate neural codec designed for audio LM ingestion. 12.5 Hz token rate, distilled to align with WavLM features. The codec inside Moshi."
+    },
+    {
+      "name": "SemantiCodec",
+      "year": 2024,
+      "org": "University of Surrey (Liu et al.)",
+      "modality": "audio",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Ultra low bitrate semantic audio codec for general sound. Pushes toward 0.3 kbps with usable reconstruction for general audio, not just speech."
+    },
+    {
+      "name": "DualCodec",
+      "year": 2024,
+      "org": "academic",
+      "modality": "audio",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Two-stream codec separating semantic and acoustic information into different token streams. Designed for audio LMs that want explicit control over content versus voice."
+    },
+    {
+      "name": "SD-Codec",
+      "year": 2024,
+      "org": "Bie et al.",
+      "modality": "audio",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Source-Disentangled Codec. Assigns distinct codebooks per audio domain (speech, music, sound effects). Improves interpretability and controllability."
+    },
+    {
+      "name": "FlexiCodec",
+      "year": 2025,
+      "org": "academic",
+      "modality": "audio",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Variable frame-rate neural codec. Achieves 0.6 to 1.2 kbps speech with quality competitive with higher-frame-rate codecs. One of the lowest practical speech bitrates published."
+    },
+    {
+      "name": "OmniCodec",
+      "year": 2025,
+      "org": "academic",
+      "modality": "audio",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Unified low-frame-rate codec covering speech, music, and general audio in a single model."
+    },
+    {
+      "name": "SpectroStream",
+      "year": 2024,
+      "org": "academic",
+      "modality": "audio",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "STFT/MDCT-based delayed-fusion neural codec. Ultra-low-latency multi-channel codec for real-time use."
+    },
+    {
+      "name": "XYTokenizer",
+      "year": 2024,
+      "org": "academic",
+      "modality": "audio",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Low-frame-rate codec. Competitor to Mimi in the audio-LM-tokenizer space at the same frame rate."
+    },
+    {
+      "name": "Spectrogram Patch Codec",
+      "year": 2025,
+      "org": "Chary, Ramirez (USP)",
+      "modality": "speech",
+      "era": "neural",
+      "status": "academic",
+      "lineage": "academic",
+      "desc": "Mel-spectrogram patch-based VQ-VAE plus HiFi-GAN. Simpler than RVQ stacks, around 7.5 kbps for 16 kHz speech."
+    }
+  ]
+}

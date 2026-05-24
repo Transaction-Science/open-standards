@@ -20,6 +20,7 @@ members = [
     "crates/smart-byte-nostr",
     "crates/smart-byte-activitypub",
     "crates/smart-byte-ilp",
+    "crates/smart-byte-tendermint",
 ]
 
 [workspace.package]
