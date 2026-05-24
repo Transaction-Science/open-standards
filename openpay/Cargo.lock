@@ -4026,6 +4026,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "op-dispute-evidence"
+version = "0.1.0"
+dependencies = [
+ "op-core",
+ "op-dispute",
+ "proptest",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "time",
+ "uuid",
+]
+
+[[package]]
 name = "op-driver-sdk"
 version = "0.1.0"
 dependencies = [

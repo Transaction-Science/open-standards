@@ -672,6 +672,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "eoc-agent"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "eoc-core",
+ "eoc-meter",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
+]
+
+[[package]]
 name = "eoc-bench-runner"
 version = "0.1.0"
 dependencies = [

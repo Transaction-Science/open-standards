@@ -1,0 +1,22 @@
+[package]
+name = "eoc-agent"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "EOC — agentic loops (ReAct, Reflexion, ToT, LATS, Plan-and-Execute, CodeAct) with per-step token + joule budgets."
+
+[dependencies]
+eoc-core.workspace = true
+eoc-meter.workspace = true
+
+serde = { workspace = true }
+serde_json = "1"
+thiserror.workspace = true
+async-trait.workspace = true
+tokio = { workspace = true, features = ["macros", "rt", "sync", "time"] }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }

@@ -20,6 +20,7 @@ members = [
     "crates/op-reconciliation",
     "crates/op-refund",
     "crates/op-dispute",
+    "crates/op-dispute-evidence",
     "crates/op-settlement",
     "crates/op-batch",
     "crates/op-server",

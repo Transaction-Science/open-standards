@@ -20,6 +20,7 @@ members = [
     "crates/eoc-spec-decode",
     "crates/eoc-multimodal",
     "crates/eoc-carbon",
+    "crates/eoc-agent",
 ]
 
 [workspace.package]
