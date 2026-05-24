@@ -23,6 +23,7 @@ The capability a file requires is *named*, not supplied.
 |------|----------|
 | [`SPEC.md`](SPEC.md) | WAI v1.0 spec — envelope, manifest, capability menu |
 | [`wai-rs/`](wai-rs/) | Rust reference implementation (lib + cdylib + staticlib + C FFI) |
+| [`glossary/`](glossary/) | Reference catalog of media codecs surveyed for capability registration. [`codecs.json`](glossary/codecs.json) is the canonical 342-entry dataset; [`SCHEMA.md`](glossary/SCHEMA.md) defines the shape and contribution rules. Rendered at [wai.transaction.science/glossary](https://wai.transaction.science/glossary). |
 | [`corpus/`](corpus/) | Standard test material (Kodak/CLIC/Tecnick/SIPI images, Xiph Derf + UVG video, SQAM-class audio, enwik8 + Silesia text). Not committed; `CORPUS.md` documents reacquisition. |
 
 ## Quickstart
