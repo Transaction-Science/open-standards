@@ -198,6 +198,10 @@ Each capability owns its payload format. Decoder implementations
 `tools/wai_<capability>_*.py` and `wai-web/demo/`. New neural
 capabilities are added by registration; the WAI envelope is unchanged.
 
+See [`extensions/jwp-receipts.md`](extensions/jwp-receipts.md) for the
+receipt-chain sub-spec covering per-object content hashes, per-group
+Merkle roots, Ed25519 group signatures, and cross-hop preservation.
+
 ---
 
 ## 6. Conformance
