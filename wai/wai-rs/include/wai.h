@@ -260,8 +260,6 @@ int wai_envelope_unpack(const uint8_t *bytes,
                         struct wai_buffer_t *out_manifest,
                         struct wai_buffer_t *out_payload);
 
-extern const char *wai_last_error(void);
-
 /**
  * Decode a `wai.neural.<audio>` envelope (encodec32 / dac / mimi /
  * wavtokenizer). Writes mono `f32` samples into `out_samples`; the
