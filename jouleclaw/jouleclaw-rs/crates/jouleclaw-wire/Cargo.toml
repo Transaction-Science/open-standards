@@ -1,0 +1,15 @@
+[package]
+name = "jouleclaw-wire"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "L4 wire tier — the remote frontier escape hatch. RPC client + transport, invoked only when the local cascade returns Unresolvable. Ported from pattern-lang/joule-wire."
+
+[dependencies]
+jouleclaw-cascade = { path = "../jouleclaw-cascade" }
+
+[dev-dependencies]
+jouleclaw-history = { path = "../jouleclaw-history" }

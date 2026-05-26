@@ -1,0 +1,20 @@
+[package]
+name = "jouleclaw-cascade"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "JouleClaw cascade dispatcher. L0 (cache) → L1 (lawful) → L2 (embed) → L3 (model) → L4 (wire) with the 7-axis Synthesis coordinate router, calibration ledger, and verification. Ported from pattern-lang/joule-cascade."
+
+[dependencies]
+jouleclaw-core = { path = "../jouleclaw-core" }
+
+# Note: pattern-lang/joule-cascade has a dev-dep on joule-l1 for integration
+# tests that exercise the lawful-primitive tier. Those tests don't port
+# because joule-l1 depends on pattern-lang's pattern-core + cortex-ir +
+# the `joule` synthesizer (OpenIE IP that stays out of JouleClaw). The
+# `tests/r1[12]_*` files have been removed in this port; the L1 trait
+# surface lives in this crate and consumers (including pattern-lang) can
+# plug their own lawful lexicon impl.

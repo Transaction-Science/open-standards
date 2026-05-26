@@ -1,0 +1,17 @@
+[package]
+name = "jouleclaw-pack"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "JouleClaw .jc.toml sidecar — per-tensor precision contract + measured J/token on reference hardware. The artifact that turns an opaque GGUF / safetensors file into a JouleClaw-tradable model with declared energy semantics."
+
+[dependencies]
+jouleclaw-core = { path = "../jouleclaw-core" }
+jouleclaw-energy = { path = "../jouleclaw-energy" }
+serde = { workspace = true }
+thiserror.workspace = true
+toml = "0.8"
+blake3.workspace = true

@@ -1,0 +1,13 @@
+[package]
+name = "jouleclaw-history"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Persistent resolution history for JouleClaw — disk + in-memory + tiered (hot/warm/cold) + semantic. Ported from pattern-lang/joule-history."
+
+[dependencies]
+jouleclaw-core = { path = "../jouleclaw-core" }
+jouleclaw-cascade = { path = "../jouleclaw-cascade" }

@@ -1,0 +1,15 @@
+[package]
+name = "jouleclaw-loader-gguf"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "GGUF model loader for JouleClaw. F32, F16, Q4_0, Q5_K, Q8_0 quants. mmap-zero-copy load path. Includes per-model decode (gemma, gemma4, llama). Ported from pattern-lang/joule-loader-gguf."
+
+[dependencies]
+jouleclaw-core = { path = "../jouleclaw-core" }
+regex = "1"
+serde_json = { workspace = true }
+memmap2 = "0.9"

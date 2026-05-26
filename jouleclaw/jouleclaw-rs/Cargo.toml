@@ -5,9 +5,15 @@ members = [
     "crates/jouleclaw-core",
     "crates/jouleclaw-topology",
     "crates/jouleclaw-energy",
-    # Phase 2 will add: jouleclaw-cascade (with l0_cache + tier + router),
-    # jouleclaw-runtime, jouleclaw-wire, jouleclaw-bench, jouleclaw-loader-gguf,
-    # jouleclaw-pack, jouleclaw-history
+
+    # Phase 2 — cascade + format + persistence + wire
+    "crates/jouleclaw-cascade",
+    "crates/jouleclaw-loader-gguf",
+    "crates/jouleclaw-pack",
+    "crates/jouleclaw-history",
+    "crates/jouleclaw-wire",
+    # Phase 3 will add: jouleclaw-hal, jouleclaw-backend-{apple,reference,cuda,metal,rocm,vulkan},
+    # jouleclaw-runtime, jouleclaw-router (needs l2), jouleclaw-l1, jouleclaw-l2, jouleclaw-bench
 ]
 
 [workspace.package]
