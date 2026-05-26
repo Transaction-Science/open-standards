@@ -1,0 +1,18 @@
+[package]
+name = "jouleclaw-edge-client"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Lean client for a running jouleclaw-edge-cli serve daemon. No DeBERTa / safetensors / tokenizers deps — sub-50ms startup vs ~600 ms for the full jouleclaw-edge-cli."
+
+[[bin]]
+name = "jouleclaw-edge-client"
+path = "src/main.rs"
+
+[dependencies]
+tokio       = { version = "1", features = ["macros", "rt", "net", "io-util"] }
+serde       = { version = "1", features = ["derive"] }
+serde_json  = "1"

@@ -1,0 +1,16 @@
+[package]
+name = "jouleclaw-plan"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Plan pillar: query understanding, hand-rolled CSP planner, SelfModel. Produces a constraint-validated QueryPlan."
+
+[dependencies]
+jouleclaw-schema = { path = "../jouleclaw-schema" }
+serde        = { version = "1", features = ["derive"] }
+serde_json   = "1"
+chrono       = { version = "0.4", features = ["serde"] }
+uuid         = { version = "1", features = ["v4", "serde"] }

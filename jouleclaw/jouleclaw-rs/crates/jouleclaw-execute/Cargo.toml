@@ -1,0 +1,31 @@
+[package]
+name = "jouleclaw-execute"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Execute pillar: Orchestrator + RAP executor + retrievers (Wikidata SPARQL). Topologically dispatches a QueryPlan and streams RetrievedItems."
+
+[dependencies]
+jouleclaw-schema = { path = "../jouleclaw-schema" }
+jouleclaw-plan   = { path = "../jouleclaw-plan" }
+
+serde       = { version = "1", features = ["derive"] }
+serde_json  = "1"
+chrono      = { version = "0.4", features = ["serde"] }
+uuid        = { version = "1", features = ["v4", "serde"] }
+async-trait = "0.1"
+tokio       = { version = "1", features = ["macros", "rt", "rt-multi-thread", "time", "sync"] }
+reqwest     = { version = "0.13", features = ["json", "query"], default-features = false }
+sha2        = "0.10"
+
+[dev-dependencies]
+tokio       = { version = "1", features = ["macros", "rt-multi-thread", "time", "sync", "test-util"] }
+
+[features]
+default = ["rustls"]
+# Default to rustls to avoid system OpenSSL surprise on edge targets.
+rustls       = ["reqwest/rustls", "reqwest/rustls-native-certs"]
+native-tls   = ["reqwest/native-tls"]

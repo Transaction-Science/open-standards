@@ -1,0 +1,24 @@
+[package]
+name = "jouleclaw-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "jclaw — the Pi-class minimal harness binary for JouleClaw. Four primitives (read, write, edit, bash), tree-forked sessions, hot-reload extensions, joule budget on every action, Claude Code-compatible hook surface, MCP-native tool dispatch. v0.1 ships the type vocabulary + a minimal interactive loop; full hot-reload + tree-fork land later."
+
+[[bin]]
+name = "jclaw"
+path = "src/main.rs"
+
+[dependencies]
+jouleclaw-core = { path = "../jouleclaw-core" }
+jouleclaw-energy = { path = "../jouleclaw-energy" }
+jouleclaw-prov = { path = "../jouleclaw-prov" }
+jouleclaw-mcp = { path = "../jouleclaw-mcp" }
+clap = { version = "4", features = ["derive", "env"] }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread", "fs", "io-std"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }

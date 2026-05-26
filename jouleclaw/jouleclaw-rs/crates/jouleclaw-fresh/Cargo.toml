@@ -1,0 +1,22 @@
+[package]
+name = "jouleclaw-fresh"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "L3.5 stage of the cascade — fresh retrieval with provenance. Search-API adapters (Brave / Tavily / Exa / Serper), HTTP fetch + clean-text extraction, Wikipedia perennial-sources trust loader, signed-envelope wrapping. The doctrine: recent provenance-stamped knowledge beats synthesis from frozen weights."
+
+[dependencies]
+jouleclaw-core = { path = "../jouleclaw-core" }
+jouleclaw-prov = { path = "../jouleclaw-prov" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+chrono = { workspace = true }
+async-trait = { workspace = true }
+blake3 = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt"] }

@@ -1,0 +1,22 @@
+[package]
+name = "jouleclaw-mcp"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "JouleClaw's MCP tool surface — thin wrapper over the official Rust MCP SDK (rmcp) that meters every tool call against jouleclaw-energy + emits a tool-touch entry per call into jouleclaw-prov::ReceiptBuilder. Defines the `joule-mcp` extension that negotiates a binary transport (CBOR/msgpack) for clients that support it, falling back to the standard JSON-RPC wire for everyone else."
+
+[dependencies]
+jouleclaw-core = { path = "../jouleclaw-core" }
+jouleclaw-energy = { path = "../jouleclaw-energy" }
+jouleclaw-prov = { path = "../jouleclaw-prov" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_cbor = { workspace = true }
+thiserror = { workspace = true }
+async-trait = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt"] }

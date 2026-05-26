@@ -33,6 +33,22 @@ members = [
                                  # / whisper / gaussian3d / video / fusion
                                  # / 5 modalities / HAL / orchestrator /
                                  # server — ported wholesale from efficient-genai
+
+    # Phase 6 — agentic v6 (plan/execute/diagnose/compose surface)
+    "crates/jouleclaw-schema",
+    "crates/jouleclaw-plan",
+    "crates/jouleclaw-execute",
+    "crates/jouleclaw-compose",
+    "crates/jouleclaw-deberta",
+    "crates/jouleclaw-diagnose",
+    "crates/jouleclaw-edge-cli",
+    "crates/jouleclaw-edge-client",
+
+    # Phase 6 — net-new (the standard-defining moat)
+    "crates/jouleclaw-prov",     # signed receipt per resolution
+    "crates/jouleclaw-fresh",    # search-first + provenance envelope
+    "crates/jouleclaw-mcp",      # rmcp-compatible + joule-mcp profile
+    "crates/jouleclaw-cli",      # jclaw binary (Pi-class minimal harness)
 ]
 
 [workspace.package]

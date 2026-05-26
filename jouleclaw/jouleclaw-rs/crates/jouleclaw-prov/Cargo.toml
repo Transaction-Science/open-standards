@@ -1,0 +1,19 @@
+[package]
+name = "jouleclaw-prov"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Receipt-per-resolution emitter for JouleClaw. Every cascade walk emits a signed envelope (Smart Byte shape) carrying cascade-tier, joules-spent, tools-touched, eoc-stage, and a PROV-O provenance graph. The thermodynamic ledger that makes capability-per-joule claims auditable."
+
+[dependencies]
+jouleclaw-core = { path = "../jouleclaw-core" }
+jouleclaw-energy = { path = "../jouleclaw-energy" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+chrono = { workspace = true }
+blake3 = { workspace = true }
+uuid = { workspace = true }

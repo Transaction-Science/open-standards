@@ -1,0 +1,18 @@
+[package]
+name = "jouleclaw-compose"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Compose layer: draft composer (templated or LLM-backed) + verified composer that applies recovery actions to produce a structured Answer with full Provenance."
+
+[dependencies]
+jouleclaw-schema = { path = "../jouleclaw-schema" }
+
+chrono     = { version = "0.4", features = ["serde"] }
+uuid       = { version = "1", features = ["v4", "serde"] }
+serde      = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2       = "0.10"

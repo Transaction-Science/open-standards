@@ -1,0 +1,18 @@
+[package]
+name = "jouleclaw-diagnose"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Diagnose pillar: atomizer + DeBERTa-backed entailment + conflict-directed verification search + verdict + recovery actions. Produces VerificationReports the verified composer consumes."
+
+[dependencies]
+jouleclaw-schema  = { path = "../jouleclaw-schema" }
+jouleclaw-deberta = { path = "../jouleclaw-deberta" }
+
+chrono     = { version = "0.4", features = ["serde"] }
+uuid       = { version = "1", features = ["v4", "serde"] }
+serde      = { version = "1", features = ["derive"] }
+serde_json = "1"
