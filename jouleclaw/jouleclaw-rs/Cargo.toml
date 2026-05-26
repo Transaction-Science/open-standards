@@ -1,0 +1,60 @@
+[workspace]
+resolver = "3"
+members = [
+    # Phase 1 — foundation
+    "crates/jouleclaw-core",
+    "crates/jouleclaw-topology",
+    "crates/jouleclaw-energy",
+    # Phase 2 will add: jouleclaw-cascade (with l0_cache + tier + router),
+    # jouleclaw-runtime, jouleclaw-wire, jouleclaw-bench, jouleclaw-loader-gguf,
+    # jouleclaw-pack, jouleclaw-history
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.95"
+license = "Apache-2.0"
+repository = "https://github.com/Transaction-Science/open-standards"
+authors = ["JouleClaw Contributors"]
+description = "JouleClaw — energy-optimised AI runtime. Apache-2.0 Rust reference implementation."
+
+[workspace.dependencies]
+# Core
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_cbor = "0.11"
+thiserror = "2"
+blake3 = "1"
+chrono = { version = "0.4", default-features = false, features = ["clock", "serde", "std"] }
+uuid = { version = "1", features = ["v4", "v7", "serde"] }
+
+# Numerics + tensors
+half = "2"
+bytemuck = { version = "1", features = ["derive"] }
+
+# Async runtime
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "fs"] }
+async-trait = "0.1"
+
+# Telemetry
+tracing = "0.1"
+
+# Hardware energy telemetry — pinned where production-ready (from wave-1 research)
+nvml-wrapper = "0.10"  # NVIDIA discrete GPU, production-ready
+
+# Testing
+proptest = "1"
+insta = "1"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = "symbols"
+
+[profile.release-with-debug]
+inherits = "release"
+debug = true
+strip = "none"

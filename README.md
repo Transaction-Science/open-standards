@@ -1,10 +1,10 @@
 # Transaction Science Open Standards
 
-This repository houses the four open reference protocols stewarded by [Transaction Science](https://transaction.science). Each is published as a separate top-level directory with its own README, its own licence file, and its own status.
+This repository houses the five open reference protocols stewarded by [Transaction Science](https://transaction.science). Each is published as a separate top-level directory with its own README, its own licence file, and its own status.
 
 The wire format and the right to fork are public. Transaction Science writes the reference implementation and runs the optional hosted services — the protocols themselves are owned by no one.
 
-## The four standards
+## The five standards
 
 ### [openpay/](openpay/) — Payment acceptance without the SaaS tax
 
@@ -38,6 +38,14 @@ A container + capability-dispatch standard for media. WAI does not re-implement 
 - **Licence:** Apache-2.0 (see [`wai/LICENSE`](wai/LICENSE))
 - **Status:** v1.0 draft standard. `wai-rs/` reference implementation (Rust lib + cdylib + staticlib, C FFI) passes 11 capability + envelope round-trip tests. Known consumer: CommunicationOS.
 
+### [jouleclaw/](jouleclaw/) — Energy-optimised AI runtime
+
+A pure-Rust, omni-modal AI runtime that dispatches every operation through an energy-tiered cascade — `L0:Cache` (picojoules) → `L1:Lawful` (nanojoules, deterministic primitives) → `L2:Embed` (sub-millijoules, Matryoshka embeddings + hybrid search) → `L3:Model` (joules, local SSM / ternary / multimodal / diffusion) → `L4:Wire` (tens of joules, remote frontier as the escape hatch). Inference is the **last resort**, not the entry point. Frozen weights are less trustworthy than fresh, provenance-stamped retrieval. Every operation is metered in microjoules where the hardware permits, with an honest `Provenance` tag (`HwShunt | ModelBased | Estimator`) on every reading so the spec never claims accuracy the platform can't deliver. Omni-modal: text, code, vision, audio, video, image diffusion, 3D Gaussian splatting, and cross-modal fusion all dispatch through the same cascade.
+
+- **Site:** [jouleclaw.transaction.science](https://jouleclaw.transaction.science)
+- **Licence:** Apache-2.0 (see [`jouleclaw/LICENSE`](jouleclaw/LICENSE))
+- **Status:** v0.1.0 reference implementation in active development.
+
 ## How this is organised
 
 Each subdirectory is self-contained: it carries its own README, its own licence, and its own contribution guidance. Cross-protocol consistency lives at this level — in this README and in [`CHARTER.md`](CHARTER.md).
@@ -49,10 +57,11 @@ open-standards/
 ├── openpay/        — payment-acceptance stack (Apache-2.0, Rust)
 ├── smart-byte/     — value-carrier substrate (CC-BY-4.0, spec)
 ├── eoc/            — energy-optimised compute (CC-BY-4.0, spec)
-└── wai/            — media transport + capability dispatch (Apache-2.0, Rust ref impl)
+├── wai/            — media transport + capability dispatch (Apache-2.0, Rust ref impl)
+└── jouleclaw/      — energy-optimised AI runtime (Apache-2.0, Rust ref impl)
 ```
 
-The three standards do not depend on one another. They share a steward, a unit of accounting (joules), and a doctrine — that the protocol is the public commitment and the operations are the offer.
+The five standards do not depend on one another. They share a steward, a unit of accounting (joules), and a doctrine — that the protocol is the public commitment and the operations are the offer.
 
 ## Contributing
 

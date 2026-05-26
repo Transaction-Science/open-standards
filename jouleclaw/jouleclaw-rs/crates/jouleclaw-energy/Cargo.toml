@@ -1,0 +1,26 @@
+[package]
+name = "jouleclaw-energy"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Honest energy telemetry for JouleClaw. EnergyCounter trait + Provenance tag (HwShunt | ModelBased | Estimator). The thermodynamic circuit breaker is only as honest as the worst counter in the request's span."
+
+[dependencies]
+jouleclaw-core = { path = "../jouleclaw-core" }
+thiserror.workspace = true
+serde = { workspace = true, optional = true }
+
+[features]
+default = ["serde"]
+serde = ["dep:serde"]
+
+# Per-platform energy backends. Off by default so the foundation is OS-neutral;
+# downstream crates / binaries enable what their target supports.
+rapl = []                    # Intel/AMD x86 — Linux MSR + sysfs (rapl-probes class)
+nvml = []                    # NVIDIA discrete — cumulative-energy counter (Hopper+/Blackwell)
+ioreport = []                # Apple Silicon M-series — IOReport "Energy Model" channel group
+ina3221 = []                 # NVIDIA Jetson (Orin / Thor) — sysfs i2c shunt reader
+hwmon = []                   # Linux generic — for AMD Strix Halo / Ryzen AI Max iGPU + others

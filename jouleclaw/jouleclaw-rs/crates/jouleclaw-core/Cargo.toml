@@ -1,0 +1,12 @@
+[package]
+name = "jouleclaw-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Core types for JouleClaw: tensors, ops, graphs, determinism, energy. Foundation crate of the JouleClaw open standard. Ported from pattern-lang/joule-core."
+
+[dependencies]
+# Phase 0: stdlib only. No third-party deps. The foundation must be portable.
