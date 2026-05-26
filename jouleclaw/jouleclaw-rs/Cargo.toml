@@ -17,9 +17,16 @@ members = [
     "crates/jouleclaw-backend-reference",
     "crates/jouleclaw-backend-apple",
     "crates/jouleclaw-runtime",
-    # Phase 3.5 / Phase 5 will add: jouleclaw-hal (from efficient-genai),
-    # jouleclaw-backend-{cuda,metal,rocm,vulkan}, jouleclaw-l1/l2 (needs
-    # designed thin trait surface in core), jouleclaw-router, jouleclaw-bench
+
+    # Phase 4 — model tiers
+    "crates/jouleclaw-liquid",   # L3 CfC SSM
+    "crates/jouleclaw-prism",    # L3 1-bit / ternary BitNet
+    "crates/jouleclaw-mrl",      # L2 Matryoshka embeddings
+    "crates/jouleclaw-lmm",      # L3 multimodal (vision/text/audio)
+    "crates/jouleclaw-ebm",      # L1/L3 energy-based constraint sat
+    # gemma4 deferred — depends on joule-l1 + pattern-core (OpenIE IP).
+    # Will port with surgery once jouleclaw-l1 ships a thin lawful-tier
+    # trait surface in Phase 6.
 ]
 
 [workspace.package]

@@ -1,0 +1,12 @@
+[package]
+name = "jouleclaw-liquid"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "L3 tier — Closed-form Continuous-time (CfC) recurrent language models, the SSM-class brain. O(L) state evolution vs transformer O(L²) attention. Ported from pattern-lang/liquid."
+
+[dependencies]
+jouleclaw-cascade = { path = "../jouleclaw-cascade" }

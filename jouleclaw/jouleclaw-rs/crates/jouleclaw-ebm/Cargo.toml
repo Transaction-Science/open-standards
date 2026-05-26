@@ -1,0 +1,12 @@
+[package]
+name = "jouleclaw-ebm"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Energy-based constraint-satisfaction tier — SAT, n-queens, sudoku, graph coloring as joule-priced deterministic solvers. Ported from pattern-lang/ebm."
+
+[dependencies]
+jouleclaw-cascade = { path = "../jouleclaw-cascade" }

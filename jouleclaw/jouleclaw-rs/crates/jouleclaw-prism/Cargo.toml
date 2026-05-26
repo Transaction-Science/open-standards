@@ -1,0 +1,15 @@
+[package]
+name = "jouleclaw-prism"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "L3 tier — 1-bit / ternary BitNet-class kernels. Ternary transformer forward pass. The lowest-joule local-model tier. Ported from pattern-lang/prism."
+
+[dependencies]
+jouleclaw-cascade = { path = "../jouleclaw-cascade" }
+jouleclaw-core = { path = "../jouleclaw-core" }
+jouleclaw-loader-gguf = { path = "../jouleclaw-loader-gguf" }
+jouleclaw-runtime = { path = "../jouleclaw-runtime" }

@@ -1,0 +1,15 @@
+[package]
+name = "jouleclaw-mrl"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "L2 tier — Matryoshka Representation Learning (MRL) nested embeddings. Sub-millijoule retrieval tier. Embedder + nearest-neighbor picker + retrieval. Ported from pattern-lang/mrl."
+
+[dependencies]
+jouleclaw-cascade = { path = "../jouleclaw-cascade" }
+jouleclaw-core = { path = "../jouleclaw-core" }
+jouleclaw-loader-gguf = { path = "../jouleclaw-loader-gguf" }
+jouleclaw-runtime = { path = "../jouleclaw-runtime" }

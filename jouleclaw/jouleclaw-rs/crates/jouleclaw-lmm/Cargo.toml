@@ -1,0 +1,20 @@
+[package]
+name = "jouleclaw-lmm"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "L3 tier — Large Multimodal Model. Vision + text + audio pipeline on top of jouleclaw-prism's TernaryDecoder backbone. Real VL path (LFM2.5-VL preprocessing). Ported from pattern-lang/lmm."
+
+[dependencies]
+jouleclaw-cascade     = { path = "../jouleclaw-cascade" }
+jouleclaw-core        = { path = "../jouleclaw-core" }
+jouleclaw-loader-gguf = { path = "../jouleclaw-loader-gguf" }
+jouleclaw-runtime     = { path = "../jouleclaw-runtime" }
+jouleclaw-prism       = { path = "../jouleclaw-prism" }
+# Image byte decode (JPEG/PNG/...) for LFM2.5-VL preprocessing. Default
+# features pull every codec; we only need the common ones, but the
+# convenience of `image::load_from_memory` is worth it for the VL path.
+image                 = { version = "0.25", default-features = false, features = ["jpeg", "png"] }
