@@ -46,7 +46,7 @@ use jouleclaw_core::tensor::{Dtype, Tensor, TensorMeta, TensorStorage};
 /// KV cache storage precision. `None` is the historical fp32 path;
 /// `Int8` halves-twice the per-position memory at the cost of a fast
 /// per-step quant + dequant.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum KvQuant {
     /// Store K/V as F32 (current default). No quant overhead; full
     /// numerical precision; 4 bytes per element.
@@ -198,7 +198,7 @@ impl ShortConvStateCache {
 /// Immutable snapshot of a [`ShortConvStateCache`]. Cheaply `Clone`-able
 /// (no buffer duplication: the inner `Vec<u8>` is plain owned bytes that
 /// users typically wrap in `Arc<ShortConvStateSnapshot>` when sharing).
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct ShortConvStateSnapshot {
     /// One slot per layer; `Some(bytes)` for shortconv layers, `None`
     /// for attention layers. `bytes.len() == window * d * 4`.
@@ -218,7 +218,7 @@ pub struct ShortConvStateSnapshot {
 /// maintains). When restored, the cache reads the entire buffer for
 /// attention but masks tail positions via `softmax_causal_offset_dyn`,
 /// so the zero pad never leaks into logits.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct KvSnapshot {
     pub n_layers: usize,
     pub n_heads_kv: usize,

@@ -1,0 +1,18 @@
+[package]
+name = "jouleclaw-runtime"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "The JouleClaw runtime kernel. Chat, embed, generate, streaming, prompt-lookup decoding (PLD), drafter-based speculative decoding, compile, execute, validate. Ported from pattern-lang/joule-runtime."
+
+[dependencies]
+jouleclaw-core = { path = "../jouleclaw-core" }
+jouleclaw-topology = { path = "../jouleclaw-topology" }
+jouleclaw-backend-reference = { path = "../jouleclaw-backend-reference" }
+jouleclaw-backend-apple = { path = "../jouleclaw-backend-apple" }
+jouleclaw-loader-gguf = { path = "../jouleclaw-loader-gguf" }
+serde = { workspace = true }
+bincode = "1"

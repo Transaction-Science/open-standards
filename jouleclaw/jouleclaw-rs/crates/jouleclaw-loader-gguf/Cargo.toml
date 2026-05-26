@@ -11,5 +11,6 @@ description = "GGUF model loader for JouleClaw. F32, F16, Q4_0, Q5_K, Q8_0 quant
 [dependencies]
 jouleclaw-core = { path = "../jouleclaw-core" }
 regex = "1"
+serde = { workspace = true }
 serde_json = { workspace = true }
 memmap2 = "0.9"

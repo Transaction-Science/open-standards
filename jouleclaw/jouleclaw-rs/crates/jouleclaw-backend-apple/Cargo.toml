@@ -1,0 +1,29 @@
+[package]
+name = "jouleclaw-backend-apple"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Apple Silicon backend for JouleClaw: Accelerate (AMX), Metal compute, MPSMatrixMultiplication. On M5, MPS matmul auto-routes through the GPU's Neural Accelerators (Tensor APIs). Ported from pattern-lang/joule-backend-apple."
+
+[dependencies]
+jouleclaw-core = { path = "../jouleclaw-core" }
+
+# Accelerate is linked via build.rs on macOS only. No third-party crates
+# needed for cblas_sgemm; we declare the FFI directly.
+
+# Metal Performance Shaders bindings — gated to macOS targets. On M5 the
+# MPSMatrixMultiplication path auto-routes through the GPU's Neural
+# Accelerators ("Tensor Cores") for matmul; on M3/M4 it routes through
+# the existing GPU shader path. The kernel-selection layer prefers MPS
+# on M5 + sufficient-size matmuls, AMX otherwise.
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = "0.6"
+objc2-foundation = "0.3"
+objc2-metal = "0.3"
+objc2-metal-performance-shaders = "0.3"
+
+[lib]
+crate-type = ["rlib"]

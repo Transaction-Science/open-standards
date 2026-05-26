@@ -12,8 +12,14 @@ members = [
     "crates/jouleclaw-pack",
     "crates/jouleclaw-history",
     "crates/jouleclaw-wire",
-    # Phase 3 will add: jouleclaw-hal, jouleclaw-backend-{apple,reference,cuda,metal,rocm,vulkan},
-    # jouleclaw-runtime, jouleclaw-router (needs l2), jouleclaw-l1, jouleclaw-l2, jouleclaw-bench
+
+    # Phase 3 — backends + runtime
+    "crates/jouleclaw-backend-reference",
+    "crates/jouleclaw-backend-apple",
+    "crates/jouleclaw-runtime",
+    # Phase 3.5 / Phase 5 will add: jouleclaw-hal (from efficient-genai),
+    # jouleclaw-backend-{cuda,metal,rocm,vulkan}, jouleclaw-l1/l2 (needs
+    # designed thin trait surface in core), jouleclaw-router, jouleclaw-bench
 ]
 
 [workspace.package]

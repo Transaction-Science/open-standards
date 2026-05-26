@@ -1,0 +1,12 @@
+[package]
+name = "jouleclaw-backend-reference"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Pure-Rust scalar reference kernels for JouleClaw. Determinism oracle for all other backends. Ported from pattern-lang/joule-backend-reference."
+
+[dependencies]
+jouleclaw-core = { path = "../jouleclaw-core" }
