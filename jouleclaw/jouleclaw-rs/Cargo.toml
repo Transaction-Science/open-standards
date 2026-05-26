@@ -27,6 +27,12 @@ members = [
     # gemma4 deferred — depends on joule-l1 + pattern-core (OpenIE IP).
     # Will port with surgery once jouleclaw-l1 ships a thin lawful-tier
     # trait surface in Phase 6.
+
+    # Phase 5 — omni-modal generation (single crate; will split later)
+    "crates/jouleclaw-omni",     # diffusion / stable-diffusion / musicgen
+                                 # / whisper / gaussian3d / video / fusion
+                                 # / 5 modalities / HAL / orchestrator /
+                                 # server — ported wholesale from efficient-genai
 ]
 
 [workspace.package]

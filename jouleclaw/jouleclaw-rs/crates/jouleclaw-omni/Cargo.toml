@@ -1,0 +1,122 @@
+[package]
+name = "jouleclaw-omni"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "JouleClaw omni-modal generation tier. Diffusion (40+ samplers), Stable Diffusion / SDXL / SD3 / Flux paths, MusicGen, Whisper, Gaussian3D, video, cross-modal fusion, MoE expert cache. Ported wholesale from efficient-genai; preserves the internal module structure for now (hal / inference / modalities / runtime / orchestrator / quality / server / tensor / weight_store / core). Future phases will split this into separate crates as the architecture stabilises."
+
+[lib]
+name = "jouleclaw_omni"
+path = "src/lib.rs"
+
+[features]
+default = ["std"]
+std = []
+
+# Hardware backends
+cuda = ["dep:cudarc"]
+metal = ["dep:metal", "dep:objc2"]
+rocm = []
+vulkan = ["dep:ash", "dep:gpu-allocator"]
+
+# JIT compilation
+jit = ["dep:cranelift", "dep:cranelift-jit"]
+
+# Model formats
+safetensors = ["dep:safetensors"]
+gguf = []
+
+# Optimizations
+simd = []
+rayon = ["dep:rayon"]
+
+# Server
+server = ["dep:axum", "dep:tower-http", "dep:tracing-subscriber", "dep:image", "dep:uuid", "dep:base64"]
+
+# Note: the jouledb feature from efficient-genai was dropped during the
+# JouleClaw port. It path-depended on `joulesperbit/crates/joule-db-{weights,core}`
+# (JoulesPerBit IP) which does not port into the public open standard.
+
+# Convenience: everything except cuda + jit (which often require external
+# toolchains) so a developer can `cargo build --features dev` on bare
+# macOS/Linux without provisioning extra SDKs.
+dev = ["metal", "vulkan", "safetensors", "rayon", "simd", "server"]
+full = ["cuda", "metal", "vulkan", "jit", "safetensors", "rayon", "simd", "server"]
+
+[dependencies]
+# JouleClaw foundation
+jouleclaw-loader-gguf = { path = "../jouleclaw-loader-gguf" }
+
+# Core
+thiserror = "2.0"
+tracing = "0.1"
+parking_lot = "0.12"
+dashmap = "6.1"
+crossbeam = "0.8"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Async runtime
+tokio = { version = "1.44", features = ["rt-multi-thread", "sync", "macros", "time", "fs", "net", "io-util"] }
+async-stream = "0.3"
+futures = "0.3"
+
+# Memory management
+bumpalo = "3.17"
+memmap2 = "0.9"
+
+# Serialization (zero-copy)
+rkyv = { version = "0.8" }
+bytemuck = { version = "1.22", features = ["derive"] }
+
+# Math
+half = { version = "2.5", features = ["bytemuck", "num-traits"] }
+num-traits = "0.2"
+rand = "0.9"
+rustfft = "6.2"
+
+# Text processing
+regex = "1.11"
+tokenizers = "0.21"
+
+# Native libc bindings
+libc = "0.2.180"
+
+# Optional: CUDA
+cudarc = { version = "0.16", optional = true }
+
+# Optional: Metal (macOS/iOS) - using objc2 for modern Rust bindings
+metal = { version = "0.31", optional = true }
+objc2 = { version = "0.6", optional = true }
+
+# Optional: Vulkan
+ash = { version = "0.38", optional = true }
+gpu-allocator = { version = "0.27", optional = true, features = ["vulkan"] }
+
+# Optional: JIT compiler
+cranelift = { version = "0.116", optional = true }
+cranelift-jit = { version = "0.116", optional = true }
+
+# Optional: Model formats
+safetensors = { version = "0.5", optional = true }
+
+# Optional: Parallelism
+rayon = { version = "1.10", optional = true }
+
+# Optional: Server stack
+axum = { version = "0.7", optional = true }
+tower-http = { version = "0.5", features = ["trace", "cors", "fs"], optional = true }
+tracing-subscriber = { version = "0.3", optional = true }
+image = { version = "0.24", optional = true }
+uuid = { version = "1.10", features = ["v4"], optional = true }
+base64 = { version = "0.22", optional = true }
+
+# HTTP client for model_fetch (HF Hub / S3 downloads).
+reqwest = { version = "0.12", features = ["rustls-tls", "stream", "json"], default-features = false }
+
+[dev-dependencies]
+proptest = "1.6"
+tokio-test = "0.4"
