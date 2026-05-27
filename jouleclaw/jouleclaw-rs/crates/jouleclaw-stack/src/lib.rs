@@ -103,6 +103,7 @@ use jouleclaw_promote::{
     shared_in_memory, FilePromotionStore, InMemoryPromotionStore, PromotedTier, PromotionGate,
     PromotionStore, SharedStore,
 };
+use jouleclaw_skill::{InMemorySkillStore, SharedSkills, Skill, SkillStore, SkillTier};
 use jouleclaw_verify::OutputVerifier;
 
 /// Default global energy budget for the [`Governor`]: 1 MJ per rolling
@@ -171,6 +172,12 @@ pub struct JouleClawStack<S: PromotionStore = InMemoryPromotionStore> {
     /// Confidence bar a verified compartment answer must clear to be
     /// promoted (default [`jouleclaw_promote::DEFAULT_PROMOTE_CONFIDENCE`]).
     pub promote_confidence: f32,
+
+    /// Skill registry, shared with the front [`SkillTier`] in
+    /// [`Self::runtime`]. Where promotion caches one exact answer, a
+    /// skill resolves a whole *class* of queries deterministically.
+    /// Register parameterized skills via [`Self::register_skill`].
+    pub skill_store: SharedSkills<InMemorySkillStore>,
 }
 
 impl<S: PromotionStore + 'static> JouleClawStack<S> {
@@ -189,6 +196,9 @@ impl<S: PromotionStore + 'static> JouleClawStack<S> {
         // Front deterministic tier: verified model answers promoted here
         // resolve at nanojoule energy and never re-invoke the model.
         cascade.register(Box::new(PromotedTier::new(promotion_store.clone()))); // L0.1 promoted
+        // Compiled skills: resolve a whole query *class* deterministically.
+        let skill_store = jouleclaw_skill::shared_in_memory();
+        cascade.register(Box::new(SkillTier::new(skill_store.clone()))); // L0.5 skills
         cascade.register(Box::new(FormulaFirstTier::new(InMemoryKnowledgeStore::new()))); // L0.25
         cascade.register(Box::new(ToolTier::new())); // L0.5
         cascade.register(Box::new(LlmCheapTier::new(EchoBackend::default()))); // L3
@@ -220,6 +230,16 @@ impl<S: PromotionStore + 'static> JouleClawStack<S> {
             promotion_store,
             verifier: None,
             promote_confidence: jouleclaw_promote::DEFAULT_PROMOTE_CONFIDENCE,
+            skill_store,
+        }
+    }
+
+    /// Register a compiled skill. The front [`SkillTier`] will then
+    /// resolve every query matching the skill's template deterministically
+    /// — no model, regardless of how many distinct instances arrive.
+    pub fn register_skill(&mut self, skill: Skill) {
+        if let Ok(mut store) = self.skill_store.lock() {
+            store.register(skill);
         }
     }
 
@@ -458,6 +478,37 @@ mod tests {
         }
         assert!(ans.joules_spent < 1e-6); // nanojoules, not the model's 2 J
         assert!(stack.promotion_store.lock().unwrap().invocations_avoided() >= 1);
+    }
+
+    #[test]
+    fn registered_skill_resolves_a_query_class() {
+        use jouleclaw_skill::{Procedure, Skill, Template};
+        use jouleclaw_program::{Field, Signature};
+        let mut stack = JouleClawStack::with_defaults();
+        stack.register_skill(Skill::new(
+            "greet",
+            Signature::new(
+                "greet",
+                "greet by name",
+                vec![Field::text("name", "person")],
+                vec![Field::text("greeting", "out")],
+            ),
+            Template::parse("greet {name}").expect("template"),
+            Procedure::Format("Hello, {name}!".into()),
+            TierId::L3(L3ModelId(0)),
+        ));
+        // Two distinct instances, both resolved deterministically by the
+        // ONE skill — no model, served by the front SkillTier.
+        for (q_text, expected) in [("greet Alice", "Hello, Alice!"), ("greet Bob", "Hello, Bob!")] {
+            let ans = stack.runtime.answer(text(q_text)).expect("resolves");
+            assert_eq!(ans.tier_used, TierId::L0_5ToolCompute);
+            match ans.output {
+                AnswerOutput::Text(t) => assert_eq!(t, expected),
+                other => panic!("expected skill answer, got {other:?}"),
+            }
+            assert!(ans.joules_spent < 1e-6);
+        }
+        assert!(stack.skill_store.lock().unwrap().invocations_avoided() >= 2);
     }
 
     #[test]

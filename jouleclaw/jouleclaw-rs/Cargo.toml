@@ -127,6 +127,9 @@ members = [
 
     # Yang→yin promotion — verified model answers become permanent deterministic facts (cost→0 with use).
     "crates/jouleclaw-promote",
+
+    # Skill-compilation — verified resolutions become typed parameterized deterministic skills (a whole query class, no model).
+    "crates/jouleclaw-skill",
 ]
 
 [workspace.package]

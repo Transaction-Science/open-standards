@@ -2329,6 +2329,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "jouleclaw-skill"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-cascade",
+ "jouleclaw-program",
+ "regex",
+ "serde",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "jouleclaw-ssm-reader"
 version = "0.1.0"
 dependencies = [
@@ -2361,11 +2372,13 @@ dependencies = [
  "jouleclaw-graph-rag",
  "jouleclaw-llm-cheap",
  "jouleclaw-local-index",
+ "jouleclaw-program",
  "jouleclaw-promote",
  "jouleclaw-proof-tier",
  "jouleclaw-reflection",
  "jouleclaw-rerank",
  "jouleclaw-routing",
+ "jouleclaw-skill",
  "jouleclaw-ssm-reader",
  "jouleclaw-ssm-router",
  "jouleclaw-struct-contrast",

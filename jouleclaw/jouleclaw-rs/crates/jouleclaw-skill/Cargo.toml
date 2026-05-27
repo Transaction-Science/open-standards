@@ -1,0 +1,16 @@
+[package]
+name = "jouleclaw-skill"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "JouleClaw skill-compilation — a verified model resolution becomes a typed, parameterized, deterministic skill that resolves a whole class of queries without the model. The generalizing cousin of yang→yin promotion."
+
+[dependencies]
+jouleclaw-cascade = { path = "../jouleclaw-cascade" }
+jouleclaw-program = { path = "../jouleclaw-program" }
+regex            = { workspace = true }
+serde            = { workspace = true }
+thiserror        = { workspace = true }
