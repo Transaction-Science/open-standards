@@ -106,15 +106,21 @@ impl VerificationTier {
 
     /// Model identifiers of the configured backends, in dispatch order.
     pub fn model_ids(&self) -> Vec<String> {
-        self.backends.iter().map(|b| b.model_id().to_string()).collect()
+        self.backends.iter().map(|b| b.model_name().to_string()).collect()
     }
 
-    /// Build the [`LlmRequest`] this tier issues for `prompt`.
+    /// Build the [`LlmRequest`] this tier issues for `prompt`. L4 always
+    /// asks for a deterministic (`temperature 0.0`) short answer with no
+    /// stop sequences, system prompt, or grammar — the job is to verify,
+    /// not to shape output.
     fn build_request(&self, prompt: String) -> LlmRequest {
         LlmRequest {
             prompt,
             max_tokens: self.max_tokens,
             temperature: 0.0,
+            stop: Vec::new(),
+            system: None,
+            grammar: None,
         }
     }
 
@@ -143,9 +149,12 @@ impl Tier for VerificationTier {
         if prompt.is_empty() {
             return None;
         }
-        let request = self.build_request(prompt);
-        // Sum the per-backend estimates — every backend runs.
-        let joules: f64 = self.backends.iter().map(|b| b.estimate_joules(&request)).sum();
+        // Sum the per-backend typical costs — every backend runs.
+        let joules: f64 = self
+            .backends
+            .iter()
+            .map(|b| b.typical_joules_per_call())
+            .sum();
         Some(TierEstimate {
             joules,
             latency: VERIFICATION_TIER_LATENCY,
@@ -168,8 +177,12 @@ impl Tier for VerificationTier {
         // Dispatch every backend in parallel. `std::thread::scope`
         // borrows `&self.backends` for the lifetime of the scope, so
         // we can hand each `&dyn LlmBackend` to its own thread without
-        // arc-ing.
-        let results: Vec<Result<crate::llm::LlmResponse, crate::llm::LlmError>> =
+        // arc-ing. We carry each backend's `typical_joules_per_call`
+        // alongside its result so a failing or meter-less backend can
+        // still be charged its modeled cost (the canonical `LlmError`
+        // does not carry the backend identity, so we attribute by
+        // position rather than by parsing the error).
+        let results: Vec<(f64, Result<crate::llm::LlmResponse, crate::llm::LlmError>)> =
             std::thread::scope(|scope| {
                 let handles: Vec<_> = self
                     .backends
@@ -177,42 +190,42 @@ impl Tier for VerificationTier {
                     .map(|backend| {
                         let req = request.clone();
                         let b: &dyn LlmBackend = backend.as_ref();
-                        scope.spawn(move || b.complete(&req))
+                        let typical = b.typical_joules_per_call();
+                        (typical, scope.spawn(move || b.complete(&req)))
                     })
                     .collect();
                 handles
                     .into_iter()
-                    .map(|h| match h.join() {
-                        Ok(r) => r,
-                        Err(_) => Err(crate::llm::LlmError::BackendFailed {
-                            model_id: "<panic>".into(),
-                            reason: "worker thread panicked".into(),
-                        }),
+                    .map(|(typical, h)| {
+                        let r = match h.join() {
+                            Ok(r) => r,
+                            Err(_) => Err(crate::llm::LlmError::Other(
+                                "worker thread panicked".into(),
+                            )),
+                        };
+                        (typical, r)
                     })
                     .collect()
             });
 
         // Tally joule spend across every backend. We charge for *all*
         // backends regardless of outcome — the work happened on the
-        // wire whether or not the comparison agreed.
+        // wire whether or not the comparison agreed. A successful
+        // backend that reported real energy is charged that; otherwise
+        // (no meter, or failure) we fall back to its typical cost.
         let mut joules_spent = 0.0;
         let mut candidates: Vec<String> = Vec::with_capacity(results.len());
         let mut any_error: Option<String> = None;
-        for r in results {
+        for (typical, r) in results {
             match r {
                 Ok(resp) => {
-                    joules_spent += resp.joules;
+                    joules_spent += resp.energy_joules.unwrap_or(typical);
                     candidates.push(resp.text);
                 }
                 Err(e) => {
-                    // Sum at least the estimated cost for the failing
-                    // backend so calibration is not skewed downward.
-                    joules_spent += self
-                        .backends
-                        .iter()
-                        .find(|b| matches!(&e, crate::llm::LlmError::BackendFailed { model_id, .. } if b.model_id() == model_id))
-                        .map(|b| b.estimate_joules(&request))
-                        .unwrap_or(0.0);
+                    // Charge the failing backend's modeled cost so
+                    // calibration is not skewed downward.
+                    joules_spent += typical;
                     any_error.get_or_insert_with(|| e.to_string());
                 }
             }

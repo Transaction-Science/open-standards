@@ -9,7 +9,7 @@
 //! Cost model (sum across configured backends):
 //!
 //! ```text
-//! joules           = Σ backend.estimate_joules(request)   ≈ 4 J typical
+//! joules           = Σ backend.typical_joules_per_call()   ≈ 4 J typical
 //! latency          = 6 s   (two ~3 s cheap-LLM calls, run in parallel)
 //! confidence_floor = 0.9   (agreement-only; refused otherwise)
 //! ```
@@ -32,11 +32,12 @@
 //!
 //! ## Backend trait
 //!
-//! [`LlmBackend`] is defined locally in [`crate::llm`] as a
-//! placeholder while the sibling `jouleclaw-llm-cheap` crate is being
-//! ported in parallel. The trait shape was specified to be identical
-//! to that crate's; once it lands on disk this module's `llm.rs`
-//! should be deleted and `LlmBackend` re-exported from there.
+//! [`LlmBackend`] is the canonical trait from the sibling L3 crate
+//! `jouleclaw-llm-cheap`; L4 consumes it directly and re-exports it
+//! (along with [`LlmRequest`] / [`LlmResponse`] / [`LlmError`]) through
+//! [`crate::llm`]. Two deterministic reference backends —
+//! [`StaticBackend`] and [`FailingBackend`] — ship for tests and for
+//! downstream integration without a real inference stack.
 
 #![forbid(unsafe_code)]
 
@@ -49,7 +50,8 @@ pub use checker::{
     jaccard, normalise,
 };
 pub use llm::{
-    FailingBackend, LlmBackend, LlmError, LlmRequest, LlmResponse, StaticBackend,
+    FailingBackend, FinishReason, LlmBackend, LlmError, LlmRequest, LlmResponse,
+    StaticBackend,
 };
 pub use tier::{
     VerificationTier, VerificationTierError, VERIFICATION_TIER_CONFIDENCE_FLOOR,

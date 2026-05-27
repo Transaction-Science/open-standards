@@ -9,12 +9,9 @@ authors.workspace = true
 description = "JouleClaw L4 verification tier — cross-model agreement check across ≥2 LLM backends. When you really do need the answer and you're willing to pay 4 J for it."
 
 [dependencies]
-jouleclaw-cascade = { path = "../jouleclaw-cascade" }
-jouleclaw-energy  = { path = "../jouleclaw-energy" }
-# TODO: switch to the published `jouleclaw-llm-cheap` crate once that
-# sibling ships. The trait shapes were specified to be identical, so the
-# in-tree placeholder in `src/llm.rs` can be replaced wholesale.
-# jouleclaw-llm-cheap = { path = "../jouleclaw-llm-cheap" }
+jouleclaw-cascade   = { path = "../jouleclaw-cascade" }
+jouleclaw-energy    = { path = "../jouleclaw-energy" }
+jouleclaw-llm-cheap = { path = "../jouleclaw-llm-cheap" }
 serde      = { workspace = true }
 serde_json = { workspace = true }
 thiserror  = { workspace = true }
