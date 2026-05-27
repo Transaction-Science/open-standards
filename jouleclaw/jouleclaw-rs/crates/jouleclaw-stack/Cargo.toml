@@ -1,0 +1,32 @@
+[package]
+name = "jouleclaw-stack"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "JouleClaw full-stack assembler — wires the L0.25–L10 tier crates into one runnable Runtime + control plane, using each crate's deterministic reference backend."
+
+[dependencies]
+jouleclaw-cascade           = { path = "../jouleclaw-cascade" }
+# Resolver tiers (terminal answers) — registered into the Runtime walk.
+jouleclaw-formula           = { path = "../jouleclaw-formula" }
+jouleclaw-tool-tier         = { path = "../jouleclaw-tool-tier" }
+jouleclaw-ssm-reader        = { path = "../jouleclaw-ssm-reader" }
+jouleclaw-llm-cheap         = { path = "../jouleclaw-llm-cheap" }
+jouleclaw-verification-tier = { path = "../jouleclaw-verification-tier" }
+jouleclaw-proof-tier        = { path = "../jouleclaw-proof-tier" }
+# Pipeline-stage tiers (intermediate artifacts) — exposed for explicit composition.
+jouleclaw-ssm-router        = { path = "../jouleclaw-ssm-router" }
+jouleclaw-local-index       = { path = "../jouleclaw-local-index" }
+jouleclaw-graph-rag         = { path = "../jouleclaw-graph-rag" }
+jouleclaw-struct-contrast   = { path = "../jouleclaw-struct-contrast" }
+jouleclaw-federation        = { path = "../jouleclaw-federation" }
+jouleclaw-rerank            = { path = "../jouleclaw-rerank" }
+# Control plane.
+jouleclaw-routing           = { path = "../jouleclaw-routing" }
+jouleclaw-reflection        = { path = "../jouleclaw-reflection" }
+jouleclaw-tuner             = { path = "../jouleclaw-tuner" }
+jouleclaw-supervisor        = { path = "../jouleclaw-supervisor" }
+jouleclaw-governor          = { path = "../jouleclaw-governor" }

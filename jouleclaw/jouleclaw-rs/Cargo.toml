@@ -121,6 +121,9 @@ members = [
 
     # L10 governor — rolling joule budget, per-tenant quotas, kill switch.
     "crates/jouleclaw-governor",
+
+    # Full-stack assembler — wires the tier crates into one runnable Runtime + control plane.
+    "crates/jouleclaw-stack",
 ]
 
 [workspace.package]

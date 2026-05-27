@@ -2340,6 +2340,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "jouleclaw-stack"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-cascade",
+ "jouleclaw-federation",
+ "jouleclaw-formula",
+ "jouleclaw-governor",
+ "jouleclaw-graph-rag",
+ "jouleclaw-llm-cheap",
+ "jouleclaw-local-index",
+ "jouleclaw-proof-tier",
+ "jouleclaw-reflection",
+ "jouleclaw-rerank",
+ "jouleclaw-routing",
+ "jouleclaw-ssm-reader",
+ "jouleclaw-ssm-router",
+ "jouleclaw-struct-contrast",
+ "jouleclaw-supervisor",
+ "jouleclaw-tool-tier",
+ "jouleclaw-tuner",
+ "jouleclaw-verification-tier",
+]
+
+[[package]]
 name = "jouleclaw-struct-contrast"
 version = "0.1.0"
 dependencies = [
