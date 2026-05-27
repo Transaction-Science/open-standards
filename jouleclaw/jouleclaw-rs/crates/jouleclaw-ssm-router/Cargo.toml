@@ -1,0 +1,16 @@
+[package]
+name = "jouleclaw-ssm-router"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "JouleClaw L0.75 SSM-router tier — local intent classifier (Mamba-3 class) that routes queries to downstream tiers without committing to a full read. Pure Rust. Ports the verity-cascade donor with a hash-based KeywordClassifier default; production consumers plug in a Liquid/Mamba backend via the IntentClassifier trait."
+
+[dependencies]
+jouleclaw-cascade = { path = "../jouleclaw-cascade" }
+jouleclaw-energy  = { path = "../jouleclaw-energy" }
+serde             = { workspace = true }
+serde_json        = { workspace = true }
+thiserror         = { workspace = true }

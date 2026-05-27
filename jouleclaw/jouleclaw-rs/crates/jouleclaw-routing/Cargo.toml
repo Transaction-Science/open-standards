@@ -1,0 +1,15 @@
+[package]
+name = "jouleclaw-routing"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "JouleClaw L5 learned-routing tier — episode-memory + similarity dispatch ordering. Meta-cognitive control plane, pure Rust."
+
+[dependencies]
+jouleclaw-cascade = { path = "../jouleclaw-cascade" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }

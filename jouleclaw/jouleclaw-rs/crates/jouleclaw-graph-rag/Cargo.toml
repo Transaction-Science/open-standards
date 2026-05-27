@@ -1,0 +1,16 @@
+[package]
+name = "jouleclaw-graph-rag"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "JouleClaw L1.25 GraphRAG tier — deterministic entity extraction plus knowledge-graph enrichment. Pure Rust, no model inference."
+
+[dependencies]
+jouleclaw-cascade = { path = "../jouleclaw-cascade" }
+jouleclaw-energy = { path = "../jouleclaw-energy" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }

@@ -1,0 +1,16 @@
+[package]
+name = "jouleclaw-federation"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "JouleClaw L2 federation tier — multi-provider parallel search orchestration with pluggable fusers. Pure Rust, no async runtime."
+
+[dependencies]
+jouleclaw-cascade = { path = "../jouleclaw-cascade" }
+jouleclaw-energy = { path = "../jouleclaw-energy" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }

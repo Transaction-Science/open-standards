@@ -1,0 +1,16 @@
+[package]
+name = "jouleclaw-rerank"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "JouleClaw L2.5 NeuralRerank tier — pluggable reranker (ColBERT/SPLADE/BM25) over a federated candidate set. Pure Rust, no model deps."
+
+[dependencies]
+jouleclaw-cascade = { path = "../jouleclaw-cascade" }
+jouleclaw-energy = { path = "../jouleclaw-energy" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }

@@ -1,0 +1,16 @@
+[package]
+name = "jouleclaw-formula"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "JouleClaw L0.25 formula-first tier — structural-contrast relationship resolution. Pure Rust, deterministic, no model inference."
+
+[dependencies]
+jouleclaw-cascade = { path = "../jouleclaw-cascade" }
+jouleclaw-energy = { path = "../jouleclaw-energy" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }

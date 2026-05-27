@@ -1,0 +1,15 @@
+[package]
+name = "jouleclaw-decode"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Grammar-constrained decoding for JouleClaw — regex / CFG / JSON-schema → token-vocabulary mask. Pure Rust."
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+regex = { workspace = true }

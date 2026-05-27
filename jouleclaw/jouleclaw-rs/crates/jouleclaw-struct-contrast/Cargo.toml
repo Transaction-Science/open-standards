@@ -1,0 +1,17 @@
+[package]
+name = "jouleclaw-struct-contrast"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "JouleClaw L1.375 structural-contrast tier — second formula pass with graph-enriched entity context from L1.25 GraphRag. Decomposes similarity per-dimension. Pure Rust."
+
+[dependencies]
+jouleclaw-cascade = { path = "../jouleclaw-cascade" }
+jouleclaw-formula = { path = "../jouleclaw-formula" }
+jouleclaw-energy = { path = "../jouleclaw-energy" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }

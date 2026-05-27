@@ -1,0 +1,15 @@
+[package]
+name = "jouleclaw-reflection"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "JouleClaw L7 reflection — offline meta-cognitive learning over query traces, emits promote/demote lessons. Meta-cognitive control plane, pure Rust."
+
+[dependencies]
+jouleclaw-cascade = { path = "../jouleclaw-cascade" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }

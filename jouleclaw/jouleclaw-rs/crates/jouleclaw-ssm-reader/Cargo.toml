@@ -1,0 +1,16 @@
+[package]
+name = "jouleclaw-ssm-reader"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "JouleClaw L1.5 SSM-reader tier — local neural reading comprehension over retrieved passages. Class-typical cost ~20,000 µJ. Pure Rust. Ports the verity-cascade donor with a deterministic ExtractiveReader default; production consumers plug in a Mamba/Liquid SSM via the ReadingComprehender trait."
+
+[dependencies]
+jouleclaw-cascade = { path = "../jouleclaw-cascade" }
+jouleclaw-energy  = { path = "../jouleclaw-energy" }
+serde             = { workspace = true }
+serde_json        = { workspace = true }
+thiserror         = { workspace = true }

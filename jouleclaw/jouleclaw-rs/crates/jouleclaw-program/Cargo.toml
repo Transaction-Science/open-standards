@@ -1,0 +1,22 @@
+[package]
+name = "jouleclaw-program"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Typed-signature programs for JouleClaw — DSPy-style modules + compiler, pure Rust."
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+# jouleclaw-decode = { path = "../jouleclaw-decode" }  # optional, gated behind `decode` feature
+
+[features]
+default = []
+# When enabled, GrammarHandle is wired into jouleclaw-decode. For v0.1
+# jouleclaw-decode is not yet buildable, so we keep a placeholder newtype
+# and gate real wiring behind this flag.
+decode = []

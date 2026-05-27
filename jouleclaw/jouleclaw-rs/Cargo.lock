@@ -1788,6 +1788,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "jouleclaw-agent"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-cascade",
+ "jouleclaw-energy",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "jouleclaw-backend-apple"
 version = "0.1.0"
 dependencies = [
@@ -1870,6 +1881,16 @@ dependencies = [
  "serde_json",
  "tokenizers 0.22.2",
  "uuid",
+]
+
+[[package]]
+name = "jouleclaw-decode"
+version = "0.1.0"
+dependencies = [
+ "regex",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -1973,6 +1994,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "jouleclaw-federation"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-cascade",
+ "jouleclaw-energy",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "jouleclaw-formula"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-cascade",
+ "jouleclaw-energy",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "jouleclaw-fresh"
 version = "0.1.0"
 dependencies = [
@@ -1988,6 +2031,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "jouleclaw-governor"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "jouleclaw-graph-rag"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-cascade",
+ "jouleclaw-energy",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "jouleclaw-history"
 version = "0.1.0"
 dependencies = [
@@ -2000,6 +2063,17 @@ name = "jouleclaw-liquid"
 version = "0.1.0"
 dependencies = [
  "jouleclaw-cascade",
+]
+
+[[package]]
+name = "jouleclaw-llm-cheap"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-cascade",
+ "jouleclaw-energy",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -2023,6 +2097,17 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "jouleclaw-local-index"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-cascade",
+ "jouleclaw-energy",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -2144,6 +2229,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "jouleclaw-program"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "jouleclaw-proof-tier"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-cascade",
+ "jouleclaw-energy",
+ "jouleclaw-verify",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "jouleclaw-prov"
 version = "0.1.0"
 dependencies = [
@@ -2155,6 +2261,37 @@ dependencies = [
  "serde_json",
  "thiserror 2.0.18",
  "uuid",
+]
+
+[[package]]
+name = "jouleclaw-reflection"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-cascade",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "jouleclaw-rerank"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-cascade",
+ "jouleclaw-energy",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "jouleclaw-routing"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-cascade",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -2181,6 +2318,63 @@ dependencies = [
 ]
 
 [[package]]
+name = "jouleclaw-ssm-reader"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-cascade",
+ "jouleclaw-energy",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "jouleclaw-ssm-router"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-cascade",
+ "jouleclaw-energy",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "jouleclaw-struct-contrast"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-cascade",
+ "jouleclaw-energy",
+ "jouleclaw-formula",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "jouleclaw-supervisor"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-cascade",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "jouleclaw-tool-tier"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-cascade",
+ "jouleclaw-energy",
+ "jouleclaw-tools",
+ "regex",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "jouleclaw-tools"
 version = "0.1.0"
 dependencies = [
@@ -2202,6 +2396,26 @@ name = "jouleclaw-topology"
 version = "0.1.0"
 dependencies = [
  "jouleclaw-core",
+]
+
+[[package]]
+name = "jouleclaw-tuner"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "jouleclaw-verification-tier"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-cascade",
+ "jouleclaw-energy",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
 ]
 
 [[package]]

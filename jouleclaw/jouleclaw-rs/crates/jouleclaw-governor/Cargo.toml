@@ -1,0 +1,14 @@
+[package]
+name = "jouleclaw-governor"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "JouleClaw L10 governor — rolling joule budget enforcement, per-tenant quotas, kill switch. Meta-cognitive control plane, pure Rust."
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }

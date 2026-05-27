@@ -1,0 +1,17 @@
+[package]
+name = "jouleclaw-proof-tier"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "JouleClaw L4.5 proof-solver tier — deterministic constraint satisfaction (SAT, Sudoku, scheduling) at constraint-solver energy. Pure Rust."
+
+[dependencies]
+jouleclaw-cascade = { path = "../jouleclaw-cascade" }
+jouleclaw-verify  = { path = "../jouleclaw-verify" }
+jouleclaw-energy  = { path = "../jouleclaw-energy" }
+serde      = { workspace = true }
+serde_json = { workspace = true }
+thiserror  = { workspace = true }

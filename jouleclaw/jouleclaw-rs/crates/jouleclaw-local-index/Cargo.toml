@@ -1,0 +1,16 @@
+[package]
+name = "jouleclaw-local-index"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "JouleClaw L1 LocalIndex tier — client-energy-only retrieval against a local document corpus. Pluggable LocalIndex trait, ships a pure-Rust BM25-shaped InMemoryIndex reference impl. No tantivy dep — production swap-in via the trait."
+
+[dependencies]
+jouleclaw-cascade = { path = "../jouleclaw-cascade" }
+jouleclaw-energy = { path = "../jouleclaw-energy" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }

@@ -59,8 +59,68 @@ members = [
     # L0.5 tool-compute tier — 484 deterministic, zero-hallucination pure-function tools.
     "crates/jouleclaw-tools",
 
+    # L0.25 formula-first tier — structural-contrast relationship resolver.
+    "crates/jouleclaw-formula",
+
+    # L0.5 tool-tier — Tier adapter over jouleclaw-tools (registry of 484 deterministic tools).
+    "crates/jouleclaw-tool-tier",
+
     # Regulatory-compliance wedge built on the energy substrate.
     "crates/jouleclaw-compliance",
+
+    # Grammar-constrained decoding for L3/L4 model outputs.
+    "crates/jouleclaw-decode",
+
+    # L4.5 proof-solver tier — deterministic CSP at constraint-solver energy.
+    "crates/jouleclaw-proof-tier",
+
+    # Typed-signature programs — DSPy-style modules + compiler, pure Rust.
+    "crates/jouleclaw-program",
+
+    # L0.75 SSM-router tier — local intent classifier, picks downstream tiers.
+    "crates/jouleclaw-ssm-router",
+
+    # L1.25 GraphRAG tier — deterministic entity extraction + KG enrichment.
+    "crates/jouleclaw-graph-rag",
+
+    # L1.375 structural-contrast tier — second formula pass with graph context.
+    "crates/jouleclaw-struct-contrast",
+
+    # L1.5 SSM-reader tier — local reading-comprehension QA over passages.
+    "crates/jouleclaw-ssm-reader",
+
+    # L2 federation tier — multi-provider parallel search + fusion.
+    "crates/jouleclaw-federation",
+
+    # L2.5 neural-rerank tier — reranker (BM25 default; ColBERT/SPLADE plug-in).
+    "crates/jouleclaw-rerank",
+
+    # L1 local-index tier — BM25-shaped retrieval over an in-process corpus.
+    "crates/jouleclaw-local-index",
+
+    # L3 cheap-LLM tier — sync trait surface, EchoBackend default.
+    "crates/jouleclaw-llm-cheap",
+
+    # L4 cross-model verification tier — parallel dispatch + agreement checker.
+    "crates/jouleclaw-verification-tier",
+
+    # L5 learned-routing tier — episode-memory dispatch ordering (meta).
+    "crates/jouleclaw-routing",
+
+    # L6 agent tier — multi-step recursive cascade (decompose/dispatch/compose).
+    "crates/jouleclaw-agent",
+
+    # L7 reflection — offline meta-cognitive learning, promote/demote lessons.
+    "crates/jouleclaw-reflection",
+
+    # L8 self-tuner — five damped control loops over cascade dynamics.
+    "crates/jouleclaw-tuner",
+
+    # L9 supervisor — pathology detection (explosion/starvation/oscillation/inversion).
+    "crates/jouleclaw-supervisor",
+
+    # L10 governor — rolling joule budget, per-tenant quotas, kill switch.
+    "crates/jouleclaw-governor",
 ]
 
 [workspace.package]
