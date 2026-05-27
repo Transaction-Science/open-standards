@@ -133,7 +133,7 @@ fn dispatch_structured(tier: &mut dyn Tier, q: &Query, remaining: f64) -> (Optio
     }
 }
 
-impl JouleClawStack {
+impl<S: jouleclaw_promote::PromotionStore + 'static> JouleClawStack<S> {
     /// Run the default RAG pipeline for `question` within `budget_j`
     /// joules. Convenience for [`rag_with`](Self::rag_with) with
     /// [`RagConfig::default`].

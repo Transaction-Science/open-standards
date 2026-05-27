@@ -41,7 +41,15 @@ where
     /// a single-shot tier, so the agent refuses it (returns `None` from
     /// `estimate_cost`).
     min_steps: usize,
+    /// Hard cap on sub-queries dispatched per invocation. Bounds the
+    /// fan-out *width* so a runaway planner cannot explode the tree.
+    /// (Tree *depth* is bounded by the joule budget — see `try_answer`.)
+    max_steps: usize,
 }
+
+/// Default fan-out cap. A single agent invocation dispatches at most
+/// this many sub-queries.
+pub const DEFAULT_MAX_STEPS: usize = 16;
 
 impl<C: AgentCascade> AgentTier<KeywordPlanner, C, Concatenator> {
     /// Agent with the default keyword planner and newline concatenator,
@@ -52,6 +60,7 @@ impl<C: AgentCascade> AgentTier<KeywordPlanner, C, Concatenator> {
             cascade,
             composer: Concatenator::default(),
             min_steps: 2,
+            max_steps: DEFAULT_MAX_STEPS,
         }
     }
 }
@@ -69,7 +78,14 @@ where
             cascade,
             composer,
             min_steps: min_steps.max(1),
+            max_steps: DEFAULT_MAX_STEPS,
         }
+    }
+
+    /// Override the fan-out cap (sub-queries dispatched per invocation).
+    pub fn with_max_steps(mut self, max_steps: usize) -> Self {
+        self.max_steps = max_steps.max(1);
+        self
     }
 
     /// Borrow the cascade shim (e.g. to inspect a `MockCascade`'s
@@ -86,14 +102,23 @@ where
         }
     }
 
-    /// Build a sub-query that inherits the parent's budget/quality/
-    /// context but carries the sub-query text and a fraction of the
-    /// remaining budget.
-    fn sub_query(parent: &Query, text: &str) -> Query {
+    /// Build a sub-query that inherits the parent's quality/context but
+    /// carries the sub-query text and a budget **clamped to the joules
+    /// still remaining** for this agent invocation. Clamping is the
+    /// recursion bound: a nested agent receives a strictly smaller
+    /// budget at each level, so even unbounded decomposition halts when
+    /// the joules run out (the thermodynamic kill-switch), with no need
+    /// for a depth counter the `Query` type cannot carry.
+    fn sub_query(parent: &Query, text: &str, remaining: f64) -> Query {
         let mut sub = parent.clone();
         sub.input = QueryInput::Text(text.to_string());
         // Sub-queries accept partial answers; the agent composes them.
         sub.quality = QualityFloor::chat();
+        // A branch can spend at most what is left — never the full parent
+        // budget per branch.
+        let cap = remaining.max(0.0);
+        sub.budget.hard_limit = sub.budget.hard_limit.min(cap);
+        sub.budget.soft_target = sub.budget.soft_target.min(cap);
         sub
     }
 }
@@ -126,10 +151,13 @@ where
     }
 
     fn try_answer(&mut self, q: &Query, budget_remaining: f64) -> Result<Answer, AnswerError> {
-        let steps = self.planner.plan(q);
+        let mut steps = self.planner.plan(q);
         if steps.is_empty() {
             return Ok(refusal(RefusalReason::Inapplicable, 0.0));
         }
+        // Bound fan-out width: never dispatch more than `max_steps`
+        // sub-queries from one invocation.
+        steps.truncate(self.max_steps);
 
         let mut parts: Vec<String> = Vec::with_capacity(steps.len());
         let mut spent = 0.0f64;
@@ -145,7 +173,7 @@ where
                     attempted_tiers: vec![(TierId::L6Agent, spent)],
                 });
             }
-            let sub = Self::sub_query(q, &step.text);
+            let sub = Self::sub_query(q, &step.text, budget_remaining - spent);
             match self.cascade.dispatch(&sub) {
                 Ok(ans) => {
                     spent += ans.joules_spent;
@@ -327,6 +355,55 @@ mod tests {
         };
         let ans = a.try_answer(&query, 100.0).unwrap();
         assert!(matches!(ans.output, AnswerOutput::Refused(RefusalReason::Inapplicable)));
+    }
+
+    #[test]
+    fn fan_out_capped_by_max_steps() {
+        // Four clauses, but the fan-out cap is 2 → only 2 sub-dispatches.
+        let mut a = AgentTier::new(MockCascade::echo()).with_max_steps(2);
+        let _ = a.try_answer(&q("a and b and c and d"), 100.0).unwrap();
+        assert_eq!(a.cascade().seen.len(), 2);
+    }
+
+    #[test]
+    fn sub_query_budget_clamped_to_remaining() {
+        // Each sub-branch's budget is clamped to the joules still left,
+        // so a branch can never claim the full parent budget and a nested
+        // agent receives a strictly smaller budget each level (the
+        // recursion bound).
+        use std::sync::{Arc, Mutex};
+        struct Recording {
+            budgets: Arc<Mutex<Vec<f64>>>,
+            per: f64,
+        }
+        impl AgentCascade for Recording {
+            fn dispatch(&mut self, q: &Query) -> Result<Answer, AnswerError> {
+                self.budgets.lock().unwrap().push(q.budget.hard_limit);
+                Ok(Answer {
+                    output: AnswerOutput::Text("ok".into()),
+                    tier_used: TierId::L0,
+                    joules_spent: self.per,
+                    confidence: 0.9,
+                    trace: ExecutionTrace::default(),
+                    verification: VerificationStatus::Resolved,
+                })
+            }
+        }
+        let budgets = Arc::new(Mutex::new(Vec::new()));
+        let mut a = AgentTier::new(Recording {
+            budgets: budgets.clone(),
+            per: 3.0,
+        });
+        // budget_remaining = 10; each branch costs 3 J.
+        let _ = a.try_answer(&q("a and b and c"), 10.0).unwrap();
+        let b = budgets.lock().unwrap();
+        assert_eq!(b.len(), 3);
+        // Clamped to remaining at each step: 10 → 7 → 4.
+        assert!(b[0] <= 10.0 + 1e-9);
+        assert!(b[1] <= 7.0 + 1e-9);
+        assert!(b[2] <= 4.0 + 1e-9);
+        // Strictly shrinking — the thermodynamic recursion bound.
+        assert!(b[1] < b[0] && b[2] < b[1]);
     }
 
     #[test]

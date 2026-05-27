@@ -94,9 +94,14 @@ use jouleclaw_supervisor::Supervisor;
 use jouleclaw_tuner::Tuner;
 
 // Yang→yin promotion.
+use std::path::Path;
+use std::sync::{Arc, Mutex};
+
 use jouleclaw_cascade::types::{Answer, AnswerError, AnswerOutput, JouleClass, Query};
+use jouleclaw_promote::disk::DiskError;
 use jouleclaw_promote::{
-    shared_in_memory, InMemoryPromotionStore, PromotedTier, PromotionGate, SharedStore,
+    shared_in_memory, FilePromotionStore, InMemoryPromotionStore, PromotedTier, PromotionGate,
+    PromotionStore, SharedStore,
 };
 use jouleclaw_verify::OutputVerifier;
 
@@ -116,7 +121,7 @@ pub const DEFAULT_SUPERVISOR_WINDOW: usize = 256;
 /// Fields are public so a consumer can swap any component for a
 /// production backend (a real SSM behind the router, a tantivy index,
 /// an HTTP LLM backend, …) after construction.
-pub struct JouleClawStack {
+pub struct JouleClawStack<S: PromotionStore = InMemoryPromotionStore> {
     /// Resolver cascade (L0 cache → L0.25 → L0.5 → L1.5 → L3 → L4 → L4.5),
     /// with the L5 [`LearnedRouter`] installed as its router.
     pub runtime: Runtime,
@@ -153,7 +158,7 @@ pub struct JouleClawStack {
     /// registered in [`Self::runtime`]. Inspect it for the promotion log
     /// and `invocations_avoided` (model calls saved by promotion). Feed
     /// it via [`Self::promote`] or [`Self::answer_and_promote`].
-    pub promotion_store: SharedStore<InMemoryPromotionStore>,
+    pub promotion_store: SharedStore<S>,
 
     /// Optional verifier for the auto-promotion path. When set,
     /// [`Self::answer_and_promote`] runs it over a compartment (model)
@@ -168,19 +173,21 @@ pub struct JouleClawStack {
     pub promote_confidence: f32,
 }
 
-impl JouleClawStack {
-    /// Assemble the default stack. Every tier uses its crate's
-    /// deterministic reference backend, so the result runs end-to-end
-    /// with no external dependencies. On a plain text query the resolver
-    /// walk falls through to the L3 [`EchoBackend`]; tool-shaped and
-    /// constraint-shaped queries resolve at L0.5 / L4.5 respectively.
-    pub fn with_defaults() -> Self {
+impl<S: PromotionStore + 'static> JouleClawStack<S> {
+    /// Shared assembly: build the resolver cascade + control plane over a
+    /// caller-provided promotion store. Used by [`with_defaults`]
+    /// (in-memory) and [`with_durable_promotion`] (file-backed). Every
+    /// tier uses its crate's deterministic reference backend, so the
+    /// result runs end-to-end with no external dependencies.
+    ///
+    /// [`with_defaults`]: JouleClawStack::with_defaults
+    /// [`with_durable_promotion`]: JouleClawStack::with_durable_promotion
+    fn assemble(promotion_store: SharedStore<S>) -> Self {
         // Resolver cascade, registered cheapest-first. The runtime owns
         // a built-in L0 cache ahead of these.
         let mut cascade = Cascade::new();
         // Front deterministic tier: verified model answers promoted here
         // resolve at nanojoule energy and never re-invoke the model.
-        let promotion_store = shared_in_memory();
         cascade.register(Box::new(PromotedTier::new(promotion_store.clone()))); // L0.1 promoted
         cascade.register(Box::new(FormulaFirstTier::new(InMemoryKnowledgeStore::new()))); // L0.25
         cascade.register(Box::new(ToolTier::new())); // L0.5
@@ -284,6 +291,28 @@ impl JouleClawStack {
     }
 }
 
+impl JouleClawStack<InMemoryPromotionStore> {
+    /// Assemble the default stack with an in-memory promotion store
+    /// (promoted facts live for the process lifetime). On a plain text
+    /// query the resolver walk falls through to the L3 `EchoBackend`;
+    /// tool-shaped and constraint-shaped queries resolve at L0.5 / L4.5.
+    pub fn with_defaults() -> Self {
+        Self::assemble(shared_in_memory())
+    }
+}
+
+impl JouleClawStack<FilePromotionStore> {
+    /// Assemble a stack whose promoted facts persist under `dir` (an
+    /// append-only journal, replayed on open) — so the deterministic
+    /// surface learned by one run is available to the next. Identical to
+    /// [`with_defaults`](JouleClawStack::with_defaults) in every other
+    /// respect.
+    pub fn with_durable_promotion(dir: impl AsRef<Path>) -> Result<Self, DiskError> {
+        let store = FilePromotionStore::open(dir)?;
+        Ok(Self::assemble(Arc::new(Mutex::new(store))))
+    }
+}
+
 /// Output bytes for verification; `Refused` answers have none.
 fn output_bytes(output: &AnswerOutput) -> Option<Vec<u8>> {
     match output {
@@ -301,7 +330,7 @@ fn now_secs() -> u64 {
         .unwrap_or(0)
 }
 
-impl Default for JouleClawStack {
+impl Default for JouleClawStack<InMemoryPromotionStore> {
     fn default() -> Self {
         Self::with_defaults()
     }
@@ -429,6 +458,48 @@ mod tests {
         }
         assert!(ans.joules_spent < 1e-6); // nanojoules, not the model's 2 J
         assert!(stack.promotion_store.lock().unwrap().invocations_avoided() >= 1);
+    }
+
+    #[test]
+    fn durable_promotion_survives_restart() {
+        let mut dir = std::env::temp_dir();
+        dir.push(format!(
+            "jouleclaw-stack-durable-{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.as_nanos())
+                .unwrap_or(0)
+        ));
+        let model = Answer {
+            output: AnswerOutput::Text("Paris".into()),
+            tier_used: TierId::L3(L3ModelId(0)),
+            joules_spent: 2.0,
+            confidence: 0.97,
+            trace: ExecutionTrace::default(),
+            verification: VerificationStatus::Resolved,
+        };
+        // First process: durable stack, promote a verified fact.
+        {
+            let mut stack =
+                JouleClawStack::with_durable_promotion(&dir).expect("open durable stack");
+            assert!(stack.promote(&text("durable capital of france"), &model, true, 1));
+        }
+        // Second process: reopen the same dir — the fact is replayed and
+        // the front PromotedTier serves it for a never-before-asked query.
+        {
+            let mut stack =
+                JouleClawStack::with_durable_promotion(&dir).expect("reopen durable stack");
+            let ans = stack
+                .runtime
+                .answer(text("durable capital of france"))
+                .expect("resolves");
+            assert_eq!(ans.tier_used, TierId::L0_1FactLut);
+            match ans.output {
+                AnswerOutput::Text(t) => assert_eq!(t, "Paris"),
+                other => panic!("expected replayed promoted answer, got {other:?}"),
+            }
+        }
+        let _ = std::fs::remove_dir_all(&dir);
     }
 
     #[test]
