@@ -1,0 +1,12 @@
+{
+  "jc_receipt": "1",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "closed_at": "2026-05-24T00:00:00Z",
+  "input_hash": "REPLACE_WITH_BLAKE3_HEX_OF_input.txt",
+  "tier": "L0",
+  "joules_uj": 1,
+  "energy_provenance": "Estimator",
+  "tools_touched": [],
+  "claims": [],
+  "eoc_stage": null
+}

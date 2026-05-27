@@ -49,6 +49,7 @@ members = [
     "crates/jouleclaw-fresh",    # search-first + provenance envelope
     "crates/jouleclaw-mcp",      # rmcp-compatible + joule-mcp profile
     "crates/jouleclaw-cli",      # jclaw binary (Pi-class minimal harness)
+    "crates/jouleclaw-edge",     # end-to-end edge demo + LawfulRegistryTier shim
 ]
 
 [workspace.package]

@@ -1857,6 +1857,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "jouleclaw-edge"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-cascade",
+ "jouleclaw-core",
+ "jouleclaw-ebm",
+ "jouleclaw-liquid",
+ "jouleclaw-lmm",
+ "jouleclaw-mrl",
+ "jouleclaw-prism",
+]
+
+[[package]]
 name = "jouleclaw-edge-cli"
 version = "0.1.0"
 dependencies = [

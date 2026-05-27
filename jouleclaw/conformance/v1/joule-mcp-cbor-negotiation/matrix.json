@@ -1,0 +1,9 @@
+{
+  "capability_tag": "x-jouleclaw/joule-mcp@1",
+  "matrix": [
+    { "local": [],                              "remote": [],                              "wire": "json-rpc" },
+    { "local": [],                              "remote": ["x-jouleclaw/joule-mcp@1"],     "wire": "json-rpc" },
+    { "local": ["x-jouleclaw/joule-mcp@1"],     "remote": [],                              "wire": "json-rpc" },
+    { "local": ["x-jouleclaw/joule-mcp@1"],     "remote": ["x-jouleclaw/joule-mcp@1"],     "wire": "cbor"     }
+  ]
+}

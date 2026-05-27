@@ -1,0 +1,25 @@
+[package]
+name = "jouleclaw-edge"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "End-to-end edge demo for JouleClaw — builds a Cascade with all the model tiers and a LawfulRegistry-backed L1 shim, runs representative queries, prints the trace. The reference demonstration of the L0→L4 dispatch walking in cost order, with a Pi-class minimal harness wired on top."
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "jouleclaw-edge"
+path = "src/main.rs"
+
+[dependencies]
+jouleclaw-core    = { path = "../jouleclaw-core" }
+jouleclaw-cascade = { path = "../jouleclaw-cascade" }
+jouleclaw-prism   = { path = "../jouleclaw-prism" }
+jouleclaw-liquid  = { path = "../jouleclaw-liquid" }
+jouleclaw-mrl     = { path = "../jouleclaw-mrl" }
+jouleclaw-lmm     = { path = "../jouleclaw-lmm" }
+jouleclaw-ebm     = { path = "../jouleclaw-ebm" }

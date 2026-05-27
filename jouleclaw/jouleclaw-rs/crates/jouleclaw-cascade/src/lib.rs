@@ -12,6 +12,7 @@
 
 pub mod types;
 pub mod tier;
+pub mod lawful;
 pub mod l0_cache;
 pub mod history;
 pub mod router;
@@ -47,6 +48,7 @@ pub use body_safety::{SafetyPolicy, SafetyState, DenyReason};
 
 pub use types::*;
 pub use tier::{Cascade, Runtime, Tier, TierEstimate};
+pub use lawful::{LawfulPrimitive, LawfulRegistry, LawfulHit};
 pub use l0_cache::{L0Cache, L0Stats};
 pub use history::{
     HistoryLayer, HistoryEntry, HistoryAnswer, HistoryError, HistoryStats,
