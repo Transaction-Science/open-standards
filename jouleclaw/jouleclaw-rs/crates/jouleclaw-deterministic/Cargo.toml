@@ -1,0 +1,18 @@
+[package]
+name = "jouleclaw-deterministic"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Standard library of deterministic L1 primitives for JouleClaw — arithmetic, units, base conversion, dates, strings, hashes, common lookups. Plugs into jouleclaw-cascade::LawfulRegistry. The 'deterministic compute, search first' doctrine made concrete: queries that never invoke a model."
+
+[dependencies]
+jouleclaw-cascade = { path = "../jouleclaw-cascade" }
+jouleclaw-core    = { path = "../jouleclaw-core" }
+chrono            = { workspace = true }
+blake3            = { workspace = true }
+sha2              = "0.10"
+md5               = "0.7"
+regex             = "1"

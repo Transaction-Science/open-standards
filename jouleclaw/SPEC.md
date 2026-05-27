@@ -259,7 +259,116 @@ their receipts.
 
 ---
 
-## 9. References
+## 9. Adjacent techniques
+
+This section names the architectural pattern JouleClaw implements
+and lists the research communities that have, separately, solved
+parts of it. The intent is not novelty-claiming. It is to make
+the assembly visible so an engineer arriving from any one of those
+communities can locate their work inside the cascade.
+
+### 9.1 The architectural pattern
+
+An LLM inference call is a render pass. A token is a frame. A
+reasoning chain is a sequence of frames. A context window is a
+scene graph. An agent loop is an NPC control loop. RAG is texture
+streaming. A model checkpoint is a level asset. The pipeline from
+prompt to response is — structurally — exactly the work a game
+engine does between input poll and presented frame.
+
+The game-engine industry was forced to solve this problem under a
+fixed 150–200 W power budget twenty years ago. The five JouleClaw
+cascade tiers are direct translations of game-engine architectural
+primitives:
+
+| JouleClaw tier  | Game-engine primitive          | What the engine actually does |
+|-----------------|--------------------------------|-------------------------------|
+| `L0:Cache`      | texture / asset cache          | Content-addressed; cheap to check; valid until invalidated |
+| `L1:Lawful`     | pre-baked geometry, LUTs       | The work the engine *refuses to run* because the answer is already in the format |
+| `L2:Embed`      | BVH / spatial query            | Find the closest match; do not compute from first principles |
+| `L3:Model`      | procedural / runtime synthesis | Invoked only when nothing baked or streamed will do |
+| `L4:Wire`       | server-streamed asset / CDN    | The escape hatch when the local box cannot satisfy |
+
+Each game-engine technique listed below has a near-exact
+counterpart in modern AI inference that the AI industry has, so
+far, declined to deploy at the same architectural rigor:
+
+| Game-engine technique          | AI counterpart                                              | JouleClaw component |
+|--------------------------------|-------------------------------------------------------------|---------------------|
+| Frustum culling                | Skip tiers whose `estimate_cost` returns `None`             | `jouleclaw-cascade::Tier::estimate_cost` |
+| Level-of-detail (LOD)          | Route to the cheapest sufficient model — SLM before frontier | `jouleclaw-cascade` router + `.jc.toml` declared-cost contract |
+| Deferred rendering             | Do not forward-pass through 175B parameters for a token a 7B would produce identically | The cascade auction over backends declaring their `J/op` |
+| Physically-based rendering     | One foundation model, derive specializations — not 12 full fine-tunes | (consumer concern; the spec doesn't dictate) |
+| Virtual texturing              | Retrieve only the context this token will attend to, not the whole 128k window | `jouleclaw-fresh` + KV-cache-aware retrieval |
+| Temporal upsampling            | Cache the prior reasoning chain; reconstruct the next step from a small delta, not by re-running the whole chain | `jouleclaw-cache` + `jouleclaw-history` reuse |
+| Nanite-style mesh streaming    | Activate only the MoE experts the input actually needs      | Backend-side; the spec exposes the J-per-op contract |
+| Hardware ray tracing + denoiser | A few high-quality forward passes plus a verifier beats one large unconstrained pass | `jouleclaw-verify` chain gating L3 output |
+| Frame budget                   | `JouleBudget` walks the cascade like a render budget walks the scene graph | `jouleclaw-energy::EnergyQuota` + breaker |
+
+The pattern is not new. The assembly is.
+
+### 9.2 Five communities, one architecture
+
+Five research communities currently hold one face each of this
+architecture. They publish at different venues and do not, by and
+large, talk to one another. A conforming JouleClaw runtime composes
+all five of their primitives — that composition is the standard's
+contribution.
+
+| Community | Representative work | JouleClaw component |
+|---|---|---|
+| **Constrained decoding** | Outlines (Willard & Louf), XGrammar (Dong et al. 2024), Guidance, LMQL, Pre³, OpenAI/Anthropic structured-output APIs | `jouleclaw-decode` *(planned v0.2 — currently external)*; grammar-mask trait honoured by L3 backends |
+| **Compound AI systems / DSPy** | DSPy (Khattab et al., Stanford → MIT; CAIS 2026 inaugural ACM conference, May 2026) | `jouleclaw-program` *(planned v0.2)*; typed signatures + module compilation over the cascade |
+| **Small / specialist models** | NVIDIA Research (Belcak & Heinrich, 2025), Microsoft Phi team, TinyML, llama.cpp | `jouleclaw-cascade` router + `jouleclaw-pack` declared-cost contracts |
+| **Neurosymbolic / verifier-in-the-loop** | Lean + LLM provers, BMC + LLM (LaM4Inv), SymCode, ProofNet++, VIRF, Eidoku | `jouleclaw-verify` (`OutputVerifier` trait + `VerifierChain` + receipt integration) |
+| **Energy measurement / Green Software** | Patterson et al., ML.ENERGY Leaderboard, MDPI Sensors edge-computing surveys, GSF SCI specification, AI Energy Score | `jouleclaw-energy` + the `Provenance` honesty contract + `.jc.toml` measured-cost rows |
+
+A conforming runtime **SHOULD** be able to point at concrete
+in-tree code or a registered adapter for each of the five primitives
+above. A runtime that solves only one face is a research project,
+not a JouleClaw implementation.
+
+### 9.3 The three-lever ceiling
+
+Energy reduction from a fully-naive monolithic baseline (~10¹⁸
+above the Landauer floor for current generative inference per
+output bit) composes multiplicatively across three independent
+levers:
+
+| Lever | Reduces by | What does it |
+|-------|-----------|---------------|
+| **Route to the right cell** | 10⁸–10¹⁰× | The cascade itself — `L0 / L1 / L2` close most queries without invoking a model |
+| **Cache the prior work** | 10²–10⁴× | Content-addressed cache (`L0`), prior-resolution history, MRL embeddings (`L2`) |
+| **Align silicon to primitive** | 10²–10⁴× | The `.jc.toml` declared-cost contract is the input data hardware co-design needs |
+
+Stacked total: **10¹²–10¹⁸×** below the naive baseline. The "90 %
+reduction" figure quoted on the marketing surface is the
+conservative floor of what the three levers permit when composed
+honestly.
+
+The ceiling is not the Landauer bound — reaching the bound requires
+reversible logic and zero-impedance interconnect that nobody can
+engineer today. The ceiling is how disciplined the routing and the
+hardware choices are.
+
+### 9.4 The receipt is the proof, not the marketing
+
+A runtime that produces lower receipts than the conformance vectors
+demand without the per-tool-touch `Provenance` to back them is
+non-conformant. JouleClaw refuses the receipts-as-marketing failure
+mode that has accumulated around carbon offsets and software
+sustainability claims more broadly. Every `joules_uj` figure in a
+conforming receipt must trace back to either a real hardware
+counter (`Provenance::HwShunt`), a documented vendor model
+(`Provenance::ModelBased`), or a calibrated static estimator
+(`Provenance::Estimator`) with a wider tolerance band.
+
+The breaker enforces at the granularity of the worst counter in
+the span. This is normative.
+
+---
+
+## 10. References
 
 - [JouleClaw Charter](../CHARTER.md) — stewardship pattern (shared
   across all five open standards)

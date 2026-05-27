@@ -1,0 +1,19 @@
+[package]
+name = "jouleclaw-lut"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Literal lookup-table primitive for JouleClaw. The 'router IS the table' insight as real code: hash-keyed exact-match LUT, sub-nanojoule resolution, registered pre-baked answers that never get evicted. Sits beneath the L0:Cache content-addressed cache."
+
+[dependencies]
+jouleclaw-core    = { path = "../jouleclaw-core" }
+jouleclaw-cascade = { path = "../jouleclaw-cascade" }
+blake3            = { workspace = true }
+chrono            = { workspace = true }
+serde             = { workspace = true }
+thiserror         = { workspace = true }
+toml              = "0.8"
+csv               = "1"

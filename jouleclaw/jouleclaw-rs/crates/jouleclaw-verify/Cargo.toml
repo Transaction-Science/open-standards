@@ -1,0 +1,19 @@
+[package]
+name = "jouleclaw-verify"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Verifier-in-the-loop for JouleClaw. AI proposes, verifier disposes — the formal-methods pattern (Lean, BMC, SymCode) as a small composable trait surface. Gates open-ended L3 output through deterministic verifiers; receipts record which verifier passed."
+
+[dependencies]
+jouleclaw-core   = { path = "../jouleclaw-core" }
+jouleclaw-prov   = { path = "../jouleclaw-prov" }
+jouleclaw-energy = { path = "../jouleclaw-energy" }
+regex           = "1"
+serde           = { workspace = true }
+serde_json      = { workspace = true }
+blake3          = { workspace = true }
+thiserror       = { workspace = true }

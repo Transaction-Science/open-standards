@@ -50,6 +50,11 @@ members = [
     "crates/jouleclaw-mcp",      # rmcp-compatible + joule-mcp profile
     "crates/jouleclaw-cli",      # jclaw binary (Pi-class minimal harness)
     "crates/jouleclaw-edge",     # end-to-end edge demo + LawfulRegistryTier shim
+    "crates/jouleclaw-verify",   # verifier-in-the-loop — AI proposes, verifier disposes
+    "crates/jouleclaw-deterministic",  # L1 standard library — 30+ deterministic primitives
+
+    # Pre-cascade resolver — registered, never-evicted lookup table.
+    "crates/jouleclaw-lut",
 ]
 
 [workspace.package]
