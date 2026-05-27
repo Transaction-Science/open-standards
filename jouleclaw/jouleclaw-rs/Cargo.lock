@@ -1799,6 +1799,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "jouleclaw-approve"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-cascade",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "jouleclaw-backend-apple"
 version = "0.1.0"
 dependencies = [
@@ -2365,6 +2373,7 @@ dependencies = [
 name = "jouleclaw-stack"
 version = "0.1.0"
 dependencies = [
+ "jouleclaw-approve",
  "jouleclaw-cascade",
  "jouleclaw-federation",
  "jouleclaw-formula",

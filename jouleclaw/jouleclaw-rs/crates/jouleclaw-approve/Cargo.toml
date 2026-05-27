@@ -1,0 +1,13 @@
+[package]
+name = "jouleclaw-approve"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "JouleClaw approval gates — pause a cascade dispatch for review before it runs. Energy-shaped: only the expensive compartment (model) calls need approval; cheap deterministic work proceeds freely."
+
+[dependencies]
+jouleclaw-cascade = { path = "../jouleclaw-cascade" }
+thiserror        = { workspace = true }

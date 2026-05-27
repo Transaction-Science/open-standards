@@ -103,6 +103,7 @@ use jouleclaw_promote::{
     shared_in_memory, FilePromotionStore, InMemoryPromotionStore, PromotedTier, PromotionGate,
     PromotionStore, SharedStore,
 };
+use jouleclaw_approve::{set_gate, shared_gate, ApprovalGate, AutoApprove, GatedTier, SharedGate};
 use jouleclaw_skill::{InMemorySkillStore, SharedSkills, Skill, SkillStore, SkillTier};
 use jouleclaw_verify::OutputVerifier;
 
@@ -178,6 +179,13 @@ pub struct JouleClawStack<S: PromotionStore = InMemoryPromotionStore> {
     /// skill resolves a whole *class* of queries deterministically.
     /// Register parameterized skills via [`Self::register_skill`].
     pub skill_store: SharedSkills<InMemorySkillStore>,
+
+    /// Approval gate consulted before each **model-tier** (L3/L4)
+    /// dispatch. Default [`AutoApprove`] (headless, no gating). Swap it
+    /// via [`Self::with_approval_gate`] to require review — e.g. a
+    /// `JouleThresholdGate` so only expensive calls pause. The
+    /// deterministic floor (promotion/skill/formula/tool) is never gated.
+    pub approval_gate: SharedGate,
 }
 
 impl<S: PromotionStore + 'static> JouleClawStack<S> {
@@ -201,14 +209,21 @@ impl<S: PromotionStore + 'static> JouleClawStack<S> {
         cascade.register(Box::new(SkillTier::new(skill_store.clone()))); // L0.5 skills
         cascade.register(Box::new(FormulaFirstTier::new(InMemoryKnowledgeStore::new()))); // L0.25
         cascade.register(Box::new(ToolTier::new())); // L0.5
-        cascade.register(Box::new(LlmCheapTier::new(EchoBackend::default()))); // L3
+        // Model (compartment) tiers are wrapped in an approval gate. The
+        // deterministic tiers above are never gated — only the expensive
+        // yang calls can be paused for review.
+        let approval_gate = shared_gate(AutoApprove);
+        cascade.register(Box::new(GatedTier::new(
+            LlmCheapTier::new(EchoBackend::default()),
+            approval_gate.clone(),
+        ))); // L3
         // L4 cross-model verification — only constructed if ≥2 backends
         // (always true here). Reached only when L3 refuses.
         if let Ok(verify) = VerificationTier::new(vec![
             Box::new(StaticBackend::new("ref-a", "")),
             Box::new(StaticBackend::new("ref-b", "")),
         ]) {
-            cascade.register(Box::new(verify));
+            cascade.register(Box::new(GatedTier::new(verify, approval_gate.clone())));
         }
         cascade.register(Box::new(ProofTier::new())); // L4.5
 
@@ -231,7 +246,18 @@ impl<S: PromotionStore + 'static> JouleClawStack<S> {
             verifier: None,
             promote_confidence: jouleclaw_promote::DEFAULT_PROMOTE_CONFIDENCE,
             skill_store,
+            approval_gate,
         }
+    }
+
+    /// Install the approval gate consulted before every model-tier
+    /// dispatch (swaps the shared gate in place — also affects the tiers
+    /// already registered in [`Self::runtime`]). Pass e.g. a
+    /// `jouleclaw_approve::JouleThresholdGate` so only expensive calls
+    /// require review, or `DenyAll` to lock the compartment.
+    pub fn with_approval_gate(self, gate: impl ApprovalGate + 'static) -> Self {
+        set_gate(&self.approval_gate, gate);
+        self
     }
 
     /// Register a compiled skill. The front [`SkillTier`] will then
@@ -478,6 +504,22 @@ mod tests {
         }
         assert!(ans.joules_spent < 1e-6); // nanojoules, not the model's 2 J
         assert!(stack.promotion_store.lock().unwrap().invocations_avoided() >= 1);
+    }
+
+    #[test]
+    fn approval_gate_can_lock_the_compartment() {
+        use jouleclaw_cascade::types::AnswerError;
+        // Default (AutoApprove): "hello" reaches L3 and is answered.
+        let mut open = JouleClawStack::with_defaults();
+        assert!(open.runtime.answer(text("hello there")).is_ok());
+
+        // DenyAll: deterministic tiers refuse "hello", the gated model
+        // tiers are blocked, nothing answers → NoTierSatisfied. The
+        // expensive compartment never ran.
+        let mut locked =
+            JouleClawStack::with_defaults().with_approval_gate(jouleclaw_approve::DenyAll);
+        let res = locked.runtime.answer(text("hello there"));
+        assert!(matches!(res, Err(AnswerError::NoTierSatisfied { .. })), "got {res:?}");
     }
 
     #[test]
