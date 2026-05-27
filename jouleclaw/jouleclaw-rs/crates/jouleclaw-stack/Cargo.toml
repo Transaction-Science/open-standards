@@ -30,3 +30,4 @@ jouleclaw-reflection        = { path = "../jouleclaw-reflection" }
 jouleclaw-tuner             = { path = "../jouleclaw-tuner" }
 jouleclaw-supervisor        = { path = "../jouleclaw-supervisor" }
 jouleclaw-governor          = { path = "../jouleclaw-governor" }
+serde_json                  = { workspace = true }

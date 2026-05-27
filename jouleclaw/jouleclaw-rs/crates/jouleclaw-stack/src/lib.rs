@@ -14,22 +14,26 @@
 //! execution surface contains two distinct kinds of tier:
 //!
 //! - **Resolvers** — produce a final answer (or refuse): [`FormulaFirstTier`]
-//!   (L0.25), [`ToolTier`] (L0.5), [`SsmReaderTier`] (L1.5), [`LlmCheapTier`]
-//!   (L3), [`VerificationTier`] (L4), [`ProofTier`] (L4.5). These are
+//!   (L0.25), [`ToolTier`] (L0.5), [`LlmCheapTier`] (L3),
+//!   [`VerificationTier`] (L4), [`ProofTier`] (L4.5). These are
 //!   registered into [`JouleClawStack::runtime`] in ascending cost order;
 //!   the cheapest one that can close the query wins.
-//! - **Pipeline stages** — produce an *intermediate artifact*, not an
-//!   answer: [`SsmRouterTier`] (L0.75, a route), [`LocalIndexTier`] (L1),
-//!   [`Federation`] (L2) and [`GraphRagTier`] (L1.25) (retrieved
-//!   candidates / subgraph), [`StructContrastTier`] (L1.375, a contrast
-//!   map), [`RerankTier`] (L2.5, a reordering). Dropping these into the
-//!   linear walk would short-circuit it — the router would "answer" every
-//!   query with a route. So they are exposed as fields for explicit
-//!   `retrieve → enrich → rerank → read` composition rather than walked.
+//! - **Pipeline stages** — produce an *intermediate artifact*, not a
+//!   standalone answer: [`SsmRouterTier`] (L0.75, a route),
+//!   [`LocalIndexTier`] (L1), [`Federation`] (L2) and [`GraphRagTier`]
+//!   (L1.25) (retrieved candidates / subgraph), [`StructContrastTier`]
+//!   (L1.375, a contrast map), [`RerankTier`] (L2.5, a reordering), and
+//!   [`SsmReaderTier`] (L1.5, the *read* terminal that extracts an answer
+//!   from retrieved passages — it refuses a bare query, so it belongs to
+//!   the pipeline, not the standalone walk). Dropping the retrieval /
+//!   router stages into the linear walk would short-circuit it (the
+//!   router would "answer" every query with a route), so they are exposed
+//!   as fields and driven explicitly.
 //!
-//! A future orchestrator can drive the pipeline stages to build context
-//! and feed [`SsmReaderTier`] (which reads retrieved passages); that
-//! orchestration is intentionally out of scope for v0.
+//! The orchestrator is realized as [`JouleClawStack::rag`] /
+//! [`JouleClawStack::rag_with`]: `retrieve → enrich → rerank → read`,
+//! charging energy at each stage, honoring a joule budget, and emitting a
+//! per-stage trace. See [`pipeline`].
 //!
 //! ## Control plane (L5–L10)
 //!
@@ -55,6 +59,9 @@
 //! registered here.
 
 #![forbid(unsafe_code)]
+
+pub mod pipeline;
+pub use pipeline::{RagConfig, RagOutcome, StageTrace};
 
 use jouleclaw_cascade::tier::{Cascade, Runtime};
 
@@ -111,6 +118,10 @@ pub struct JouleClawStack {
     pub graph_rag: GraphRagTier<InMemoryKnowledgeGraph>,
     /// L1.375 — structural-contrast second pass.
     pub struct_contrast: StructContrastTier<InMemoryKnowledgeStore>,
+    /// L1.5 — the pipeline's *read* terminal: extracts an answer from
+    /// retrieved passages. Refuses a bare query, so it is driven by the
+    /// orchestrator, not the standalone walk.
+    pub ssm_reader: SsmReaderTier,
     /// L2 — federated retrieval (one mock provider by default).
     pub federation: Federation,
     /// L2.5 — BM25 reranker.
@@ -139,7 +150,6 @@ impl JouleClawStack {
         let mut cascade = Cascade::new();
         cascade.register(Box::new(FormulaFirstTier::new(InMemoryKnowledgeStore::new()))); // L0.25
         cascade.register(Box::new(ToolTier::new())); // L0.5
-        cascade.register(Box::new(SsmReaderTier::new())); // L1.5 (refuses without passages)
         cascade.register(Box::new(LlmCheapTier::new(EchoBackend::default()))); // L3
         // L4 cross-model verification — only constructed if ≥2 backends
         // (always true here). Reached only when L3 refuses.
@@ -159,6 +169,7 @@ impl JouleClawStack {
             local_index: LocalIndexTier::new(InMemoryIndex::new()),
             graph_rag: GraphRagTier::new(InMemoryKnowledgeGraph::new()),
             struct_contrast: StructContrastTier::new(InMemoryKnowledgeStore::new()),
+            ssm_reader: SsmReaderTier::new(),
             federation: Federation::with_providers(vec![Box::new(MockProvider::named("reference"))]),
             rerank: RerankTier::new(Bm25Reranker::default()),
             reflection: ReflectionEngine::default(),
@@ -205,8 +216,9 @@ mod tests {
         assert!(ids.contains(&TierId::L0));
         assert!(ids.contains(&TierId::L0_25FormulaFirst));
         assert!(ids.contains(&TierId::L0_5ToolCompute));
-        assert!(ids.contains(&TierId::L1_5SsmReader));
         assert!(ids.contains(&TierId::L4_5Proof));
+        // ssm-reader is a pipeline field now, NOT in the standalone walk.
+        assert!(!ids.contains(&TierId::L1_5SsmReader));
         // L3 / L4 are parameterised model ids; assert at least one of each family.
         assert!(ids.iter().any(|t| matches!(t, TierId::L3(_))));
         assert!(ids.iter().any(|t| matches!(t, TierId::L4(_))));
