@@ -55,6 +55,12 @@ members = [
 
     # Pre-cascade resolver — registered, never-evicted lookup table.
     "crates/jouleclaw-lut",
+
+    # L0.5 tool-compute tier — 484 deterministic, zero-hallucination pure-function tools.
+    "crates/jouleclaw-tools",
+
+    # Regulatory-compliance wedge built on the energy substrate.
+    "crates/jouleclaw-compliance",
 ]
 
 [workspace.package]
@@ -71,10 +77,18 @@ description = "JouleClaw — energy-optimised AI runtime. Apache-2.0 Rust refere
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 serde_cbor = "0.11"
+serde_yml = "0.0.12"
+toml = "0.8"
 thiserror = "2"
 blake3 = "1"
+sha2 = "0.10"
+base64 = "0.22"
+regex = "1"
 chrono = { version = "0.4", default-features = false, features = ["clock", "serde", "std"] }
-uuid = { version = "1", features = ["v4", "v7", "serde"] }
+uuid = { version = "1", features = ["v4", "v5", "v7", "serde"] }
+
+# Optional HTTP (feature-gated in jouleclaw-tools)
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"] }
 
 # Numerics + tensors
 half = "2"

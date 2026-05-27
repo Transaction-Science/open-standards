@@ -6,21 +6,27 @@ rust-version.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Honest energy telemetry for JouleClaw. EnergyCounter trait + Provenance tag (HwShunt | ModelBased | Estimator). The thermodynamic circuit breaker is only as honest as the worst counter in the request's span."
+description = "Honest energy telemetry for JouleClaw. EnergyCounter trait + Provenance tag (HwShunt | ModelBased | Estimator) plus concrete platform backends (RAPL, NVML, Apple Silicon estimator) and a thread-safe ledger. The thermodynamic circuit breaker is only as honest as the worst counter in the request's span."
 
 [dependencies]
 jouleclaw-core = { path = "../jouleclaw-core" }
 thiserror.workspace = true
 serde = { workspace = true, optional = true }
+serde_json = { workspace = true, optional = true }
+tracing = { workspace = true, optional = true }
+nvml-wrapper = { workspace = true, optional = true }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+libc = "0.2"
 
 [features]
 default = ["serde"]
-serde = ["dep:serde"]
+serde = ["dep:serde", "dep:serde_json"]
 
 # Per-platform energy backends. Off by default so the foundation is OS-neutral;
 # downstream crates / binaries enable what their target supports.
-rapl = []                    # Intel/AMD x86 — Linux MSR + sysfs (rapl-probes class)
-nvml = []                    # NVIDIA discrete — cumulative-energy counter (Hopper+/Blackwell)
-ioreport = []                # Apple Silicon M-series — IOReport "Energy Model" channel group
-ina3221 = []                 # NVIDIA Jetson (Orin / Thor) — sysfs i2c shunt reader
-hwmon = []                   # Linux generic — for AMD Strix Halo / Ryzen AI Max iGPU + others
+rapl = []                                       # Intel/AMD x86 — Linux sysfs powercap
+nvml = ["dep:nvml-wrapper", "dep:tracing"]      # NVIDIA discrete — NVML cumulative-energy counter
+ioreport = []                                   # Apple Silicon M-series — load-avg estimator (Estimator provenance)
+ina3221 = []                                    # NVIDIA Jetson (Orin / Thor) — sysfs i2c shunt reader
+hwmon = []                                      # Linux generic — for AMD Strix Halo / Ryzen AI Max iGPU + others

@@ -24,13 +24,27 @@
 //! See the JouleClaw spec section "Energy provenance contract" for the
 //! normative behavior.
 
-#![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
 use core::fmt;
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
+
+// Platform backends + ledger live in submodules. Each module owns its
+// own `#![forbid(unsafe_code)]` attribute, except `apple` which requires
+// an `unsafe extern "C"` block for `libc::getloadavg`.
+#[cfg(feature = "rapl")]
+pub mod rapl;
+
+#[cfg(feature = "nvml")]
+pub mod nvml;
+
+#[cfg(all(feature = "ioreport", target_os = "macos"))]
+pub mod apple;
+
+pub mod meter;
+pub mod ledger;
 
 /// Provenance of an energy reading. Load-bearing — every consumer of a
 /// reading MUST inspect this before claiming accuracy.

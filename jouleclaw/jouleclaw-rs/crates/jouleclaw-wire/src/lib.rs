@@ -236,12 +236,24 @@ fn encode_payload(msg: &WireMessage) -> Vec<u8> {
 }
 
 fn encode_tier(tier: &TierId) -> (u8, u32) {
+    // L0-L4 wire encoding is byte-stable for receipts (SPEC §7). The L0-L10
+    // fractional tiers added in v0.2 collapse onto their coarse class for
+    // wire transport; tier precision is preserved in receipt.wire_tag.
+    use jouleclaw_cascade::JouleClass;
     match tier {
         TierId::L0 => (0, 0),
         TierId::L1(prim) => (1, *prim as u32),
         TierId::L2(m) => (2, m.0),
         TierId::L3(m) => (3, m.0),
         TierId::L4(m) => (4, m.0),
+        other => match other.joule_class() {
+            JouleClass::Cache => (0, 0),
+            JouleClass::Lawful => (1, 0),
+            JouleClass::Embed => (2, 0),
+            JouleClass::Model => (3, 0),
+            JouleClass::Wire => (4, 0),
+            JouleClass::Meta => (5, 0),
+        },
     }
 }
 

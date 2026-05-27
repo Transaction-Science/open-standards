@@ -47,6 +47,10 @@ pub use body::{BodyTier, BodyDispatch, Plan, BodyError, FileWriter};
 pub use body_safety::{SafetyPolicy, SafetyState, DenyReason};
 
 pub use types::*;
+// Explicit re-exports for the L0–L10 fractional tier surface and the
+// coarse-class bridge used by receipt-emitting crates. (Already covered
+// by `pub use types::*` above; restated for discoverability.)
+pub use types::{CoarseTier, JouleClass, TierId, map_to_coarse};
 pub use tier::{Cascade, Runtime, Tier, TierEstimate};
 pub use lawful::{LawfulPrimitive, LawfulRegistry, LawfulHit};
 pub use l0_cache::{L0Cache, L0Stats};

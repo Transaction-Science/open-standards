@@ -1,0 +1,19 @@
+[package]
+name = "jouleclaw-compliance"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Regulatory-compliance wedge for JouleClaw: ISO/IEC 21031 SCI calculator, signed AI-service energy passport (BLAKE3-hashed for tamper evidence), and CSRD Scope-3 / EU AI Act / EED / ESPR report generators. Built on jouleclaw-energy + jouleclaw-prov."
+
+[dependencies]
+jouleclaw-core = { path = "../jouleclaw-core" }
+jouleclaw-energy = { path = "../jouleclaw-energy" }
+jouleclaw-prov = { path = "../jouleclaw-prov" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror.workspace = true
+chrono = { workspace = true }
+blake3 = { workspace = true }
