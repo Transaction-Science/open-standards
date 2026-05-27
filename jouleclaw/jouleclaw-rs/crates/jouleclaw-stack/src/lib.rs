@@ -13,6 +13,11 @@
 //! That semantics fits tiers whose output is a **final answer**, but the
 //! execution surface contains two distinct kinds of tier:
 //!
+//! - **Promoted front tier** — a [`jouleclaw_promote::PromotedTier`] is
+//!   registered ahead of everything. Verified model answers promoted via
+//!   [`JouleClawStack::promote`] resolve here at nanojoule energy, so a
+//!   repeated question never re-pays the model tax — cost trends to zero
+//!   with use (the yang→yin path).
 //! - **Resolvers** — produce a final answer (or refuse): [`FormulaFirstTier`]
 //!   (L0.25), [`ToolTier`] (L0.5), [`LlmCheapTier`] (L3),
 //!   [`VerificationTier`] (L4), [`ProofTier`] (L4.5). These are
@@ -88,6 +93,12 @@ use jouleclaw_routing::LearnedRouter;
 use jouleclaw_supervisor::Supervisor;
 use jouleclaw_tuner::Tuner;
 
+// Yang→yin promotion.
+use jouleclaw_cascade::types::{Answer, Query};
+use jouleclaw_promote::{
+    shared_in_memory, InMemoryPromotionStore, PromotedTier, PromotionGate, SharedStore,
+};
+
 /// Default global energy budget for the [`Governor`]: 1 MJ per rolling
 /// hour. Sized so the default stack admits realistic demo traffic; a
 /// real deployment sets its own ceiling.
@@ -136,6 +147,12 @@ pub struct JouleClawStack {
     pub supervisor: Supervisor,
     /// L10 — budget governor.
     pub governor: Governor,
+
+    /// Yang→yin promotion store, shared with the front [`PromotedTier`]
+    /// registered in [`Self::runtime`]. Inspect it for the promotion log
+    /// and `invocations_avoided` (model calls saved by promotion). Feed
+    /// it via [`Self::promote`].
+    pub promotion_store: SharedStore<InMemoryPromotionStore>,
 }
 
 impl JouleClawStack {
@@ -148,6 +165,10 @@ impl JouleClawStack {
         // Resolver cascade, registered cheapest-first. The runtime owns
         // a built-in L0 cache ahead of these.
         let mut cascade = Cascade::new();
+        // Front deterministic tier: verified model answers promoted here
+        // resolve at nanojoule energy and never re-invoke the model.
+        let promotion_store = shared_in_memory();
+        cascade.register(Box::new(PromotedTier::new(promotion_store.clone()))); // L0.1 promoted
         cascade.register(Box::new(FormulaFirstTier::new(InMemoryKnowledgeStore::new()))); // L0.25
         cascade.register(Box::new(ToolTier::new())); // L0.5
         cascade.register(Box::new(LlmCheapTier::new(EchoBackend::default()))); // L3
@@ -176,7 +197,27 @@ impl JouleClawStack {
             tuner: Tuner::new(),
             supervisor: Supervisor::with_default_detectors(DEFAULT_SUPERVISOR_WINDOW, Vec::new()),
             governor: Governor::new(DEFAULT_GOVERNOR_BUDGET_J, DEFAULT_GOVERNOR_WINDOW_SECS, 0),
+            promotion_store,
         }
+    }
+
+    /// Consider a (query, answer) pair for yang→yin promotion. Call this
+    /// after a model-tier answer has been verified: a verified,
+    /// high-confidence compartment answer is recorded as a permanent
+    /// deterministic fact, so the same query thereafter resolves at the
+    /// front [`PromotedTier`] for nanojoules instead of re-invoking the
+    /// model. Returns `true` if the answer was newly promoted.
+    ///
+    /// `verified` is the caller's verifier verdict (e.g. from
+    /// `jouleclaw-verify`); `now_secs` is the caller's clock.
+    pub fn promote(
+        &mut self,
+        query: &Query,
+        answer: &Answer,
+        verified: bool,
+        now_secs: u64,
+    ) -> bool {
+        PromotionGate::new(self.promotion_store.clone()).consider(query, answer, verified, now_secs)
     }
 }
 
@@ -190,8 +231,11 @@ impl Default for JouleClawStack {
 mod tests {
     use super::*;
     use jouleclaw_cascade::types::{
-        AnswerOutput, ContextRef, JouleBudget, QualityFloor, Query, QueryInput, TierId,
+        Answer, AnswerOutput, ContextRef, ExecutionTrace, JouleBudget, L3ModelId, QualityFloor,
+        Query, QueryInput, TierId,
     };
+    use jouleclaw_cascade::verification::VerificationStatus;
+    use jouleclaw_promote::PromotionStore;
 
     fn text(s: &str) -> Query {
         Query {
@@ -256,6 +300,35 @@ mod tests {
             ans.output,
             AnswerOutput::Structured(_) | AnswerOutput::Text(_)
         ));
+    }
+
+    #[test]
+    fn promoted_fact_is_served_by_front_tier() {
+        let mut stack = JouleClawStack::with_defaults();
+        let q = text("what is the capital of france");
+        // Simulate a verified model answer (as a verifier would approve).
+        let model = Answer {
+            output: AnswerOutput::Text("Paris".into()),
+            tier_used: TierId::L3(L3ModelId(0)),
+            joules_spent: 2.0,
+            confidence: 0.97,
+            trace: ExecutionTrace::default(),
+            verification: VerificationStatus::Resolved,
+        };
+        assert!(stack.promote(&q, &model, true, 1));
+        // A fresh ask is served deterministically by the promoted front
+        // tier (built-in L0 cache is empty for this never-run query).
+        let ans = stack
+            .runtime
+            .answer(text("what is the capital of france"))
+            .expect("resolves");
+        assert_eq!(ans.tier_used, TierId::L0_1FactLut);
+        match ans.output {
+            AnswerOutput::Text(t) => assert_eq!(t, "Paris"),
+            other => panic!("expected promoted answer, got {other:?}"),
+        }
+        assert!(ans.joules_spent < 1e-6); // nanojoules, not the model's 2 J
+        assert!(stack.promotion_store.lock().unwrap().invocations_avoided() >= 1);
     }
 
     #[test]

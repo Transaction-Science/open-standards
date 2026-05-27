@@ -124,6 +124,9 @@ members = [
 
     # Full-stack assembler — wires the tier crates into one runnable Runtime + control plane.
     "crates/jouleclaw-stack",
+
+    # Yang→yin promotion — verified model answers become permanent deterministic facts (cost→0 with use).
+    "crates/jouleclaw-promote",
 ]
 
 [workspace.package]

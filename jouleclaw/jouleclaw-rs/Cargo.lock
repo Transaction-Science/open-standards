@@ -2238,6 +2238,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "jouleclaw-promote"
+version = "0.1.0"
+dependencies = [
+ "blake3",
+ "jouleclaw-cascade",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "jouleclaw-proof-tier"
 version = "0.1.0"
 dependencies = [
@@ -2350,6 +2361,7 @@ dependencies = [
  "jouleclaw-graph-rag",
  "jouleclaw-llm-cheap",
  "jouleclaw-local-index",
+ "jouleclaw-promote",
  "jouleclaw-proof-tier",
  "jouleclaw-reflection",
  "jouleclaw-rerank",
