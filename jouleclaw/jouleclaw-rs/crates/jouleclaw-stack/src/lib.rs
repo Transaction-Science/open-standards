@@ -94,10 +94,11 @@ use jouleclaw_supervisor::Supervisor;
 use jouleclaw_tuner::Tuner;
 
 // Yang→yin promotion.
-use jouleclaw_cascade::types::{Answer, Query};
+use jouleclaw_cascade::types::{Answer, AnswerError, AnswerOutput, JouleClass, Query};
 use jouleclaw_promote::{
     shared_in_memory, InMemoryPromotionStore, PromotedTier, PromotionGate, SharedStore,
 };
+use jouleclaw_verify::OutputVerifier;
 
 /// Default global energy budget for the [`Governor`]: 1 MJ per rolling
 /// hour. Sized so the default stack admits realistic demo traffic; a
@@ -151,8 +152,20 @@ pub struct JouleClawStack {
     /// Yang→yin promotion store, shared with the front [`PromotedTier`]
     /// registered in [`Self::runtime`]. Inspect it for the promotion log
     /// and `invocations_avoided` (model calls saved by promotion). Feed
-    /// it via [`Self::promote`].
+    /// it via [`Self::promote`] or [`Self::answer_and_promote`].
     pub promotion_store: SharedStore<InMemoryPromotionStore>,
+
+    /// Optional verifier for the auto-promotion path. When set,
+    /// [`Self::answer_and_promote`] runs it over a compartment (model)
+    /// answer and promotes only on a pass. `None` (the default) disables
+    /// auto-promotion — promoting an unverified answer would poison the
+    /// deterministic store, so the safe default requires an explicit
+    /// verifier (or use [`Self::promote`] with your own verdict).
+    pub verifier: Option<Box<dyn OutputVerifier>>,
+
+    /// Confidence bar a verified compartment answer must clear to be
+    /// promoted (default [`jouleclaw_promote::DEFAULT_PROMOTE_CONFIDENCE`]).
+    pub promote_confidence: f32,
 }
 
 impl JouleClawStack {
@@ -198,7 +211,23 @@ impl JouleClawStack {
             supervisor: Supervisor::with_default_detectors(DEFAULT_SUPERVISOR_WINDOW, Vec::new()),
             governor: Governor::new(DEFAULT_GOVERNOR_BUDGET_J, DEFAULT_GOVERNOR_WINDOW_SECS, 0),
             promotion_store,
+            verifier: None,
+            promote_confidence: jouleclaw_promote::DEFAULT_PROMOTE_CONFIDENCE,
         }
+    }
+
+    /// Install a verifier to enable the auto-promotion path
+    /// ([`Self::answer_and_promote`]).
+    pub fn with_verifier(mut self, verifier: Box<dyn OutputVerifier>) -> Self {
+        self.verifier = Some(verifier);
+        self
+    }
+
+    /// Override the promotion confidence bar used by [`Self::promote`]
+    /// and [`Self::answer_and_promote`].
+    pub fn with_promote_confidence(mut self, confidence: f32) -> Self {
+        self.promote_confidence = confidence.clamp(0.0, 1.0);
+        self
     }
 
     /// Consider a (query, answer) pair for yang→yin promotion. Call this
@@ -217,8 +246,59 @@ impl JouleClawStack {
         verified: bool,
         now_secs: u64,
     ) -> bool {
-        PromotionGate::new(self.promotion_store.clone()).consider(query, answer, verified, now_secs)
+        PromotionGate::new(self.promotion_store.clone())
+            .with_min_confidence(self.promote_confidence)
+            .consider(query, answer, verified, now_secs)
     }
+
+    /// Answer a query and, if it was resolved by the statistical
+    /// compartment (a Model/Wire-class tier) AND a [`verifier`](Self::verifier)
+    /// is installed AND that verifier passes, automatically promote it
+    /// (yang→yin). This is the auto-wired path: verify-then-promote with
+    /// no caller bookkeeping. Deterministic-tier answers are returned
+    /// untouched (there is no model tax to amortize).
+    ///
+    /// Returns the answer regardless of whether promotion happened;
+    /// inspect [`promotion_store`](Self::promotion_store) for the effect.
+    pub fn answer_and_promote(&mut self, query: Query) -> Result<Answer, AnswerError> {
+        // Keep the query to key the promotion; the runtime consumes its copy.
+        let answer = self.runtime.answer(query.clone())?;
+
+        let is_compartment = matches!(
+            answer.tier_used.joule_class(),
+            JouleClass::Model | JouleClass::Wire
+        );
+        if is_compartment {
+            if let Some(bytes) = output_bytes(&answer.output) {
+                let verified = self
+                    .verifier
+                    .as_ref()
+                    .map(|v| v.verify(&bytes).is_pass())
+                    .unwrap_or(false);
+                if verified {
+                    self.promote(&query, &answer, true, now_secs());
+                }
+            }
+        }
+        Ok(answer)
+    }
+}
+
+/// Output bytes for verification; `Refused` answers have none.
+fn output_bytes(output: &AnswerOutput) -> Option<Vec<u8>> {
+    match output {
+        AnswerOutput::Text(t) => Some(t.as_bytes().to_vec()),
+        AnswerOutput::Structured(b) => Some(b.clone()),
+        AnswerOutput::Refused(_) => None,
+    }
+}
+
+/// Wall-clock unix seconds for promotion timestamps.
+fn now_secs() -> u64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0)
 }
 
 impl Default for JouleClawStack {
@@ -236,6 +316,26 @@ mod tests {
     };
     use jouleclaw_cascade::verification::VerificationStatus;
     use jouleclaw_promote::PromotionStore;
+    use jouleclaw_verify::VerifyResult;
+
+    /// Trivial verifier that approves any non-empty output — stands in
+    /// for a real domain verifier in the auto-promotion test.
+    struct PassIfNonEmpty;
+    impl OutputVerifier for PassIfNonEmpty {
+        fn name(&self) -> &str {
+            "verify:nonempty"
+        }
+        fn verify(&self, output: &[u8]) -> VerifyResult {
+            if output.is_empty() {
+                VerifyResult::fail("empty")
+            } else {
+                VerifyResult::Pass
+            }
+        }
+        fn declared_cost_uj(&self) -> u64 {
+            1
+        }
+    }
 
     fn text(s: &str) -> Query {
         Query {
@@ -329,6 +429,28 @@ mod tests {
         }
         assert!(ans.joules_spent < 1e-6); // nanojoules, not the model's 2 J
         assert!(stack.promotion_store.lock().unwrap().invocations_avoided() >= 1);
+    }
+
+    #[test]
+    fn auto_promote_promotes_verified_compartment_answer() {
+        // Low bar (0.7) so the L3 echo (0.8 confidence) clears it.
+        let mut stack = JouleClawStack::with_defaults()
+            .with_verifier(Box::new(PassIfNonEmpty))
+            .with_promote_confidence(0.7);
+        // "hello" reaches L3 (formula/tool refuse), echo answers @0.8.
+        let ans = stack.answer_and_promote(text("hello there")).expect("resolves");
+        assert!(matches!(ans.tier_used, TierId::L3(_)));
+        // Verified compartment answer → auto-promoted.
+        assert_eq!(stack.promotion_store.lock().unwrap().len(), 1);
+        assert_eq!(stack.promotion_store.lock().unwrap().log()[0].origin_tier, "L3");
+    }
+
+    #[test]
+    fn auto_promote_no_verifier_does_not_promote() {
+        let mut stack = JouleClawStack::with_defaults().with_promote_confidence(0.7);
+        let _ = stack.answer_and_promote(text("hello there")).expect("resolves");
+        // No verifier installed → nothing promoted.
+        assert_eq!(stack.promotion_store.lock().unwrap().len(), 0);
     }
 
     #[test]

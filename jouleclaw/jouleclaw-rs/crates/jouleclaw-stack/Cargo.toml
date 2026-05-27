@@ -31,4 +31,5 @@ jouleclaw-tuner             = { path = "../jouleclaw-tuner" }
 jouleclaw-supervisor        = { path = "../jouleclaw-supervisor" }
 jouleclaw-governor          = { path = "../jouleclaw-governor" }
 jouleclaw-promote           = { path = "../jouleclaw-promote" }
+jouleclaw-verify            = { path = "../jouleclaw-verify" }
 serde_json                  = { workspace = true }

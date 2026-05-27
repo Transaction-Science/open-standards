@@ -38,6 +38,9 @@
 
 #![forbid(unsafe_code)]
 
+pub mod disk;
+pub use disk::FilePromotionStore;
+
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -114,6 +117,28 @@ impl PromotionKey {
             s.push_str(&format!("{b:02x}"));
         }
         s
+    }
+
+    /// Reconstruct a key from its 64-char lowercase hex form (the
+    /// inverse of [`to_hex`](Self::to_hex)). Returns `None` if the
+    /// string is not exactly 32 hex-encoded bytes.
+    pub fn from_hex(s: &str) -> Option<Self> {
+        if s.len() != 64 {
+            return None;
+        }
+        let mut out = [0u8; 32];
+        let bytes = s.as_bytes();
+        for (i, slot) in out.iter_mut().enumerate() {
+            let hi = (bytes[2 * i] as char).to_digit(16)?;
+            let lo = (bytes[2 * i + 1] as char).to_digit(16)?;
+            *slot = (hi * 16 + lo) as u8;
+        }
+        Some(Self(out))
+    }
+
+    /// The raw 32-byte digest.
+    pub fn as_bytes(&self) -> &[u8; 32] {
+        &self.0
     }
 }
 

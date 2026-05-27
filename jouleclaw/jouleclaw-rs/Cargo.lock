@@ -2373,6 +2373,7 @@ dependencies = [
  "jouleclaw-tool-tier",
  "jouleclaw-tuner",
  "jouleclaw-verification-tier",
+ "jouleclaw-verify",
  "serde_json",
 ]
 
