@@ -133,6 +133,9 @@ members = [
 
     # Approval gates — pause a dispatch for review before it runs; energy-shaped (only expensive model calls gated).
     "crates/jouleclaw-approve",
+
+    # Cost-table model-bank dispatcher — route a query to the cheapest capable reasoner slot by measured joules.
+    "crates/jouleclaw-dispatch",
 ]
 
 [workspace.package]

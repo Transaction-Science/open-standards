@@ -1,0 +1,15 @@
+[package]
+name = "jouleclaw-dispatch"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "JouleClaw cost-table model-bank dispatcher — the compartment is a bank, not a singleton. Classify a query, route to the cheapest capable reasoner slot by measured joules. Avoids the language-tax of sending short queries to frontier models."
+
+[dependencies]
+jouleclaw-cascade   = { path = "../jouleclaw-cascade" }
+jouleclaw-llm-cheap = { path = "../jouleclaw-llm-cheap" }
+serde              = { workspace = true }
+thiserror          = { workspace = true }

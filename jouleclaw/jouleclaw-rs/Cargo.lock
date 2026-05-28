@@ -1927,6 +1927,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "jouleclaw-dispatch"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-cascade",
+ "jouleclaw-llm-cheap",
+ "serde",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "jouleclaw-ebm"
 version = "0.1.0"
 dependencies = [
