@@ -25,7 +25,7 @@ The three documents are self-contained: a reader can understand and use the fram
 
 ## Status
 
-Document stack **v1.2** (May 2026). Specification only — a standalone, system-agnostic reference implementation (`arl-core`: the four-axis claim model with the cross-axis gates and LEXICON vocabulary enforced, so an invalid claim cannot be constructed; then an `arl-sandbox` Supervisor) is in progress and will land alongside these documents. No reference implementation, playground, multi-node sandbox, edge tier, non-NVIDIA accelerator telemetry, or continuous-evaluation framework ships in v1.2.
+Document stack **v1.2** (May 2026). The standalone, system-agnostic reference implementation has begun: [`arl-rs/`](arl-rs/) ships **`arl-core`** — the four-axis claim model with every cross-axis gate enforced (a high validation depth is unreachable without matching convergence and security; energy non-disclosure caps the score at ARL 3; security non-disclosure caps the class at S0; methodology must predate the claim) and the LEXICON controlled vocabulary enforced (excluded terms like *AGI* / *consciousness* invalidate a claim by construction; partially-hype terms are flagged for review). 22 tests, zero coupling to any runtime. The **`arl-sandbox`** Supervisor (the ARL-S measurement environment) is next. No playground, multi-node sandbox, edge tier, non-NVIDIA accelerator telemetry, or continuous-evaluation framework ships in v1.2.
 
 ## Lineage
 

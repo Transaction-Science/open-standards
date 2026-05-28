@@ -1,0 +1,14 @@
+[package]
+name = "arl-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "ARL core — the four-axis AI Readiness Level claim model with the cross-axis gates and controlled-vocabulary enforcement, so an invalid or unmeasurable claim cannot be asserted. Standalone, vendor-neutral, tied to no runtime."
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
