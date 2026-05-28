@@ -1,0 +1,17 @@
+[package]
+name = "arl-sandbox"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "ARL-S Supervisor core — the evaluation session model, the tier↔ARL↔telemetry structural gates, and the Ed25519-over-JCS + SHA-256 attestation that makes an ARL measurement tamper-evident and replayable."
+
+[dependencies]
+arl-core      = { path = "../arl-core" }
+ed25519-dalek = { workspace = true }
+sha2          = { workspace = true }
+serde         = { workspace = true }
+serde_json    = { workspace = true }
+thiserror     = { workspace = true }

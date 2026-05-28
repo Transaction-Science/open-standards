@@ -52,7 +52,7 @@ A universal, vendor-neutral standard for measuring the readiness of an AI system
 
 - **Site:** [arl.transaction.science](https://arl.transaction.science)
 - **Licence:** CC-BY-4.0 (see [`arl/LICENSE`](arl/LICENSE)); forthcoming reference implementation Apache-2.0.
-- **Status:** Document stack v1.2 (May 2026). Specification published (`ARL.md`, `ARL-S.md`, `LEXICON.md`); standalone reference impl begun — `arl-rs/` ships `arl-core` (four-axis claim model + cross-axis gates + lexicon enforcement, 22 tests, no runtime coupling).
+- **Status:** Document stack v1.2 (May 2026). Specification published (`ARL.md`, `ARL-S.md`, `LEXICON.md`); standalone reference impl in `arl-rs/` — `arl-core` (four-axis claim model + cross-axis gates + lexicon enforcement) and `arl-sandbox` (ARL-S session model + tier/telemetry gates + Ed25519-over-JCS + SHA-256 attestation). 38 tests, no runtime coupling.
 
 ## How this is organised
 
