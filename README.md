@@ -1,10 +1,10 @@
 # Transaction Science Open Standards
 
-This repository houses the five open reference protocols stewarded by [Transaction Science](https://transaction.science). Each is published as a separate top-level directory with its own README, its own licence file, and its own status.
+This repository houses the open reference standards stewarded by [Transaction Science](https://transaction.science). Each is published as a separate top-level directory with its own README, its own licence file, and its own status.
 
 The wire format and the right to fork are public. Transaction Science writes the reference implementation and runs the optional hosted services — the protocols themselves are owned by no one.
 
-## The five standards
+## The standards
 
 ### [openpay/](openpay/) — Payment acceptance without the SaaS tax
 
@@ -46,6 +46,14 @@ A pure-Rust, omni-modal AI runtime that dispatches every operation through an en
 - **Licence:** Apache-2.0 (see [`jouleclaw/LICENSE`](jouleclaw/LICENSE))
 - **Status:** v0.1.0 reference implementation in active development.
 
+### [arl/](arl/) — AI Readiness Level
+
+A universal, vendor-neutral standard for measuring the readiness of an AI system to perform a defined task in a defined context — what the Technology Readiness Level scale is to technology. Tied to no model, runtime, or vendor. Every score has four required parts, each anchored in math or physics that does not move: validation depth (1–9, statistics), convergence class (A–E, stochastic process theory), energy profile (joules, thermodynamics), and security class (S0–S4, information theory and cryptography). Cross-axis gates make a high readiness claim unreachable without matching convergence and security, and energy non-disclosure caps the score. The companion ARL Sandbox (ARL-S) specifies the measurement environment.
+
+- **Site:** [arl.transaction.science](https://arl.transaction.science)
+- **Licence:** CC-BY-4.0 (see [`arl/LICENSE`](arl/LICENSE)); forthcoming reference implementation Apache-2.0.
+- **Status:** Document stack v1.2 (May 2026). Specification published (`ARL.md`, `ARL-S.md`, `LEXICON.md`); standalone reference implementation in progress.
+
 ## How this is organised
 
 Each subdirectory is self-contained: it carries its own README, its own licence, and its own contribution guidance. Cross-protocol consistency lives at this level — in this README and in [`CHARTER.md`](CHARTER.md).
@@ -58,10 +66,11 @@ open-standards/
 ├── smart-byte/     — value-carrier substrate (CC-BY-4.0, spec)
 ├── eoc/            — energy-optimised compute (CC-BY-4.0, spec)
 ├── wai/            — media transport + capability dispatch (Apache-2.0, Rust ref impl)
-└── jouleclaw/      — energy-optimised AI runtime (Apache-2.0, Rust ref impl)
+├── jouleclaw/      — energy-optimised AI runtime (Apache-2.0, Rust ref impl)
+└── arl/            — AI Readiness Level measurement standard (CC-BY-4.0, spec; ref impl in progress)
 ```
 
-The five standards do not depend on one another. They share a steward, a unit of accounting (joules), and a doctrine — that the protocol is the public commitment and the operations are the offer.
+The standards do not depend on one another. They share a steward and a doctrine — that the protocol is the public commitment and the operations are the offer. (Most also share a unit of accounting, joules; ARL is universal and tied to nothing, joules being one of its four measured axes rather than a shared substrate.)
 
 ## Contributing
 
