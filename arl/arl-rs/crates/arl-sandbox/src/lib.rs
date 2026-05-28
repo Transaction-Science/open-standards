@@ -29,8 +29,13 @@
 
 pub mod attest;
 pub mod session;
+pub mod supervisor;
 
 pub use attest::{attest_session, verify_attestation, AttestError, Attestation};
 pub use session::{
     IsolationTier, Session, SessionViolation, TelemetryPresence,
+};
+pub use supervisor::{
+    EchoHarness, Evaluation, FixedPhysicalSource, Harness, HarnessOutcome, NullPhysicalSource,
+    PhysicalTelemetry, PhysicalTelemetrySource, ResourceTelemetry, Supervisor,
 };
