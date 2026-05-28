@@ -293,19 +293,24 @@ Each game-engine technique listed below has a near-exact
 counterpart in modern AI inference that the AI industry has, so
 far, declined to deploy at the same architectural rigor:
 
-| Game-engine technique          | AI counterpart                                              | JouleClaw component |
+Every lever below now has a **shipped** JouleClaw realization — the
+frame is no longer rhetorical; each row points at in-tree code:
+
+| Game-engine technique          | AI counterpart                                              | JouleClaw component (shipped) |
 |--------------------------------|-------------------------------------------------------------|---------------------|
 | Frustum culling                | Skip tiers whose `estimate_cost` returns `None`             | `jouleclaw-cascade::Tier::estimate_cost` |
-| Level-of-detail (LOD)          | Route to the cheapest sufficient model — SLM before frontier | `jouleclaw-cascade` router + `.jc.toml` declared-cost contract |
-| Deferred rendering             | Do not forward-pass through 175B parameters for a token a 7B would produce identically | The cascade auction over backends declaring their `J/op` |
+| Level-of-detail (LOD)          | Route to the cheapest sufficient model — SLM before frontier | `jouleclaw-dispatch::ModelBankTier` (cheapest *capable* slot by measured J) |
+| Deferred rendering             | Do not forward-pass through 175B parameters for a token a 7B would produce identically | `jouleclaw-dispatch` cost-table over backends declaring their `J/op` |
 | Physically-based rendering     | One foundation model, derive specializations — not 12 full fine-tunes | (consumer concern; the spec doesn't dictate) |
-| Virtual texturing              | Retrieve only the context this token will attend to, not the whole 128k window | `jouleclaw-fresh` + KV-cache-aware retrieval |
-| Temporal upsampling            | Cache the prior reasoning chain; reconstruct the next step from a small delta, not by re-running the whole chain | `jouleclaw-cache` + `jouleclaw-history` reuse |
-| Nanite-style mesh streaming    | Activate only the MoE experts the input actually needs      | Backend-side; the spec exposes the J-per-op contract |
-| Hardware ray tracing + denoiser | A few high-quality forward passes plus a verifier beats one large unconstrained pass | `jouleclaw-verify` chain gating L3 output |
-| Frame budget                   | `JouleBudget` walks the cascade like a render budget walks the scene graph | `jouleclaw-energy::EnergyQuota` + breaker |
+| Virtual texturing              | Retrieve only the context this token will attend to, not the whole 128k window | `jouleclaw-stack` RAG pipeline (`retrieve → enrich → rerank → read`, top-k only) + `jouleclaw-fresh` |
+| Temporal upsampling            | Reuse prior verified work; reconstruct from a small delta, not by re-running | `jouleclaw-promote` (exact yang→yin) + `jouleclaw-skill` (whole query class) |
+| Nanite-style mesh streaming    | Activate only the reasoner the input actually needs         | `jouleclaw-dispatch` routes to the one slot, not the whole bank |
+| Hardware ray tracing + denoiser | A few high-quality forward passes plus a verifier beats one large unconstrained pass | `jouleclaw-verify` (`OutputVerifier`) + `jouleclaw-approve` gate before the pass |
+| Agent / NPC control loop       | Bounded multi-step recursion — fan-out capped, depth bounded by the joule budget | `jouleclaw-agent` (`max_steps` + per-branch budget clamp) |
+| Frame budget                   | `JouleBudget` walks the cascade like a render budget walks the scene graph | `jouleclaw-energy::EnergyQuota` + breaker, `jouleclaw-governor` (global), `jouleclaw-agent` (nested) |
 
-The pattern is not new. The assembly is.
+The pattern is not new. The assembly — and the fact that every lever is
+a shipped, tested crate rather than a slogan — is.
 
 ### 9.2 Five communities, one architecture
 
@@ -317,8 +322,8 @@ contribution.
 
 | Community | Representative work | JouleClaw component |
 |---|---|---|
-| **Constrained decoding** | Outlines (Willard & Louf), XGrammar (Dong et al. 2024), Guidance, LMQL, Pre³, OpenAI/Anthropic structured-output APIs | `jouleclaw-decode` *(planned v0.2 — currently external)*; grammar-mask trait honoured by L3 backends |
-| **Compound AI systems / DSPy** | DSPy (Khattab et al., Stanford → MIT; CAIS 2026 inaugural ACM conference, May 2026) | `jouleclaw-program` *(planned v0.2)*; typed signatures + module compilation over the cascade |
+| **Constrained decoding** | Outlines (Willard & Louf), XGrammar (Dong et al. 2024), Guidance, LMQL, Pre³, OpenAI/Anthropic structured-output APIs | `jouleclaw-decode` *(shipped)* — pure-Rust regex / CFG / JSON-schema → token-vocabulary mask |
+| **Compound AI systems / DSPy** | DSPy (Khattab et al., Stanford → MIT; CAIS 2026 inaugural ACM conference, May 2026) | `jouleclaw-program` *(shipped)* — typed signatures + module compiler — and `jouleclaw-skill`, its deterministic skill-compilation realization |
 | **Small / specialist models** | NVIDIA Research (Belcak & Heinrich, 2025), Microsoft Phi team, TinyML, llama.cpp | `jouleclaw-cascade` router + `jouleclaw-pack` declared-cost contracts |
 | **Neurosymbolic / verifier-in-the-loop** | Lean + LLM provers, BMC + LLM (LaM4Inv), SymCode, ProofNet++, VIRF, Eidoku | `jouleclaw-verify` (`OutputVerifier` trait + `VerifierChain` + receipt integration) |
 | **Energy measurement / Green Software** | Patterson et al., ML.ENERGY Leaderboard, MDPI Sensors edge-computing surveys, GSF SCI specification, AI Energy Score | `jouleclaw-energy` + the `Provenance` honesty contract + `.jc.toml` measured-cost rows |
