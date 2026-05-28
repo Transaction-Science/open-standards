@@ -1,0 +1,15 @@
+[package]
+name = "jouleclaw-session"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "JouleClaw session tree — an energy-attributed, branchable log of resolutions. Fork a session at any turn to explore alternatives without losing the original (Pi-style --fork)."
+
+[dependencies]
+jouleclaw-cascade = { path = "../jouleclaw-cascade" }
+serde            = { workspace = true }
+serde_json       = { workspace = true }
+thiserror        = { workspace = true }

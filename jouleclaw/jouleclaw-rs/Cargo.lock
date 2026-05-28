@@ -2347,6 +2347,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "jouleclaw-session"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-cascade",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "jouleclaw-skill"
 version = "0.1.0"
 dependencies = [

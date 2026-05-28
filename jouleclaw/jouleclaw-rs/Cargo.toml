@@ -136,6 +136,9 @@ members = [
 
     # Cost-table model-bank dispatcher — route a query to the cheapest capable reasoner slot by measured joules.
     "crates/jouleclaw-dispatch",
+
+    # Session tree — energy-attributed, branchable log of resolutions (Pi-style --fork).
+    "crates/jouleclaw-session",
 ]
 
 [workspace.package]
