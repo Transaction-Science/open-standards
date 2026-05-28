@@ -23,6 +23,7 @@ pub const MIN_ENERGY_N: u32 = 100;
 /// (ARL 1 / Class E / S0 / energy undisclosed), so a bare claim is honest
 /// about how little it has shown.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default)]
 pub struct Claim {
     // ── Identity (what is being scored) ──
     /// `[model version] + [harness version] + [config hash]`.

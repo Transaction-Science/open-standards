@@ -19,6 +19,7 @@ pub enum AxisError {
 /// How thoroughly the readiness claim has been tested, 1–9. Adapts the
 /// Technology Readiness Level scale.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(try_from = "u8", into = "u8")]
 pub struct ValidationDepth(u8);
 
 impl ValidationDepth {
@@ -34,6 +35,19 @@ impl ValidationDepth {
     /// The numeric level, 1–9.
     pub fn level(self) -> u8 {
         self.0
+    }
+}
+
+impl TryFrom<u8> for ValidationDepth {
+    type Error = AxisError;
+    fn try_from(level: u8) -> Result<Self, Self::Error> {
+        Self::new(level)
+    }
+}
+
+impl From<ValidationDepth> for u8 {
+    fn from(d: ValidationDepth) -> u8 {
+        d.0
     }
 }
 

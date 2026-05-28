@@ -1,0 +1,18 @@
+[package]
+name = "arl-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "arl — the ARL reference checker. Validate a claim against the four-axis cross-axis gates, lint its vocabulary, and verify a session attestation, from the command line or CI."
+
+[[bin]]
+name = "arl"
+path = "src/main.rs"
+
+[dependencies]
+arl-core    = { path = "../arl-core" }
+arl-sandbox = { path = "../arl-sandbox" }
+serde_json  = { workspace = true }

@@ -39,3 +39,7 @@ pub use supervisor::{
     EchoHarness, Evaluation, FixedPhysicalSource, Harness, HarnessOutcome, NullPhysicalSource,
     PhysicalTelemetry, PhysicalTelemetrySource, ResourceTelemetry, Supervisor,
 };
+
+/// Re-export of the Ed25519 signing key type, so consumers can construct
+/// a [`Supervisor`] without depending on `ed25519-dalek` directly.
+pub use ed25519_dalek::{SigningKey, VerifyingKey};
