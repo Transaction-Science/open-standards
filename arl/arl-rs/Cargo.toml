@@ -4,6 +4,7 @@ members = [
     "crates/arl-core",
     "crates/arl-sandbox",
     "crates/arl-cli",
+    "crates/arl-wasm",
 ]
 
 [workspace.package]

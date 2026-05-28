@@ -34,3 +34,7 @@ Cargo.lock.bak
 *.log
 .scratch/
 tmp/
+
+# wasm-pack build output (regenerable)
+arl/arl-rs/crates/arl-wasm/pkg/
+arl/arl-rs/crates/arl-wasm/pkg-node/

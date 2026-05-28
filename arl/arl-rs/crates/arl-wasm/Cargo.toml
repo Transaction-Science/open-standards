@@ -1,0 +1,24 @@
+[package]
+name = "arl-wasm"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "WASM bindings over arl-core — the same cross-axis gates and lexicon checks the CLI runs, compiled for the browser playground. Single-sourced: no JS reimplementation to drift."
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+# The bundled wasm-opt rejects the bulk-memory ops current rustc emits;
+# skip the optional post-pass (the bindgen-emitted wasm is valid as-is).
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false
+
+[dependencies]
+arl-core     = { path = "../arl-core" }
+# Pinned to the installed wasm-bindgen CLI (0.2.114) so the generated
+# glue matches the toolchain that emits it.
+wasm-bindgen = "=0.2.114"
+serde_json   = { workspace = true }
