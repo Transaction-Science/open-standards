@@ -68,7 +68,8 @@
 pub mod pipeline;
 pub use pipeline::{RagConfig, RagOutcome, StageTrace};
 
-use jouleclaw_cascade::tier::{Cascade, Runtime};
+use jouleclaw_cascade::tier::{Cascade, Runtime, Tier};
+use jouleclaw_dispatch::{DispatchError, ModelBank, ModelBankTier};
 
 // Resolver tiers.
 use jouleclaw_formula::{FormulaFirstTier, InMemoryKnowledgeStore};
@@ -197,7 +198,11 @@ impl<S: PromotionStore + 'static> JouleClawStack<S> {
     ///
     /// [`with_defaults`]: JouleClawStack::with_defaults
     /// [`with_durable_promotion`]: JouleClawStack::with_durable_promotion
-    fn assemble(promotion_store: SharedStore<S>) -> Self {
+    ///
+    /// `model_tier` is the L3 statistical-compartment tier (a single
+    /// backend via [`LlmCheapTier`], or a cost-table [`ModelBankTier`]).
+    /// It is wrapped in the approval gate here.
+    fn assemble<M: Tier + 'static>(promotion_store: SharedStore<S>, model_tier: M) -> Self {
         // Resolver cascade, registered cheapest-first. The runtime owns
         // a built-in L0 cache ahead of these.
         let mut cascade = Cascade::new();
@@ -213,10 +218,7 @@ impl<S: PromotionStore + 'static> JouleClawStack<S> {
         // deterministic tiers above are never gated — only the expensive
         // yang calls can be paused for review.
         let approval_gate = shared_gate(AutoApprove);
-        cascade.register(Box::new(GatedTier::new(
-            LlmCheapTier::new(EchoBackend::default()),
-            approval_gate.clone(),
-        ))); // L3
+        cascade.register(Box::new(GatedTier::new(model_tier, approval_gate.clone()))); // L3
         // L4 cross-model verification — only constructed if ≥2 backends
         // (always true here). Reached only when L3 refuses.
         if let Ok(verify) = VerificationTier::new(vec![
@@ -343,7 +345,16 @@ impl JouleClawStack<InMemoryPromotionStore> {
     /// query the resolver walk falls through to the L3 `EchoBackend`;
     /// tool-shaped and constraint-shaped queries resolve at L0.5 / L4.5.
     pub fn with_defaults() -> Self {
-        Self::assemble(shared_in_memory())
+        Self::assemble(shared_in_memory(), LlmCheapTier::new(EchoBackend::default()))
+    }
+
+    /// Assemble a stack whose L3 compartment is a cost-table
+    /// [`ModelBankTier`] over `bank` — queries route to the cheapest
+    /// *capable* reasoner slot by measured joules, instead of a single
+    /// backend. Everything else (promotion, skills, gate, control plane)
+    /// is identical to [`with_defaults`](Self::with_defaults).
+    pub fn with_model_bank(bank: ModelBank) -> Result<Self, DispatchError> {
+        Ok(Self::assemble(shared_in_memory(), ModelBankTier::new(bank)?))
     }
 }
 
@@ -355,7 +366,10 @@ impl JouleClawStack<FilePromotionStore> {
     /// respect.
     pub fn with_durable_promotion(dir: impl AsRef<Path>) -> Result<Self, DiskError> {
         let store = FilePromotionStore::open(dir)?;
-        Ok(Self::assemble(Arc::new(Mutex::new(store))))
+        Ok(Self::assemble(
+            Arc::new(Mutex::new(store)),
+            LlmCheapTier::new(EchoBackend::default()),
+        ))
     }
 }
 
@@ -504,6 +518,31 @@ mod tests {
         }
         assert!(ans.joules_spent < 1e-6); // nanojoules, not the model's 2 J
         assert!(stack.promotion_store.lock().unwrap().invocations_avoided() >= 1);
+    }
+
+    #[test]
+    fn model_bank_routes_short_query_to_cheap_slot() {
+        use jouleclaw_dispatch::{Modality, ModelBank, ReasonerSlot};
+        use jouleclaw_llm_cheap::EchoBackend;
+        let bank = ModelBank::new()
+            .with_slot(ReasonerSlot::new(
+                "small",
+                vec![Modality::ShortText, Modality::Reasoning],
+                0.5,
+                Box::new(EchoBackend::new().with_name("small").with_typical_joules(0.5)),
+            ))
+            .with_slot(ReasonerSlot::new(
+                "long",
+                vec![Modality::LongContext, Modality::ShortText],
+                12.0,
+                Box::new(EchoBackend::new().with_name("long").with_typical_joules(12.0)),
+            ));
+        let mut stack = JouleClawStack::with_model_bank(bank).expect("non-empty bank");
+        // A short query falls through to the L3 bank and routes to the
+        // cheap slot — ~0.5 J, not 12 J.
+        let ans = stack.runtime.answer(text("a short question")).expect("resolves");
+        assert!(matches!(ans.tier_used, TierId::L3(_)));
+        assert!((ans.joules_spent - 0.5).abs() < 1e-6, "spent {}", ans.joules_spent);
     }
 
     #[test]

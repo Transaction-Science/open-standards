@@ -31,6 +31,7 @@ jouleclaw-tuner             = { path = "../jouleclaw-tuner" }
 jouleclaw-supervisor        = { path = "../jouleclaw-supervisor" }
 jouleclaw-governor          = { path = "../jouleclaw-governor" }
 jouleclaw-approve           = { path = "../jouleclaw-approve" }
+jouleclaw-dispatch          = { path = "../jouleclaw-dispatch" }
 jouleclaw-promote           = { path = "../jouleclaw-promote" }
 jouleclaw-skill             = { path = "../jouleclaw-skill" }
 jouleclaw-verify            = { path = "../jouleclaw-verify" }
