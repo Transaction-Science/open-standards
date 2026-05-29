@@ -65,7 +65,9 @@
 
 #![forbid(unsafe_code)]
 
+pub mod agent;
 pub mod pipeline;
+pub use agent::LearningCascade;
 pub use pipeline::{RagConfig, RagOutcome, StageTrace};
 
 use jouleclaw_cascade::tier::{Cascade, Runtime, Tier};

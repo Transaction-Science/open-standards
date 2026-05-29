@@ -112,8 +112,16 @@ where
     fn sub_query(parent: &Query, text: &str, remaining: f64) -> Query {
         let mut sub = parent.clone();
         sub.input = QueryInput::Text(text.to_string());
-        // Sub-queries accept partial answers; the agent composes them.
-        sub.quality = QualityFloor::chat();
+        // Sub-queries take the most permissive floor (`any`: confidence 0,
+        // partial OK) — the agent's job is to *compose* whatever each step
+        // resolves to, and its own answer is only as confident as its
+        // weakest sub-step (see `try_answer`). A stricter floor here (e.g.
+        // `chat`'s 0.7) would make the runtime *skip* any tier whose
+        // estimated confidence sits below it — including the model tier for
+        // many real backends — so a multi-step query that genuinely needs
+        // the model would refuse outright. Quality is enforced on the
+        // composed result, not pre-emptively per fragment.
+        sub.quality = QualityFloor::any();
         // A branch can spend at most what is left — never the full parent
         // budget per branch.
         let cap = remaining.max(0.0);

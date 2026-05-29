@@ -5,7 +5,13 @@ use jouleclaw_cascade::types::{Answer, AnswerError, Query};
 /// The agent's view of "ask the cascade a sub-query." The consumer
 /// implements this over their live `Runtime`; the agent never holds a
 /// `Runtime` directly, so there is no dependency cycle.
-pub trait AgentCascade: Send + Sync {
+///
+/// The bound is `Send` (an agent may move to a worker thread) but **not**
+/// `Sync`: dispatch is `&mut self` and runs in the agent's sequential
+/// loop, never shared across threads by reference. Requiring `Sync` would
+/// reject the canonical adapter — a shim holding a `&mut Runtime` or
+/// `Arc<Mutex<Runtime>>` over the live cascade — for no benefit.
+pub trait AgentCascade: Send {
     fn dispatch(&mut self, query: &Query) -> Result<Answer, AnswerError>;
 }
 

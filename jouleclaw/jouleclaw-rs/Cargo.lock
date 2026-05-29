@@ -2393,6 +2393,7 @@ dependencies = [
 name = "jouleclaw-stack"
 version = "0.1.0"
 dependencies = [
+ "jouleclaw-agent",
  "jouleclaw-approve",
  "jouleclaw-cascade",
  "jouleclaw-dispatch",

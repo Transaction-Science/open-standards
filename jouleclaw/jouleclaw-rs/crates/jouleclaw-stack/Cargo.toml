@@ -25,6 +25,7 @@ jouleclaw-struct-contrast   = { path = "../jouleclaw-struct-contrast" }
 jouleclaw-federation        = { path = "../jouleclaw-federation" }
 jouleclaw-rerank            = { path = "../jouleclaw-rerank" }
 # Control plane.
+jouleclaw-agent             = { path = "../jouleclaw-agent" }
 jouleclaw-routing           = { path = "../jouleclaw-routing" }
 jouleclaw-reflection        = { path = "../jouleclaw-reflection" }
 jouleclaw-tuner             = { path = "../jouleclaw-tuner" }
