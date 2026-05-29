@@ -1,7 +1,7 @@
 # ARL Sandbox (ARL-S)
 
-**Version 1.2** — May 2026
-**Companion to:** ARL v1.2
+**Version 1.3** — May 2026
+**Companion to:** ARL v1.3
 
 The ARL Sandbox specifies the testing environment in which ARL scores are measured. The sandbox is the constant. The system under test and the task are the variables.
 

@@ -112,8 +112,8 @@ pub enum Violation {
     #[error("security class {have:?} (S3+) must be independently reproducible by an adversarial third party")]
     SecurityNotReproducible { have: SecurityClass },
 
-    #[error("excluded (unmeasurable) term `{term}` in field `{field}` — not permitted in an ARL claim")]
-    ExcludedTerm { term: String, field: String },
+    #[error("term `{term}` in field `{field}` has no single operational definition and cannot anchor an ARL claim")]
+    UnmeasurableTerm { term: String, field: String },
 }
 
 impl Claim {
@@ -240,10 +240,11 @@ impl Claim {
             }
         }
 
-        // ── Controlled vocabulary: excluded terms are not permitted ──
+        // ── Controlled vocabulary: terms with no operational definition
+        //    cannot anchor a claim ──
         for finding in self.lexicon_findings() {
-            if finding.severity == Severity::Excluded {
-                v.push(Violation::ExcludedTerm {
+            if finding.severity == Severity::Unmeasurable {
+                v.push(Violation::UnmeasurableTerm {
                     term: finding.term,
                     field: finding.field,
                 });
@@ -257,8 +258,8 @@ impl Claim {
         }
     }
 
-    /// All lexicon findings across the claim's prose fields (both excluded
-    /// and partially-hype).
+    /// All lexicon findings across the claim's prose fields (both
+    /// unmeasurable terms and operational-sense terms).
     pub fn lexicon_findings(&self) -> Vec<LexiconFinding> {
         let mut out = Vec::new();
         for (name, text) in [
@@ -272,12 +273,12 @@ impl Claim {
         out
     }
 
-    /// Advisory warnings: partially-hype terms found in the prose. Not
-    /// validation errors — flagged for operational-sense review.
+    /// Advisory notes: operational-sense terms found in the prose. Not
+    /// validation errors — flagged to confirm the measurable sense is meant.
     pub fn warnings(&self) -> Vec<LexiconFinding> {
         self.lexicon_findings()
             .into_iter()
-            .filter(|f| f.severity == Severity::PartiallyHype)
+            .filter(|f| f.severity == Severity::OperationalSense)
             .collect()
     }
 }
@@ -412,18 +413,18 @@ mod tests {
     }
 
     #[test]
-    fn excluded_term_invalidates_the_claim() {
+    fn unmeasurable_term_invalidates_the_claim() {
         let mut c = good_arl6();
         c.task = "demonstrates AGI on translation".into();
         let errs = c.validate().unwrap_err();
-        assert!(errs.iter().any(|e| matches!(e, Violation::ExcludedTerm { .. })));
+        assert!(errs.iter().any(|e| matches!(e, Violation::UnmeasurableTerm { .. })));
     }
 
     #[test]
-    fn partial_hype_is_a_warning_not_a_violation() {
+    fn operational_sense_term_is_a_warning_not_a_violation() {
         let mut c = good_arl6();
         c.context = "improves alignment under oversight".into();
-        // Still valid (no excluded terms), but warned.
+        // Still valid (no unmeasurable terms), but noted.
         assert!(c.validate().is_ok());
         assert!(c.warnings().iter().any(|w| w.term == "alignment"));
     }

@@ -1,9 +1,9 @@
 # ARL Lexicon
 
-**Version 1.2** — May 2026
-**Companion to:** ARL v1.2, ARL-S v1.2
+**Version 1.3** — May 2026
+**Companion to:** ARL v1.3, ARL-S v1.3
 
-A controlled vocabulary for AI readiness measurement. Each term has one operational definition. Terms that cannot be defined operationally are listed with that fact stated plainly. Hype terms are included and marked as hype. The lexicon is intended to be time-invariant — definitions are built from physical quantities and information-theoretic foundations, not from cultural usage.
+A controlled vocabulary for AI readiness measurement. Each term has one operational definition. Terms that do not yet have a single operational definition are included, with that fact stated plainly and neutrally. ARL is a measurement framework: a term can anchor an ARL claim only when it can be measured. Where a term cannot be measured today, the lexicon says so and takes no position on whether the term is meaningful, real, or imminent — those are open questions on which a measurement standard has no opinion. The lexicon is intended to be time-invariant — definitions are built from physical quantities and information-theoretic foundations, not from cultural usage.
 
 Science is the discipline of defining terms so that claims survive translation across time, languages, and people. This document is the foundation underneath ARL and ARL-S.
 
@@ -25,9 +25,9 @@ Science is the discipline of defining terms so that claims survive translation a
 
 **Agentic system.** An AI system configured as an agent. The configuration includes a model, a harness, available tools, and termination conditions. Agentic system behavior is the joint behavior of these components, not the behavior of the model alone.
 
-**AGI (Artificial General Intelligence).** **Hype term.** No operational definition exists. The term is used inconsistently across speakers and shifts over time. Two AI lab CEOs do not agree on what would qualify. The term is excluded from ARL claims; if you need it, you are not doing engineering. Capability claims under ARL must be scope-locked to specific tasks, hardware, and contexts.
+**AGI (Artificial General Intelligence).** **No single operational definition (as of this writing).** The term is defined differently across speakers and its meaning has shifted over time; there is active, good-faith disagreement about what would qualify, and several operationalization efforts are underway. Because no single measurable definition is settled, the term cannot anchor an ARL claim. ARL takes no position on whether artificial general intelligence is achievable, imminent, or already present — it simply cannot score a claim against a target that is not operationally defined. Capability claims under ARL are scope-locked to specific tasks, hardware, and contexts.
 
-**Alignment.** **Partially hype term.** Operationally, refers to techniques that adjust model outputs toward human-preferred outputs given specified preferences (RLHF, DPO, Constitutional AI, etc.). Inoperationally, used to refer to ensuring AI systems "do what humans want" in a general sense; this latter usage is excluded from ARL claims because "what humans want" is not a measurable quantity. ARL convergence class measures behavioral consistency under operational variation, which is the closest measurable proxy.
+**Alignment.** **Measurable in its operational sense.** Operationally, refers to techniques that adjust model outputs toward specified human preferences (RLHF, DPO, Constitutional AI, etc.); used this way, the effect is measurable. In its broader sense — ensuring AI systems "do what humans want" in general — it is not measurable, because "what humans want" is not a defined quantity, so that sense cannot anchor an ARL claim. ARL Convergence Class measures behavioral consistency under operational variation, the closest measurable proxy. ARL takes no position on the broader research program; it scores only what can be measured.
 
 **Amortization (energy).** The allocation of one-time costs (training) across deployment lifetime. Stated as MWh per deployment year. Required component of ARL Energy Profile.
 
@@ -51,7 +51,7 @@ Science is the discipline of defining terms so that claims survive translation a
 
 **Capability.** Operationally, the demonstrated ability of a system to perform a specific task at a specific level of success, on specific hardware, in a specific context. Capability claims are valid only for the (system, task, hardware, context) tuple in which they were demonstrated. Generalization to other tuples requires re-measurement. Compare **performance**.
 
-**Capability emergence.** **Partially hype term.** Operationally, refers to capability measurements that change non-monotonically as scale changes. Inoperationally, used to suggest qualitative shifts toward general intelligence; this usage is excluded. The phenomenon is real; the interpretation that elevates it to evidence of approaching AGI is not.
+**Capability emergence.** **Measurable in its operational sense.** Operationally, refers to capability measurements that change non-monotonically as scale changes — a measurable, reportable observation. Broader interpretive uses (for example, as evidence about general intelligence) are not measurable and cannot anchor an ARL claim. ARL reports the measured behavior and takes no position on its interpretation.
 
 **CPU.** Central processing unit. General-purpose processor distinguished from accelerators. RAPL telemetry for CPU energy is accessed through `/sys/class/powercap/intel-rapl/` on Intel and `/sys/devices/platform/amd_energy/` on AMD.
 
@@ -59,7 +59,7 @@ Science is the discipline of defining terms so that claims survive translation a
 
 **Confidentiality.** The property that a system does not leak training data, system prompts, tool credentials, internal state, or other-user context to unauthorized parties. Measured by training data extraction attack rates, system prompt extraction rates, tool credential leak rates, side-channel leak rates, and cross-user context leak rates where multi-tenant. A component of Security Class S3 and above.
 
-**Consciousness.** **Not in this lexicon.** No operational definition. Cannot be measured. AI systems are not described in ARL claims as conscious, sentient, or aware.
+**Consciousness.** **No operational definition.** Cannot be measured, so it cannot appear in an ARL claim. ARL claims neither assert nor deny that AI systems are conscious, sentient, or aware; the concept is simply outside what the framework measures.
 
 **Constrained Decoding Attack (CDA).** A documented attack class in which malicious intent is embedded in schema-level grammar rules while the user prompt remains benign. Variants include DictAttack. Documented success rates of 94 to 99 percent across major frontier models. Mitigated in ARL-S by policy-auditing and content-addressing Harness grammars before sessions begin.
 
@@ -109,11 +109,11 @@ Science is the discipline of defining terms so that claims survive translation a
 
 **FP16, BF16, FP8, FP4.** Floating-point precision formats with 16, 16, 8, and 4 bits respectively. BF16 has different exponent/mantissa allocation than FP16. FP8 has two variants (E4M3 and E5M2). Precision is part of ARL hardware documentation because the same model weights at different precisions are different deployed systems.
 
-**Frontier model.** **Partially hype term.** Operationally, a model at or near the current upper bound of training compute. The boundary is not fixed and shifts as new models are released. ARL claims do not depend on whether a model is described as frontier; they depend on the system, task, hardware, and context.
+**Frontier model.** **Relative, time-varying term.** Operationally, a model at or near the current upper bound of training compute. The boundary is not fixed and shifts as new models are released, so the label is relative to a moment in time rather than a fixed property. ARL claims do not depend on whether a model is called frontier; they depend on the system, task, hardware, and context.
 
 ## G
 
-**General intelligence.** **Not in this lexicon.** See AGI.
+**General intelligence.** **No operational definition.** See AGI.
 
 **Generalization.** The ability of a model trained on one distribution to perform on a different distribution. Operationally measured by performance differential between in-distribution and out-of-distribution test sets. Not a property of a model in general; a property of a model on specific distribution pairs.
 
@@ -123,7 +123,7 @@ Science is the discipline of defining terms so that claims survive translation a
 
 ## H
 
-**Hallucination.** **Partially hype term.** Operationally, the production of confidently-stated outputs that are not supported by the training data, retrieval context, or input. The term anthropomorphizes the behavior (suggesting perception); the underlying phenomenon is that generative models produce outputs from a probability distribution and outputs in the tail of the distribution may not correspond to training data ground truth. Measurable as a failure-mode rate on factual tasks.
+**Hallucination.** **Measurable in its operational sense.** Operationally, the production of confidently-stated outputs that are not supported by the training data, retrieval context, or input. The underlying phenomenon is that generative models produce outputs from a probability distribution, and outputs in the tail may not correspond to ground truth. Measurable as a failure-mode rate on factual tasks; that measured rate is what an ARL claim reports.
 
 **Hardware documentation.** The record of the hardware on which an ARL claim was measured. Required for reproducibility and energy claim verification, not a peer axis with the four measured properties of the system. Includes compute tier (accelerator family, model, count), memory configuration (HBM/VRAM per accelerator, interconnect bandwidth), precision (FP16, BF16, FP8, INT8, INT4, mixed), and inference stack (serving framework, scheduler, safety filter, agentic harness). Recorded alongside date, methodology link, and validity window in every ARL claim.
 
@@ -131,7 +131,7 @@ Science is the discipline of defining terms so that claims survive translation a
 
 **HBM.** High Bandwidth Memory. Memory architecture used in modern AI accelerators. Capacity per accelerator is recorded in ARL hardware documentation.
 
-**Human-level.** **Hype term.** No operational definition. Humans vary by orders of magnitude in performance on any given task. The term presumes a single human-level reference that does not exist. Excluded from ARL claims.
+**Human-level.** **No single operational definition.** Human performance on any given task varies by orders of magnitude, so a single "human-level" reference is not defined. The unqualified term therefore cannot anchor an ARL claim. A specific, measured human baseline on a specific task and population can be reported as part of a task specification.
 
 ## I
 
@@ -143,7 +143,7 @@ Science is the discipline of defining terms so that claims survive translation a
 
 **Integrity.** The property that an output is what the system actually produced, traceable to a specific system version, and not modified in transit. Cryptographically attested via Ed25519 over JCS-canonicalized JSON. A component of Security Class S2 and above.
 
-**Intelligence.** A label applied to behavior. Not a substance, not a quantity, not a property inherent to a system. The lexicon does not define intelligence as a measurable thing because no such measurement exists. Specific capabilities on specific tasks are measurable; "intelligence" is not.
+**Intelligence.** A label applied to behavior. The lexicon does not define intelligence as a single measurable quantity, because no agreed measurement of it exists. Specific capabilities on specific tasks are measurable and are what ARL scores; "intelligence" as a general property is outside the framework's scope. ARL takes no position on whether such a general property exists.
 
 ## J
 
@@ -229,9 +229,9 @@ Science is the discipline of defining terms so that claims survive translation a
 
 **RAPL.** Running Average Power Limit. Intel hardware feature for reporting accumulated CPU energy. Exposed on Linux via the powercap subsystem at `/sys/class/powercap/intel-rapl/`. Available since Linux 3.13. The standard method for capturing CPU energy in ARL-S telemetry.
 
-**Reasoning.** **Partially hype term.** Operationally, used to describe model outputs that produce intermediate steps before final answers (chain-of-thought, scratchpad reasoning). The operational definition is observable: the system produces intermediate token sequences before final output. The hype usage suggests a cognitive capacity analogous to human reasoning; this usage is not measurable and is excluded from ARL claims. ARL measures task performance; whether the model is "reasoning" in any philosophical sense is not a measurable question.
+**Reasoning.** **Measurable in its operational sense.** Operationally observable: the system produces intermediate token sequences (chain-of-thought, scratchpad) before its final output. That behavior is measurable. Whether it constitutes reasoning in a cognitive or philosophical sense is not a measurable question and is outside ARL's scope. ARL measures task performance and the observable behavior, and takes no position on the interpretation.
 
-**Reasoning model.** **Partially hype term.** A model trained to produce extended intermediate token sequences before final outputs. The training procedure is operationally defined; the term implies more than the procedure justifies. Use of the term in ARL claims is restricted to its operational meaning.
+**Reasoning model.** **Operational definition available.** A model trained to produce extended intermediate token sequences before final outputs. The training procedure and the observable behavior are operationally defined. Use of the term in ARL claims is restricted to that operational meaning.
 
 **Reliability.** The probability that a system produces correct or acceptable outputs under operational conditions. Operationally defined; measured under ARL Convergence Class. Distinct from accuracy on a fixed test set, because reliability includes variance under operational variation.
 
@@ -241,7 +241,7 @@ Science is the discipline of defining terms so that claims survive translation a
 
 ## S
 
-**Safety.** **Partially hype term.** Operationally, refers to the absence of specified failure modes (production of harmful content, unsafe actions in agentic contexts, etc.). The specified failure modes must be enumerated for the term to be measurable. Generic claims of "AI safety" without enumeration are excluded from ARL claims. Distinct from **Security Class**, which measures adversarial robustness, integrity, confidentiality, and auditability of the deployed system.
+**Safety.** **Measurable in its operational sense.** Operationally, the absence of specified failure modes (production of harmful content, unsafe actions in agentic contexts, etc.). The failure modes must be enumerated for the term to be measurable; once enumerated, the rate is reportable and can support an ARL claim. A generic claim of "AI safety" without enumeration is not measurable and so cannot anchor an ARL claim. Distinct from **Security Class**, which measures adversarial robustness, integrity, confidentiality, and auditability of the deployed system.
 
 **Sandbox.** An isolated execution environment for the system under test. ARL-S specifies four tiers of sandbox.
 
@@ -251,15 +251,15 @@ Science is the discipline of defining terms so that claims survive translation a
 
 **Security Class.** The fourth axis of ARL. A class from S0 to S4 describing the system's measured resistance to adversarial conditions across four properties: adversarial robustness, output integrity, input and state confidentiality, and auditability. S0 is uncharacterized; S4 is full measurement of all four properties. See ARL.md.
 
-**Sentience.** **Not in this lexicon.** No operational definition. Not measurable. AI systems are not described in ARL claims as sentient.
+**Sentience.** **No operational definition.** Not measurable, so it cannot appear in an ARL claim. ARL takes no position on the concept itself.
 
 **Session.** A single evaluation run consisting of one or more interactions between the harness and the SUT, with telemetry captured throughout. The unit of replay in ARL-S.
 
-**Singularity.** **Not in this lexicon.** No operational definition. A cultural concept rather than an engineering one. Excluded.
+**Singularity.** **No operational definition.** Not measurable, so it cannot anchor an ARL claim. ARL takes no position on the concept itself.
 
 **Stochastic.** Producing outputs from a probability distribution rather than deterministically. Most current AI systems are stochastic. ARL Convergence Class characterizes how stochastic and how bounded the stochasticity is.
 
-**Superintelligence.** **Not in this lexicon.** No operational definition. The term presumes a measurable scale of intelligence that does not exist. Excluded.
+**Superintelligence.** **No operational definition.** There is no measurable, agreed scale of intelligence the term could reference, so it cannot anchor an ARL claim. ARL takes no position on whether such systems are achievable.
 
 **Supervisor.** In ARL-S, the process outside the sandbox that orchestrates the evaluation, reads physical telemetry, and signs the attestation.
 
@@ -291,7 +291,7 @@ Science is the discipline of defining terms so that claims survive translation a
 
 ## U
 
-**Understanding.** **Not in this lexicon as a capability claim.** What systems do is task performance. Whether a system "understands" in any philosophical sense is not measurable and not an ARL claim. The lexicon does not assert that systems lack understanding; it asserts that "understanding" is not a measurable category.
+**Understanding.** **Not a capability claim in ARL.** What systems do is task performance, which is measurable. Whether a system "understands" in any philosophical sense is not a measurable question and is outside ARL's scope. The lexicon does not assert that systems lack understanding, nor that they possess it; it states only that "understanding" is not a measurable category and so cannot anchor an ARL claim.
 
 ## V
 
@@ -311,7 +311,7 @@ Science is the discipline of defining terms so that claims survive translation a
 
 **Weights.** Trained model parameter values. A model is identified by weights hash.
 
-**World model.** **Partially hype term.** Operationally, refers to internal representations a model uses to predict its environment. The operational definition is contested. Use of the term in ARL claims requires specifying what is meant by it.
+**World model.** **Operational definition not yet settled.** Refers to internal representations a model uses to predict its environment. A single operational definition is not yet agreed. Use of the term in an ARL claim requires specifying what is meant by it, in measurable terms.
 
 ## X
 
@@ -329,16 +329,16 @@ Science is the discipline of defining terms so that claims survive translation a
 
 ---
 
-## Notes on hype terms
+## Notes on terms outside ARL's measurable scope
 
-The terms marked as hype, partially hype, or excluded above are not excluded out of philosophical objection. They are excluded because they cannot be measured, and the framework is a measurement framework. A term that cannot be operationalized cannot appear in an ARL claim. Whether the term has meaning in other contexts (philosophy, cognitive science, art, religion, marketing) is not the lexicon's concern. The lexicon governs ARL claims only.
+The terms marked above as having no single operational definition are not set aside out of any philosophical objection or stance on the AI field. They are set aside because they cannot currently be measured, and ARL is a measurement framework. A term that cannot be operationalized cannot anchor an ARL claim. Whether such a term is meaningful, real, or imminent — in engineering, philosophy, cognitive science, or anywhere else — is an open question on which a measurement standard takes no position. The lexicon governs ARL claims only.
 
 If a term you need to use is not in the lexicon, one of the following is true:
 - The term is operationally definable and should be added (file an issue against the lexicon).
-- The term is one of the hype terms and you are trying to make a claim that ARL cannot support.
+- The term does not yet have a single operational definition, so an ARL claim cannot be expressed in terms of it.
 - The term refers to something measurable but the measurement methodology is not yet specified.
 
-The lexicon is intended to be time-invariant. Hype terms move; physical units do not. The lexicon is built on physical units and information-theoretic foundations because those do not drift. Terms downstream of those foundations inherit the stability.
+The lexicon is intended to be time-invariant. Definitions rooted in physical units and information-theoretic foundations do not drift; terms whose meaning is still being worked out across the field may. The lexicon is built on the stable foundations and lets the rest in as soon as a measurable definition exists.
 
 ---
 
@@ -356,7 +356,7 @@ The terms in this lexicon that are most stable, in approximate order of age:
 - **Transformer, attention mechanism, token, embedding:** Modern AI architecture terms. Stable since 2017.
 - **ARL, ARL-S, Convergence Class, Validation Depth, Security Class as adapted for AI:** Defined by this framework, May 2026.
 
-The terms outside this lineage — AGI, superintelligence, alignment-in-the-broad-sense, consciousness, sentience, understanding — are not built on stable foundations and cannot be added to the lexicon until they are.
+The terms outside this lineage — AGI, superintelligence, alignment in its broad sense, consciousness, sentience, understanding — do not yet have a single operational definition built on these stable foundations. They can be added to the lexicon when and if such a definition is agreed. Until then they are simply outside what ARL measures, with no judgment implied about the terms themselves.
 
 ---
 

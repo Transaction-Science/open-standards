@@ -42,7 +42,7 @@ pub fn validate(claim_json: &str) -> String {
 
 /// Lint a claim's prose against the controlled vocabulary.
 ///
-/// Returns JSON: `{ "findings": [{ "term", "field", "severity" }], "excluded": n }`.
+/// Returns JSON: `{ "findings": [{ "term", "field", "severity" }], "unmeasurable": n }`.
 #[wasm_bindgen]
 pub fn lint(claim_json: &str) -> String {
     let claim: Claim = match serde_json::from_str(claim_json) {
@@ -51,22 +51,22 @@ pub fn lint(claim_json: &str) -> String {
             return serde_json::json!({ "error": format!("invalid claim JSON: {e}") }).to_string();
         }
     };
-    let mut excluded = 0u32;
+    let mut unmeasurable = 0u32;
     let findings: Vec<serde_json::Value> = claim
         .lexicon_findings()
         .into_iter()
         .map(|f| {
             let sev = match f.severity {
-                Severity::Excluded => {
-                    excluded += 1;
-                    "excluded"
+                Severity::Unmeasurable => {
+                    unmeasurable += 1;
+                    "unmeasurable"
                 }
-                Severity::PartiallyHype => "warn",
+                Severity::OperationalSense => "operational-sense",
             };
             serde_json::json!({ "term": f.term, "field": f.field, "severity": sev })
         })
         .collect();
-    serde_json::json!({ "findings": findings, "excluded": excluded }).to_string()
+    serde_json::json!({ "findings": findings, "unmeasurable": unmeasurable }).to_string()
 }
 
 fn result_json(ok: bool, violations: &[String], warnings: &[String]) -> String {
@@ -91,7 +91,7 @@ mod tests {
     }
 
     #[test]
-    fn validate_flags_gate_and_excluded_term() {
+    fn validate_flags_gate_and_unmeasurable_term() {
         let v = validate(
             r#"{"system":"s","task":"hits AGI","validation_depth":6,"convergence":"D","energy":"Undisclosed","security":"S0"}"#,
         );
@@ -111,9 +111,9 @@ mod tests {
     }
 
     #[test]
-    fn lint_counts_excluded() {
+    fn lint_counts_unmeasurable() {
         let l = lint(r#"{"system":"s","task":"demonstrates AGI","validation_depth":1}"#);
         let parsed: serde_json::Value = serde_json::from_str(&l).unwrap();
-        assert_eq!(parsed["excluded"], 1);
+        assert_eq!(parsed["unmeasurable"], 1);
     }
 }

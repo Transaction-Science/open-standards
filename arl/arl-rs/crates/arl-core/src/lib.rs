@@ -14,14 +14,15 @@
 //!   security class, energy non-disclosure caps the score, security
 //!   methodology non-disclosure caps the security class, and methodology
 //!   must predate the claim;
-//! - the **controlled vocabulary** ([`crate::lexicon`]) — terms that
-//!   cannot be operationalized (AGI, superintelligence, consciousness, …)
-//!   are excluded from a claim by construction; partially-hype terms are
-//!   flagged for operational-sense review.
+//! - the **controlled vocabulary** ([`crate::lexicon`]) — terms with no
+//!   single operational definition (AGI, superintelligence, consciousness, …)
+//!   cannot anchor a claim, because they cannot be measured; terms with a
+//!   measurable operational sense are flagged to confirm that sense is meant.
+//!   ARL takes no position on the terms themselves, only on their measurability.
 //!
 //! A `Claim` that passes [`validate`](Claim::validate) is a well-formed
-//! ARL claim. One that does not is not an ARL claim — it is a marketing
-//! statement, and the returned [`Violation`]s say exactly why.
+//! ARL claim, scoped to what can be measured. The returned [`Violation`]s
+//! say exactly why a claim that does not pass falls outside that scope.
 
 #![forbid(unsafe_code)]
 

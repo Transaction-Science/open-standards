@@ -1,6 +1,6 @@
 # AI Readiness Level (ARL)
 
-**Version 1.2** — May 2026
+**Version 1.3** — May 2026
 
 AI Readiness Level (ARL) is a measurement system used to assess the readiness of an AI system to perform a defined task in a defined context. Every ARL score has four parts: a validation depth from 1 to 9, a convergence class from A to E, an energy profile in joules, and a security class from S0 to S4. All four parts are required. None summarizes the others.
 

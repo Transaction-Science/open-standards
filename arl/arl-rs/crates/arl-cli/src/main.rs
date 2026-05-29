@@ -107,7 +107,7 @@ fn validate_claim_json(json: &str) -> (String, u8) {
             let mut s = String::from("PASS — well-formed ARL claim.");
             let warnings = claim.warnings();
             if !warnings.is_empty() {
-                s.push_str("\n\nwarnings (partially-hype terms — review for operational sense):");
+                s.push_str("\n\nnotes (terms with an operational sense — confirm the measurable sense is meant):");
                 for w in warnings {
                     s.push_str(&format!("\n  · `{}` in {}", w.term, w.field));
                 }
@@ -124,7 +124,7 @@ fn validate_claim_json(json: &str) -> (String, u8) {
     }
 }
 
-/// `arl lint` core: report all lexicon findings (excluded + partial).
+/// `arl lint` core: report all lexicon findings (unmeasurable + operational-sense).
 fn lint_claim_json(json: &str) -> (String, u8) {
     let claim: Claim = match serde_json::from_str(json) {
         Ok(c) => c,
@@ -134,20 +134,20 @@ fn lint_claim_json(json: &str) -> (String, u8) {
     if findings.is_empty() {
         return ("clean — no controlled-vocabulary findings.".to_string(), 0);
     }
-    let mut excluded = 0u32;
+    let mut unmeasurable = 0u32;
     let mut s = String::from("lexicon findings:");
     for f in &findings {
         let tag = match f.severity {
-            arl_core::Severity::Excluded => {
-                excluded += 1;
-                "EXCLUDED"
+            arl_core::Severity::Unmeasurable => {
+                unmeasurable += 1;
+                "UNMEASURABLE"
             }
-            arl_core::Severity::PartiallyHype => "warn",
+            arl_core::Severity::OperationalSense => "operational-sense",
         };
         s.push_str(&format!("\n  [{tag}] `{}` in {}", f.term, f.field));
     }
-    // Any excluded term means the prose is not ARL-claim-eligible.
-    (s, if excluded > 0 { 1 } else { 0 })
+    // A term with no operational definition means the prose is not ARL-claim-eligible.
+    (s, if unmeasurable > 0 { 1 } else { 0 })
 }
 
 /// `arl verify` core: verify an attestation over a session.
@@ -196,8 +196,8 @@ fn explain() -> String {
      \u{20}\u{20}ARL ≥ 6 requires the methodology published before the claim.\n\
      \u{20}\u{20}Security S3+ must be independently reproducible.\n\
      \n\
-     Excluded (unmeasurable) terms — AGI, superintelligence, consciousness,\n\
-     sentience, singularity, human-level — are not permitted in a claim."
+     Terms with no single operational definition — AGI, superintelligence,\n\
+     consciousness, sentience, singularity, human-level — cannot anchor a claim."
         .to_string()
 }
 
@@ -261,12 +261,12 @@ mod tests {
     }
 
     #[test]
-    fn lint_flags_excluded_term_exit_1() {
+    fn lint_flags_unmeasurable_term_exit_1() {
         let mut v: serde_json::Value = serde_json::from_str(&good_arl6_json()).unwrap();
         v["task"] = serde_json::json!("demonstrates AGI on translation");
         let (report, code) = lint_claim_json(&v.to_string());
         assert_eq!(code, 1);
-        assert!(report.contains("EXCLUDED"));
+        assert!(report.contains("UNMEASURABLE"));
         assert!(report.contains("agi"));
     }
 
