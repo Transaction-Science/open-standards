@@ -197,6 +197,144 @@ pub struct ConsolidationReport {
     /// Newly-captured semantic facts (deduplicated by content-address —
     /// re-running an unchanged pass returns zero new captures).
     pub new_semantic: Vec<MemoryFact>,
+    /// Procedural-promotion eligibility hints surfaced from the
+    /// emissions. Each hint says "this `key=value` cluster has
+    /// produced enough semantic facts that it's worth looking at as
+    /// a candidate for compile-to-procedure" — the consumer routes
+    /// these to `jouleclaw-skill` / `jouleclaw-promote` for the
+    /// actual promotion (which is out of scope for this crate).
+    /// Empty when no cluster crossed the threshold.
+    pub promotion_hints: Vec<PromotionHint>,
+}
+
+/// A structured signal that an episodic→semantic cluster has reached
+/// the size and consistency where procedural compilation
+/// (compile-once-resolve-forever) becomes a worthwhile thing to
+/// attempt.
+///
+/// Honest scope: this is a **hint**, not a promotion. The actual
+/// procedural-memory pipeline lives in `jouleclaw-skill` /
+/// `jouleclaw-promote` per the original v1 narrowing; this crate
+/// surfaces enough structured signal that the consumer doesn't have
+/// to re-inspect the emission list to decide what's promotable.
+///
+/// Hint criteria — a cluster is hinted when:
+///
+/// - It emitted ≥ [`PromotionHintPolicy::min_semantic_facts`]
+///   semantic facts in this pass, AND
+/// - All emitted facts share a single `(key, value)` pair in their
+///   metadata (the cluster is sharp, not scattered across many
+///   keys).
+///
+/// The exact-match-on-(key, value) requirement keeps the hint
+/// honest: a procedural promotion needs a stable invariant to
+/// compile against, not just "we saw the same person three times in
+/// different contexts."
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PromotionHint {
+    /// The metadata key shared across the cluster (e.g. `"person"`).
+    pub key: String,
+    /// The metadata value shared across the cluster (e.g. `"Sarah"`).
+    pub value: String,
+    /// How many semantic facts in this pass shared this `(key, value)`.
+    pub support: usize,
+    /// Whether this `(key, value)` was tagged
+    /// `source=llm-consolidator` (prose-emitted) or
+    /// `consolidated_from=<N>` (tag-aggregated). Surfaces *which*
+    /// consolidator produced the cluster so downstream promotion can
+    /// pick the right backend (deterministic clusters compile cleanly;
+    /// LLM-prose clusters need a generalisation step first).
+    pub source: PromotionHintSource,
+}
+
+/// Provenance tag carried on a [`PromotionHint`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum PromotionHintSource {
+    /// Cluster came from the deterministic [`TagClusterConsolidator`].
+    TagCluster,
+    /// Cluster came from an LLM-driven consolidator (currently
+    /// [`LlmConsolidator`]).
+    LlmConsolidator,
+    /// Provenance could not be determined from the emitted facts'
+    /// metadata. Consumer should treat as untrusted.
+    Unknown,
+}
+
+/// Policy for surfacing [`PromotionHint`]s from a consolidation pass.
+#[derive(Debug, Clone)]
+pub struct PromotionHintPolicy {
+    /// Minimum number of semantic facts sharing the same `(key,
+    /// value)` for a hint to fire. Default 2 — anything below that is
+    /// not a cluster, it's an instance.
+    pub min_semantic_facts: usize,
+}
+
+impl Default for PromotionHintPolicy {
+    fn default() -> Self {
+        Self { min_semantic_facts: 2 }
+    }
+}
+
+/// Scan a slice of just-captured semantic facts and surface zero or
+/// more [`PromotionHint`]s under the given policy. Pure: no IO, no
+/// mutation; the caller owns the decision to act on the hints.
+pub fn extract_promotion_hints(
+    semantic_facts: &[MemoryFact],
+    policy: &PromotionHintPolicy,
+) -> Vec<PromotionHint> {
+    // Cluster facts by every (key, value) pair in their metadata.
+    let mut clusters: BTreeMap<(String, String), Vec<&MemoryFact>> = BTreeMap::new();
+    for f in semantic_facts {
+        if f.kind != MemoryType::Semantic {
+            continue;
+        }
+        for (k, v) in &f.metadata {
+            // Skip bookkeeping keys that the consolidators add for
+            // audit but that aren't load-bearing for promotion.
+            if matches!(
+                k.as_str(),
+                "consolidated_from" | "first_episode" | "last_episode" | "source"
+            ) {
+                continue;
+            }
+            clusters
+                .entry((k.clone(), v.clone()))
+                .or_default()
+                .push(f);
+        }
+    }
+    let mut out = Vec::new();
+    for ((key, value), facts) in clusters {
+        if facts.len() < policy.min_semantic_facts {
+            continue;
+        }
+        // Identify provenance from any of the facts' source metadata.
+        let source = facts
+            .iter()
+            .filter_map(|f| f.metadata.get("source").map(String::as_str))
+            .find_map(|s| match s {
+                "llm-consolidator" => Some(PromotionHintSource::LlmConsolidator),
+                _ => None,
+            })
+            .or_else(|| {
+                if facts
+                    .iter()
+                    .any(|f| f.metadata.contains_key("consolidated_from"))
+                {
+                    Some(PromotionHintSource::TagCluster)
+                } else {
+                    None
+                }
+            })
+            .unwrap_or(PromotionHintSource::Unknown);
+        out.push(PromotionHint {
+            key,
+            value,
+            support: facts.len(),
+            source,
+        });
+    }
+    out
 }
 
 /// Run one consolidation pass.
@@ -239,9 +377,12 @@ where
     // store but allowed by the trait), report what we saw rather than
     // panic.
     let _ = before;
+    let promotion_hints =
+        extract_promotion_hints(&new_semantic, &PromotionHintPolicy::default());
     ConsolidationReport {
         window: opts.window,
         new_semantic,
+        promotion_hints,
     }
 }
 
@@ -726,5 +867,121 @@ mod tests {
         let report = run_consolidation_pass(&mut s, &c, Default::default(), 100);
         assert_eq!(report.new_semantic.len(), 1);
         assert_eq!(report.new_semantic[0].kind, MemoryType::Semantic);
+    }
+
+    // ─── PromotionHint ───────────────────────────────────────────────
+
+    fn semantic_fact(text: &str, m: BTreeMap<String, String>) -> MemoryFact {
+        let id = MemoryFact::content_address(text, &m, MemoryType::Semantic, None, None);
+        MemoryFact {
+            id,
+            text: text.into(),
+            metadata: m,
+            kind: MemoryType::Semantic,
+            created_at: 1,
+            source_trust: TrustTier::DEFAULT,
+            valid_from: None,
+            valid_to: None,
+        }
+    }
+
+    #[test]
+    fn promotion_hints_fire_when_cluster_reaches_threshold() {
+        let facts = vec![
+            semantic_fact("a", meta(&[("person", "Sarah"), ("source", "llm-consolidator")])),
+            semantic_fact("b", meta(&[("person", "Sarah"), ("source", "llm-consolidator")])),
+        ];
+        let hints = extract_promotion_hints(&facts, &PromotionHintPolicy::default());
+        assert_eq!(hints.len(), 1);
+        assert_eq!(hints[0].key, "person");
+        assert_eq!(hints[0].value, "Sarah");
+        assert_eq!(hints[0].support, 2);
+        assert!(matches!(hints[0].source, PromotionHintSource::LlmConsolidator));
+    }
+
+    #[test]
+    fn promotion_hints_skip_clusters_below_threshold() {
+        let facts = vec![
+            semantic_fact("a", meta(&[("person", "Sarah")])),
+        ];
+        let hints = extract_promotion_hints(&facts, &PromotionHintPolicy::default());
+        assert!(hints.is_empty(), "single fact is not a cluster");
+    }
+
+    #[test]
+    fn promotion_hints_classify_tag_cluster_provenance() {
+        let facts = vec![
+            semantic_fact(
+                "a",
+                meta(&[("person", "Sarah"), ("consolidated_from", "5")]),
+            ),
+            semantic_fact(
+                "b",
+                meta(&[("person", "Sarah"), ("consolidated_from", "3")]),
+            ),
+        ];
+        let hints = extract_promotion_hints(&facts, &PromotionHintPolicy::default());
+        assert_eq!(hints.len(), 1);
+        assert!(matches!(hints[0].source, PromotionHintSource::TagCluster));
+    }
+
+    #[test]
+    fn promotion_hints_skip_bookkeeping_keys() {
+        // 'consolidated_from' and 'first_episode' should NOT generate
+        // their own clusters — they're audit metadata, not invariants.
+        let facts = vec![
+            semantic_fact(
+                "a",
+                meta(&[
+                    ("person", "Sarah"),
+                    ("consolidated_from", "3"),
+                    ("first_episode", "abc"),
+                ]),
+            ),
+            semantic_fact(
+                "b",
+                meta(&[
+                    ("person", "Sarah"),
+                    ("consolidated_from", "3"),
+                    ("first_episode", "def"),
+                ]),
+            ),
+        ];
+        let hints = extract_promotion_hints(&facts, &PromotionHintPolicy::default());
+        // Only ("person", "Sarah") should be hinted; bookkeeping keys excluded.
+        assert_eq!(hints.len(), 1);
+        assert_eq!(hints[0].key, "person");
+    }
+
+    #[test]
+    fn promotion_hints_emerge_through_run_consolidation_pass() {
+        // Pre-existing test only checked new_semantic; this adds the
+        // promotion-hint emission as the structured handoff signal.
+        let c = TagClusterConsolidator::default().with_threshold(2);
+        let mut s = InMemoryStore::new();
+        // Two clusters: (person=A, 3 facts) and (person=B, 3 facts).
+        // Each cluster emits one semantic fact aggregating them.
+        // With 2 semantic facts sharing person=*-style metadata, the
+        // hint shouldn't fire — each value is distinct.
+        capture_episodic(&mut s, "a1", meta(&[("person", "A")]), 1);
+        capture_episodic(&mut s, "a2", meta(&[("person", "A")]), 2);
+        capture_episodic(&mut s, "b1", meta(&[("person", "B")]), 3);
+        capture_episodic(&mut s, "b2", meta(&[("person", "B")]), 4);
+        let report = run_consolidation_pass(&mut s, &c, Default::default(), 100);
+        // Two semantic facts emitted — one per person — but they
+        // don't share a (key, value) so no procedural hint.
+        assert_eq!(report.new_semantic.len(), 2);
+        assert!(report.promotion_hints.is_empty());
+    }
+
+    #[test]
+    fn promotion_hints_unknown_provenance_when_metadata_silent() {
+        let facts = vec![
+            semantic_fact("a", meta(&[("topic", "T")])),
+            semantic_fact("b", meta(&[("topic", "T")])),
+        ];
+        let hints = extract_promotion_hints(&facts, &PromotionHintPolicy::default());
+        assert_eq!(hints.len(), 1);
+        assert!(matches!(hints[0].source, PromotionHintSource::Unknown));
     }
 }
