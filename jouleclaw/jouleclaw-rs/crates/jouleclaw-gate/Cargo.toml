@@ -1,0 +1,18 @@
+[package]
+name = "jouleclaw-gate"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Runtime-enforced control-flow gates over a jouleclaw-graph Run, including EnergyBudgetGate (physics-grounded refusal)."
+
+[dependencies]
+jouleclaw-graph  = { path = "../jouleclaw-graph" }
+jouleclaw-energy = { path = "../jouleclaw-energy" }
+serde            = { workspace = true }
+thiserror        = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }
