@@ -143,6 +143,9 @@ members = [
     # Consolidation — CoALA episodic→semantic, scheduled batch. Deterministic tag-clustering reference + trait for LLM abstraction.
     "crates/jouleclaw-consolidate",
 
+    # Writer-critic pattern — fresh-context adversarial gate over (artifact, rubric) with a falsification pass. Builds on jouleclaw-verify.
+    "crates/jouleclaw-critic",
+
     # Approval gates — pause a dispatch for review before it runs; energy-shaped (only expensive model calls gated).
     "crates/jouleclaw-approve",
 

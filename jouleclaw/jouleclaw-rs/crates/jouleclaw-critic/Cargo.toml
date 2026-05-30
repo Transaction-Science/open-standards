@@ -1,0 +1,15 @@
+[package]
+name = "jouleclaw-critic"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "JouleClaw writer-critic pattern — fresh-context adversarial gate over an artifact + rubric, with a falsification pass before promotion. Builds on jouleclaw-verify."
+
+[dependencies]
+jouleclaw-verify = { path = "../jouleclaw-verify" }
+serde            = { workspace = true }
+serde_json       = { workspace = true }
+thiserror        = { workspace = true }

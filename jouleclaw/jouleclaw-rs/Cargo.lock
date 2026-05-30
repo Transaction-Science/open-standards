@@ -1884,6 +1884,16 @@ name = "jouleclaw-core"
 version = "0.1.0"
 
 [[package]]
+name = "jouleclaw-critic"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-verify",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "jouleclaw-deberta"
 version = "0.1.0"
 dependencies = [
@@ -2313,6 +2323,7 @@ dependencies = [
  "jouleclaw-energy",
  "serde",
  "serde_json",
+ "sha2",
  "thiserror 2.0.18",
  "uuid",
 ]
