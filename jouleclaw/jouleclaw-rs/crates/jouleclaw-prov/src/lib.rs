@@ -143,6 +143,283 @@ pub struct Receipt {
     /// cascade adapter. Optional — present only when the runtime
     /// reports through `eoc-cascade`.
     pub eoc_stage: Option<String>,
+    /// Inline span-level citations linking output byte ranges to the
+    /// retrieval chunks that grounded them. Empty for L0/L1 paths that
+    /// were not retrieval-grounded; the field is `#[serde(default)]` so
+    /// receipts produced before this field existed still deserialise.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub citations: Vec<Citation>,
+    /// HMAC-signed tool-execution receipts minted at the MCP boundary.
+    /// Each entry attests that the gateway — not the model — invoked the
+    /// tool and observed the joule cost. Empty when the resolution
+    /// touched no gateway-metered tools.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub tool_receipts: Vec<ToolReceipt>,
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Span-level citations
+// ─────────────────────────────────────────────────────────────────────
+
+/// A half-open byte range `[start, end)` over an output text. The
+/// receipt does not embed the output itself — `start..end` is a slice
+/// the consumer applies to the artifact they hold.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct TextSpan {
+    pub start: u32,
+    pub end: u32,
+}
+
+impl TextSpan {
+    pub fn new(start: u32, end: u32) -> Self {
+        Self { start, end }
+    }
+    pub fn len(&self) -> u32 {
+        self.end.saturating_sub(self.start)
+    }
+    pub fn is_empty(&self) -> bool {
+        self.end <= self.start
+    }
+}
+
+/// One inline span-level citation. Links a byte range in the output
+/// to the retrieval chunk that grounded it and the exact quoted text
+/// that justifies the link. Three pieces are the load-bearing trio
+/// the field has converged on: `(text_block, source_chunk_id,
+/// exact_quote)`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Citation {
+    /// Byte range in the output artefact this citation grounds.
+    pub text_span: TextSpan,
+    /// Opaque chunk id from the retrieval store (URL+offset, vector-DB
+    /// row id, content-address, …). Identifies which source supplied
+    /// the grounding.
+    pub source_chunk_id: String,
+    /// The exact text quoted from the source chunk that justifies the
+    /// span. Verbatim — auditors should be able to find this substring
+    /// in the chunk's contents.
+    pub exact_quote: String,
+}
+
+impl Citation {
+    pub fn new(
+        text_span: TextSpan,
+        source_chunk_id: impl Into<String>,
+        exact_quote: impl Into<String>,
+    ) -> Self {
+        Self {
+            text_span,
+            source_chunk_id: source_chunk_id.into(),
+            exact_quote: exact_quote.into(),
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// HMAC-signed tool-gateway receipts
+// ─────────────────────────────────────────────────────────────────────
+
+/// A tool-execution receipt minted by the MCP boundary (the *gateway*).
+/// Sealed with HMAC-SHA-256 using a gateway-held secret, so a downstream
+/// auditor can verify the tool was invoked through the gateway — even
+/// when the artifact carrying the receipt is replayed in a different
+/// context. The model never holds the HMAC key; the receipt's integrity
+/// is the gateway's, not the model's.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ToolReceipt {
+    /// Stable identifier — e.g. `mcp:filesystem/read`. Matches the
+    /// [`ToolTouch::tool_id`] when both are emitted for the same call.
+    pub tool_id: String,
+    /// Microjoules observed by the gateway for this call.
+    pub joules_uj: u64,
+    /// Honesty tier of the energy reading.
+    pub energy_provenance: Provenance,
+    /// RFC 3339 timestamp the gateway minted the receipt.
+    pub minted_at: String,
+    /// Opaque gateway identifier — which gateway minted this receipt.
+    /// Verifiers use this to look up the corresponding HMAC key.
+    pub gateway_id: String,
+    /// Lowercase hex of the HMAC-SHA-256 over the canonical bytes
+    /// (`tool_id || \0 || joules_uj || \0 || energy_provenance || \0 ||
+    /// minted_at || \0 || gateway_id`). 64 hex chars.
+    pub hmac_sha256_hex: String,
+}
+
+/// An MCP-boundary gateway that mints HMAC-signed [`ToolReceipt`]s. The
+/// key never leaves the gateway; only the receipt does.
+pub struct ToolGateway {
+    gateway_id: String,
+    key: Vec<u8>,
+}
+
+impl ToolGateway {
+    pub fn new(gateway_id: impl Into<String>, key: impl Into<Vec<u8>>) -> Self {
+        Self {
+            gateway_id: gateway_id.into(),
+            key: key.into(),
+        }
+    }
+
+    pub fn gateway_id(&self) -> &str {
+        &self.gateway_id
+    }
+
+    /// Mint a receipt for a tool call observed by this gateway.
+    pub fn mint_receipt(
+        &self,
+        tool_id: impl Into<String>,
+        joules_uj: u64,
+        energy_provenance: Provenance,
+        minted_at: impl Into<String>,
+    ) -> ToolReceipt {
+        let tool_id = tool_id.into();
+        let minted_at = minted_at.into();
+        let payload = canonical_tool_receipt_bytes(
+            &tool_id,
+            joules_uj,
+            energy_provenance,
+            &minted_at,
+            &self.gateway_id,
+        );
+        let mac = hmac_sha256(&self.key, &payload);
+        ToolReceipt {
+            tool_id,
+            joules_uj,
+            energy_provenance,
+            minted_at,
+            gateway_id: self.gateway_id.clone(),
+            hmac_sha256_hex: hex_encode(&mac),
+        }
+    }
+
+    /// Verify that a receipt was minted by this gateway. Constant-time
+    /// over the HMAC bytes via [`subtle_eq`]; any tampered field fails.
+    pub fn verify_receipt(&self, r: &ToolReceipt) -> bool {
+        if r.gateway_id != self.gateway_id {
+            return false;
+        }
+        let payload = canonical_tool_receipt_bytes(
+            &r.tool_id,
+            r.joules_uj,
+            r.energy_provenance,
+            &r.minted_at,
+            &r.gateway_id,
+        );
+        let Ok(expected_bytes) = hex_decode(&r.hmac_sha256_hex) else {
+            return false;
+        };
+        let actual = hmac_sha256(&self.key, &payload);
+        subtle_eq(&actual, &expected_bytes)
+    }
+}
+
+/// Canonical byte encoding for the HMAC payload — stable, NUL-delimited,
+/// matches the documented ordering on [`ToolReceipt::hmac_sha256_hex`].
+fn canonical_tool_receipt_bytes(
+    tool_id: &str,
+    joules_uj: u64,
+    energy_provenance: Provenance,
+    minted_at: &str,
+    gateway_id: &str,
+) -> Vec<u8> {
+    let mut out = Vec::with_capacity(
+        tool_id.len() + minted_at.len() + gateway_id.len() + 32,
+    );
+    out.extend_from_slice(tool_id.as_bytes());
+    out.push(0);
+    out.extend_from_slice(joules_uj.to_string().as_bytes());
+    out.push(0);
+    let prov_tag = match energy_provenance {
+        Provenance::HwShunt => "HwShunt",
+        Provenance::ModelBased => "ModelBased",
+        Provenance::Estimator => "Estimator",
+    };
+    out.extend_from_slice(prov_tag.as_bytes());
+    out.push(0);
+    out.extend_from_slice(minted_at.as_bytes());
+    out.push(0);
+    out.extend_from_slice(gateway_id.as_bytes());
+    out
+}
+
+/// Hand-rolled HMAC-SHA-256 over `sha2` so the crate doesn't pull in an
+/// extra dependency for one call site. Standard RFC 2104 construction:
+/// `H((K' XOR opad) || H((K' XOR ipad) || M))` with block size 64.
+pub fn hmac_sha256(key: &[u8], message: &[u8]) -> [u8; 32] {
+    use sha2::{Digest, Sha256};
+    const BLOCK: usize = 64;
+    // Step 1: normalise key to BLOCK bytes.
+    let mut k = [0u8; BLOCK];
+    if key.len() > BLOCK {
+        let hashed = Sha256::digest(key);
+        k[..32].copy_from_slice(&hashed);
+    } else {
+        k[..key.len()].copy_from_slice(key);
+    }
+    // Step 2: inner = H((K' XOR 0x36) || M).
+    let mut ipad = [0u8; BLOCK];
+    for i in 0..BLOCK {
+        ipad[i] = k[i] ^ 0x36;
+    }
+    let mut inner = Sha256::new();
+    inner.update(ipad);
+    inner.update(message);
+    let inner_digest = inner.finalize();
+    // Step 3: outer = H((K' XOR 0x5c) || inner).
+    let mut opad = [0u8; BLOCK];
+    for i in 0..BLOCK {
+        opad[i] = k[i] ^ 0x5c;
+    }
+    let mut outer = Sha256::new();
+    outer.update(opad);
+    outer.update(inner_digest);
+    let out = outer.finalize();
+    let mut result = [0u8; 32];
+    result.copy_from_slice(&out);
+    result
+}
+
+fn hex_encode(bytes: &[u8]) -> String {
+    const HEX: &[u8] = b"0123456789abcdef";
+    let mut s = String::with_capacity(bytes.len() * 2);
+    for &b in bytes {
+        s.push(HEX[(b >> 4) as usize] as char);
+        s.push(HEX[(b & 0xf) as usize] as char);
+    }
+    s
+}
+
+fn hex_decode(s: &str) -> Result<Vec<u8>, &'static str> {
+    if s.len() % 2 != 0 {
+        return Err("odd hex length");
+    }
+    let bytes = s.as_bytes();
+    let mut out = Vec::with_capacity(bytes.len() / 2);
+    let val = |c: u8| -> Result<u8, &'static str> {
+        match c {
+            b'0'..=b'9' => Ok(c - b'0'),
+            b'a'..=b'f' => Ok(c - b'a' + 10),
+            b'A'..=b'F' => Ok(c - b'A' + 10),
+            _ => Err("bad hex char"),
+        }
+    };
+    for chunk in bytes.chunks(2) {
+        out.push((val(chunk[0])? << 4) | val(chunk[1])?);
+    }
+    Ok(out)
+}
+
+/// Constant-time byte comparison so HMAC verification does not leak the
+/// expected bytes through timing.
+fn subtle_eq(a: &[u8], b: &[u8]) -> bool {
+    if a.len() != b.len() {
+        return false;
+    }
+    let mut diff = 0u8;
+    for i in 0..a.len() {
+        diff |= a[i] ^ b[i];
+    }
+    diff == 0
 }
 
 /// Receipt schema version this crate produces.
@@ -169,6 +446,8 @@ pub struct ReceiptBuilder {
     tools_touched: Vec<ToolTouch>,
     claims: Vec<ClaimProvenance>,
     eoc_stage: Option<String>,
+    citations: Vec<Citation>,
+    tool_receipts: Vec<ToolReceipt>,
 }
 
 impl ReceiptBuilder {
@@ -216,6 +495,28 @@ impl ReceiptBuilder {
         self
     }
 
+    /// Attach an inline span-level [`Citation`] grounding a slice of the
+    /// output to a retrieval chunk + exact quote.
+    pub fn account_citation(mut self, citation: Citation) -> Self {
+        self.citations.push(citation);
+        self
+    }
+
+    /// Attach a gateway-minted, HMAC-signed [`ToolReceipt`] for a tool
+    /// call observed at the MCP boundary. Adds the call's joules into
+    /// the running total and lowers the receipt's overall provenance
+    /// floor to the worst counter seen.
+    pub fn account_tool_receipt(mut self, receipt: ToolReceipt) -> Self {
+        self.joules_uj = self.joules_uj.saturating_add(receipt.joules_uj);
+        let worst = match (self.energy_provenance, receipt.energy_provenance) {
+            (None, p) => Some(p),
+            (Some(a), b) => Some(worst_provenance(a, b)),
+        };
+        self.energy_provenance = worst;
+        self.tool_receipts.push(receipt);
+        self
+    }
+
     /// Seal the receipt. Assigns id and closed_at from the current clock.
     pub fn seal(self) -> Result<Receipt, ReceiptError> {
         let input_hash = self.input_hash.ok_or(ReceiptError::MissingField("input_hash"))?;
@@ -235,6 +536,8 @@ impl ReceiptBuilder {
             tools_touched: self.tools_touched,
             claims: self.claims,
             eoc_stage: self.eoc_stage,
+            citations: self.citations,
+            tool_receipts: self.tool_receipts,
         })
     }
 }
@@ -340,5 +643,161 @@ mod tests {
         let back: Receipt = serde_json::from_str(&json).expect("deserialise");
         assert_eq!(back.tier, CascadeTier::L3Model);
         assert_eq!(back.joules_uj, 3_500_000);
+    }
+
+    // ─── Citation + ToolReceipt ────────────────────────────────────
+
+    #[test]
+    fn text_span_basic() {
+        let s = TextSpan::new(0, 10);
+        assert_eq!(s.len(), 10);
+        assert!(!s.is_empty());
+        let z = TextSpan::new(5, 5);
+        assert!(z.is_empty());
+    }
+
+    #[test]
+    fn citation_round_trips_through_json() {
+        let c = Citation::new(
+            TextSpan::new(12, 27),
+            "chunk:wikipedia/Paris#offset=345",
+            "Paris is the capital of France",
+        );
+        let j = serde_json::to_string(&c).expect("ser");
+        let back: Citation = serde_json::from_str(&j).expect("deser");
+        assert_eq!(back, c);
+    }
+
+    #[test]
+    fn receipt_with_citations_round_trips() {
+        let r = ReceiptBuilder::new()
+            .input_hash("abc")
+            .tier(CascadeTier::L2Embed)
+            .account_citation(Citation::new(
+                TextSpan::new(0, 5),
+                "chunk:1",
+                "hello",
+            ))
+            .seal()
+            .expect("seal");
+        let j = serde_json::to_string(&r).expect("ser");
+        let back: Receipt = serde_json::from_str(&j).expect("deser");
+        assert_eq!(back.citations.len(), 1);
+        assert_eq!(back.citations[0].source_chunk_id, "chunk:1");
+    }
+
+    #[test]
+    fn receipt_without_citations_does_not_emit_field() {
+        // skip_serializing_if = "Vec::is_empty" means the JSON omits the
+        // citations array when none are attached — older readers see the
+        // same shape as before this field existed.
+        let r = ReceiptBuilder::new()
+            .input_hash("abc")
+            .tier(CascadeTier::L0Cache)
+            .seal()
+            .expect("seal");
+        let j = serde_json::to_string(&r).expect("ser");
+        assert!(!j.contains("\"citations\""), "got: {j}");
+        assert!(!j.contains("\"tool_receipts\""), "got: {j}");
+    }
+
+    #[test]
+    fn old_receipt_without_new_fields_deserialises() {
+        // A receipt JSON written before the new fields existed — it
+        // should still deserialise (the new fields default to empty).
+        let old = r#"{
+            "jc_receipt": "1",
+            "id": "deadbeef",
+            "closed_at": "2026-05-30T00:00:00Z",
+            "input_hash": "abc",
+            "tier": "l0-cache",
+            "joules_uj": 0,
+            "energy_provenance": "Estimator",
+            "tools_touched": [],
+            "claims": [],
+            "eoc_stage": null
+        }"#;
+        let r: Receipt = serde_json::from_str(old).expect("deser old shape");
+        assert!(r.citations.is_empty());
+        assert!(r.tool_receipts.is_empty());
+    }
+
+    #[test]
+    fn hmac_sha256_matches_known_test_vector() {
+        // RFC 4231 test case 1: key = 0x0b × 20, data = "Hi There".
+        let key = [0x0bu8; 20];
+        let mac = hmac_sha256(&key, b"Hi There");
+        let expected = "b0344c61d8db38535ca8afceaf0bf12b\
+                        881dc200c9833da726e9376c2e32cff7";
+        assert_eq!(hex_encode(&mac), expected);
+    }
+
+    #[test]
+    fn hmac_handles_oversized_key_by_hashing_it() {
+        // Per RFC 4231 case 4: key longer than 64 bytes must be hashed
+        // first. Just check that an oversized key produces a 32-byte tag
+        // (no panic, no wrap-around).
+        let key = vec![0x77; 200];
+        let mac = hmac_sha256(&key, b"some message");
+        assert_eq!(mac.len(), 32);
+    }
+
+    #[test]
+    fn tool_gateway_mints_and_verifies_receipt() {
+        let gw = ToolGateway::new("mcp:gateway-a", b"sekret-key-32-bytes-or-more-here!".to_vec());
+        let r = gw.mint_receipt(
+            "mcp:filesystem/read",
+            120,
+            Provenance::HwShunt,
+            "2026-05-30T12:34:56Z",
+        );
+        assert_eq!(r.tool_id, "mcp:filesystem/read");
+        assert_eq!(r.joules_uj, 120);
+        assert_eq!(r.gateway_id, "mcp:gateway-a");
+        assert_eq!(r.hmac_sha256_hex.len(), 64);
+        assert!(gw.verify_receipt(&r));
+    }
+
+    #[test]
+    fn tool_receipt_tampering_breaks_verification() {
+        let gw = ToolGateway::new("gw", b"key-bytes".to_vec());
+        let r = gw.mint_receipt("t", 100, Provenance::ModelBased, "now");
+
+        // Tampering with joules_uj invalidates the HMAC.
+        let mut t1 = r.clone();
+        t1.joules_uj = 1;
+        assert!(!gw.verify_receipt(&t1));
+
+        // Tampering with tool_id invalidates.
+        let mut t2 = r.clone();
+        t2.tool_id = "other".into();
+        assert!(!gw.verify_receipt(&t2));
+
+        // Wrong gateway key rejects.
+        let other = ToolGateway::new("gw", b"different-key".to_vec());
+        assert!(!other.verify_receipt(&r));
+
+        // Wrong gateway_id on the receipt rejects.
+        let mut t3 = r.clone();
+        t3.gateway_id = "gw-spoofed".into();
+        assert!(!gw.verify_receipt(&t3));
+    }
+
+    #[test]
+    fn account_tool_receipt_accumulates_joules_and_floor() {
+        let gw = ToolGateway::new("gw", b"k".to_vec());
+        let r1 = gw.mint_receipt("a", 100, Provenance::HwShunt, "t1");
+        let r2 = gw.mint_receipt("b", 200, Provenance::Estimator, "t2");
+        let receipt = ReceiptBuilder::new()
+            .input_hash("abc")
+            .tier(CascadeTier::L2Embed)
+            .account_tool_receipt(r1)
+            .account_tool_receipt(r2)
+            .seal()
+            .expect("seal");
+        assert_eq!(receipt.joules_uj, 300);
+        // Worst counter wins: Estimator < ModelBased < HwShunt by honesty.
+        assert_eq!(receipt.energy_provenance, Provenance::Estimator);
+        assert_eq!(receipt.tool_receipts.len(), 2);
     }
 }
