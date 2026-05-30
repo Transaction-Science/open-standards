@@ -1,0 +1,13 @@
+[package]
+name = "jouleclaw-extract"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "JouleClaw L1 fact extraction — deterministic extractor pulling people / topics / quoted strings / key:value tags from captured text, with a trait so an LLM extractor can plug in at L3."
+
+[dependencies]
+regex          = { workspace = true }
+jouleclaw-memory = { path = "../jouleclaw-memory" }
