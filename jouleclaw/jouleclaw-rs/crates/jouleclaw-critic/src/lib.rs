@@ -410,6 +410,235 @@ pub fn promote_if_clean<C: Critic + ?Sized, F: Falsifier + ?Sized>(
 }
 
 // ─────────────────────────────────────────────────────────────────────
+// LLM-backed critic
+// ─────────────────────────────────────────────────────────────────────
+
+/// LLM-backed critic — wraps a [`jouleclaw_llm_cheap::LlmBackend`] to
+/// evaluate the artifact against the rubric in fresh context.
+///
+/// Doctrine — the same "fresh context, no writer state" rule the
+/// deterministic critic enforces structurally is enforced here by
+/// **prompt discipline**: the call only sees the artifact bytes and
+/// the rubric's criterion text. It does NOT see the writer's prompt,
+/// model name, or any trace. Lying via prompt smuggling would break
+/// the contract; this implementation refuses to take such hints.
+///
+/// Output format — the LLM is asked to reply with JSON
+/// `{"findings": [{"criterion": ..., "severity": "fail"|"warn",
+///   "reason": ...}]}`. On parse failure, the critic emits a single
+/// blocking [`Finding`] tagged `"parser"` so the artifact does NOT
+/// silently pass when the model produced garbage. That is the honest
+/// behaviour: an LLM that won't conform is a failed grader, not a
+/// passing one.
+///
+/// Cost honesty — the LLM call's joule spend (from
+/// [`jouleclaw_llm_cheap::LlmResponse::energy_joules`] if reported, or
+/// the backend's `typical_joules_per_call` fallback) is summed into
+/// the report's `joules_uj`. Deterministic verifier criteria handled
+/// in the same rubric add their `declared_cost_uj` on top — this
+/// adapter does not run them; consumers combine `LlmCritic` and
+/// `DeterministicCritic` via `MultiCritic` (a follow-on).
+///
+/// Honest scope (v1):
+///
+/// - Only [`GraderRef::LlmOnly`] criteria are evaluated. Verifier
+///   criteria are skipped, exactly inverting the deterministic
+///   reference.
+/// - One LLM call per critique, not one-per-criterion. Cheaper, but
+///   means the prompt holds the whole rubric in context.
+/// - No multi-turn dialogue, no chain-of-thought scaffolding. The
+///   reply must be JSON.
+pub struct LlmCritic {
+    backend: std::sync::Arc<dyn jouleclaw_llm_cheap::LlmBackend>,
+    max_tokens: u32,
+    temperature: f32,
+}
+
+impl LlmCritic {
+    /// Build an LLM critic with a backend and a default 512-token cap.
+    pub fn new(backend: std::sync::Arc<dyn jouleclaw_llm_cheap::LlmBackend>) -> Self {
+        Self {
+            backend,
+            max_tokens: 512,
+            temperature: 0.0,
+        }
+    }
+
+    /// Override the per-call token cap (default 512).
+    pub fn with_max_tokens(mut self, max_tokens: u32) -> Self {
+        self.max_tokens = max_tokens.max(1);
+        self
+    }
+
+    /// Override the sampling temperature (default 0.0 — greedy, to keep
+    /// critique deterministic across runs on a deterministic backend).
+    pub fn with_temperature(mut self, t: f32) -> Self {
+        self.temperature = t;
+        self
+    }
+
+    fn render_prompt(&self, artifact: &Artifact, rubric: &Rubric) -> String {
+        let mut p = String::new();
+        p.push_str("You are a strict critic. Evaluate the ARTIFACT against the RUBRIC.\n");
+        p.push_str(
+            "Reply with ONLY a JSON object: \
+             {\"findings\": [{\"criterion\": \"<name>\", \"severity\": \"fail\"|\"warn\", \"reason\": \"<one sentence>\"}]}.\n",
+        );
+        p.push_str("Emit no finding for a criterion the artifact satisfies. Do not invent criteria.\n\n");
+        p.push_str("RUBRIC:\n");
+        for c in rubric.criteria() {
+            if !matches!(c.grader, GraderRef::LlmOnly) {
+                continue;
+            }
+            p.push_str(&format!(
+                "- {} ({}): {}\n",
+                c.name,
+                match c.severity {
+                    Severity::Fail => "fail",
+                    Severity::Warn => "warn",
+                },
+                c.description
+            ));
+        }
+        p.push_str("\nARTIFACT:\n");
+        let text = match artifact.kind {
+            ArtifactKind::Text | ArtifactKind::Code | ArtifactKind::Json => {
+                String::from_utf8_lossy(&artifact.bytes).into_owned()
+            }
+            _ => format!("<binary, {} bytes>", artifact.bytes.len()),
+        };
+        p.push_str(&text);
+        p
+    }
+
+    /// Estimate the joule spend of a single LLM critique call, using
+    /// the backend's `typical_joules_per_call` (converted to µJ). This
+    /// is the *estimator* — the actual spend, if reported via
+    /// [`jouleclaw_llm_cheap::LlmResponse::energy_joules`], overrides
+    /// it during `critique`.
+    pub fn estimated_call_cost_uj(&self) -> u64 {
+        (self.backend.typical_joules_per_call() * 1_000_000.0) as u64
+    }
+}
+
+impl Critic for LlmCritic {
+    fn critique(&self, artifact: &Artifact, rubric: &Rubric) -> CritiqueReport {
+        // Quick exit: rubric has no LLM-only criteria — empty critique.
+        let llm_only_count = rubric
+            .criteria()
+            .iter()
+            .filter(|c| matches!(c.grader, GraderRef::LlmOnly))
+            .count();
+        if llm_only_count == 0 {
+            return CritiqueReport {
+                findings: Vec::new(),
+                overall: Verdict::Pass,
+                joules_uj: 0,
+            };
+        }
+
+        let prompt = self.render_prompt(artifact, rubric);
+        let mut req = jouleclaw_llm_cheap::LlmRequest::from_prompt(prompt, self.max_tokens);
+        req.temperature = self.temperature;
+
+        let resp = match self.backend.complete(&req) {
+            Ok(r) => r,
+            Err(e) => {
+                // Backend failure → one blocking finding so the
+                // artifact does not pass silently.
+                return CritiqueReport {
+                    findings: vec![Finding {
+                        criterion: "backend".into(),
+                        severity: Severity::Fail,
+                        reason: format!("LLM critic backend error: {e}"),
+                        falsified_attempted: false,
+                    }],
+                    overall: Verdict::Fail,
+                    joules_uj: self.estimated_call_cost_uj(),
+                };
+            }
+        };
+
+        let joules_uj = match resp.energy_joules {
+            Some(j) => (j * 1_000_000.0) as u64,
+            None => self.estimated_call_cost_uj(),
+        };
+
+        // Parse the reply. On failure → one blocking finding.
+        let parsed: serde_json::Value = match serde_json::from_str(resp.text.trim()) {
+            Ok(v) => v,
+            Err(_) => {
+                return CritiqueReport {
+                    findings: vec![Finding {
+                        criterion: "parser".into(),
+                        severity: Severity::Fail,
+                        reason: format!(
+                            "LLM critic reply was not valid JSON: {}",
+                            resp.text.chars().take(120).collect::<String>()
+                        ),
+                        falsified_attempted: false,
+                    }],
+                    overall: Verdict::Fail,
+                    joules_uj,
+                };
+            }
+        };
+
+        let findings = parsed
+            .get("findings")
+            .and_then(|v| v.as_array())
+            .cloned()
+            .unwrap_or_default();
+
+        // Build the set of LLM-only criterion names so we reject
+        // hallucinated criteria (the model invented a check we didn't
+        // ask for).
+        let known: std::collections::HashSet<&str> = rubric
+            .criteria()
+            .iter()
+            .filter(|c| matches!(c.grader, GraderRef::LlmOnly))
+            .map(|c| c.name.as_str())
+            .collect();
+
+        let mut out = Vec::with_capacity(findings.len());
+        for f in findings {
+            let criterion = match f.get("criterion").and_then(|v| v.as_str()) {
+                Some(s) => s.to_string(),
+                None => continue,
+            };
+            if !known.contains(criterion.as_str()) {
+                // Hallucinated criterion — silently drop. Honest
+                // because the contract is "evaluate the rubric," not
+                // "invent more checks."
+                continue;
+            }
+            let severity = match f.get("severity").and_then(|v| v.as_str()) {
+                Some("warn") => Severity::Warn,
+                _ => Severity::Fail,
+            };
+            let reason = f
+                .get("reason")
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .to_string();
+            out.push(Finding {
+                criterion,
+                severity,
+                reason,
+                falsified_attempted: false,
+            });
+        }
+
+        let overall = overall_verdict(&out);
+        CritiqueReport {
+            findings: out,
+            overall,
+            joules_uj,
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────
 // Tests
 // ─────────────────────────────────────────────────────────────────────
 
@@ -623,5 +852,137 @@ mod tests {
         // not refute") rather than silently skipping.
         assert_eq!(report.findings.len(), 1);
         assert!(report.findings[0].falsified_attempted);
+    }
+
+    // ─── LlmCritic ───────────────────────────────────────────────────
+
+    /// Backend that returns a fixed text reply.
+    struct ScriptedBackend(String);
+    impl jouleclaw_llm_cheap::LlmBackend for ScriptedBackend {
+        fn model_name(&self) -> &str {
+            "test:scripted"
+        }
+        fn complete(
+            &self,
+            _req: &jouleclaw_llm_cheap::LlmRequest,
+        ) -> Result<jouleclaw_llm_cheap::LlmResponse, jouleclaw_llm_cheap::LlmError> {
+            Ok(jouleclaw_llm_cheap::LlmResponse {
+                text: self.0.clone(),
+                finish_reason: jouleclaw_llm_cheap::FinishReason::Stop,
+                input_tokens: 0,
+                output_tokens: self.0.len() as u32,
+                energy_joules: Some(0.001),
+            })
+        }
+    }
+
+    struct ErrBackend;
+    impl jouleclaw_llm_cheap::LlmBackend for ErrBackend {
+        fn model_name(&self) -> &str {
+            "test:err"
+        }
+        fn complete(
+            &self,
+            _req: &jouleclaw_llm_cheap::LlmRequest,
+        ) -> Result<jouleclaw_llm_cheap::LlmResponse, jouleclaw_llm_cheap::LlmError> {
+            Err(jouleclaw_llm_cheap::LlmError::Upstream("nope".into()))
+        }
+    }
+
+    fn llm_rubric() -> Rubric {
+        Rubric::new()
+            .with(Criterion::llm_only("style", "Prose is clear and concise."))
+            .with(Criterion::llm_only("tone", "No hype, no marketing language."))
+    }
+
+    #[test]
+    fn llm_critic_skips_when_rubric_has_no_llm_criteria() {
+        let r = Rubric::new().with(Criterion::verifier(
+            "exact",
+            "strict",
+            EqVerifier::new("hi"),
+        ));
+        let lc = LlmCritic::new(std::sync::Arc::new(ScriptedBackend("{}".into())));
+        let report = lc.critique(&Artifact::text("hi"), &r);
+        assert!(report.findings.is_empty());
+        assert!(matches!(report.overall, Verdict::Pass));
+        assert_eq!(report.joules_uj, 0);
+    }
+
+    #[test]
+    fn llm_critic_passes_when_reply_has_no_findings() {
+        let lc = LlmCritic::new(std::sync::Arc::new(ScriptedBackend(
+            r#"{"findings": []}"#.into(),
+        )));
+        let report = lc.critique(&Artifact::text("clean prose."), &llm_rubric());
+        assert!(report.is_clean());
+        assert_eq!(report.findings.len(), 0);
+        assert!(report.joules_uj > 0, "joules accounted from response");
+    }
+
+    #[test]
+    fn llm_critic_reports_findings_for_known_criteria() {
+        let lc = LlmCritic::new(std::sync::Arc::new(ScriptedBackend(
+            r#"{"findings": [{"criterion": "tone", "severity": "fail", "reason": "uses hype words"}]}"#.into(),
+        )));
+        let report = lc.critique(&Artifact::text("revolutionary breakthrough."), &llm_rubric());
+        assert_eq!(report.findings.len(), 1);
+        assert_eq!(report.findings[0].criterion, "tone");
+        assert!(matches!(report.findings[0].severity, Severity::Fail));
+        assert!(matches!(report.overall, Verdict::Fail));
+    }
+
+    #[test]
+    fn llm_critic_drops_hallucinated_criteria() {
+        let lc = LlmCritic::new(std::sync::Arc::new(ScriptedBackend(
+            r#"{"findings": [
+                {"criterion": "made-up", "severity": "fail", "reason": "x"},
+                {"criterion": "tone", "severity": "warn", "reason": "y"}
+            ]}"#
+            .into(),
+        )));
+        let report = lc.critique(&Artifact::text("text"), &llm_rubric());
+        assert_eq!(report.findings.len(), 1, "hallucinated criterion dropped");
+        assert_eq!(report.findings[0].criterion, "tone");
+        assert!(matches!(report.findings[0].severity, Severity::Warn));
+    }
+
+    #[test]
+    fn llm_critic_fails_on_unparseable_reply() {
+        let lc = LlmCritic::new(std::sync::Arc::new(ScriptedBackend(
+            "not json at all".into(),
+        )));
+        let report = lc.critique(&Artifact::text("x"), &llm_rubric());
+        assert_eq!(report.findings.len(), 1);
+        assert_eq!(report.findings[0].criterion, "parser");
+        assert!(matches!(report.overall, Verdict::Fail));
+    }
+
+    #[test]
+    fn llm_critic_fails_on_backend_error() {
+        let lc = LlmCritic::new(std::sync::Arc::new(ErrBackend));
+        let report = lc.critique(&Artifact::text("x"), &llm_rubric());
+        assert_eq!(report.findings.len(), 1);
+        assert_eq!(report.findings[0].criterion, "backend");
+        assert!(matches!(report.overall, Verdict::Fail));
+        assert!(report.joules_uj > 0, "estimated cost still accounted");
+    }
+
+    #[test]
+    fn llm_critic_composes_through_the_full_pipeline() {
+        let lc = LlmCritic::new(std::sync::Arc::new(ScriptedBackend(
+            r#"{"findings": [{"criterion": "style", "severity": "warn", "reason": "wordy"}]}"#
+                .into(),
+        )));
+        let report = critique_and_falsify(
+            &Artifact::text("the the the"),
+            &llm_rubric(),
+            &lc,
+            &NoFalsifier,
+        );
+        assert_eq!(report.findings.len(), 1);
+        assert!(report.findings[0].falsified_attempted);
+        assert!(matches!(report.overall, Verdict::Warn));
+        assert!(report.is_clean(), "warn does not block promotion");
     }
 }
