@@ -131,6 +131,9 @@ members = [
     # Skill-compilation — verified resolutions become typed parameterized deterministic skills (a whole query class, no model).
     "crates/jouleclaw-skill",
 
+    # Agent memory layer — CoALA-typed (working/episodic/semantic/procedural), content-addressed, signed-receipt-ready facts.
+    "crates/jouleclaw-memory",
+
     # Approval gates — pause a dispatch for review before it runs; energy-shaped (only expensive model calls gated).
     "crates/jouleclaw-approve",
 

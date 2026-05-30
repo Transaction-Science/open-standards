@@ -1,0 +1,15 @@
+[package]
+name = "jouleclaw-memory"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "JouleClaw agent memory layer — CoALA-typed (working/episodic/semantic/procedural), content-addressed, signed-receipt-ready facts, with deterministic BM25 reference recall."
+
+[dependencies]
+serde      = { workspace = true }
+serde_json = { workspace = true }
+blake3     = { workspace = true }
+thiserror  = { workspace = true }
