@@ -1876,7 +1876,9 @@ dependencies = [
 name = "jouleclaw-consolidate"
 version = "0.1.0"
 dependencies = [
+ "jouleclaw-llm-cheap",
  "jouleclaw-memory",
+ "serde_json",
 ]
 
 [[package]]
@@ -1887,6 +1889,7 @@ version = "0.1.0"
 name = "jouleclaw-critic"
 version = "0.1.0"
 dependencies = [
+ "jouleclaw-llm-cheap",
  "jouleclaw-verify",
  "serde",
  "serde_json",
@@ -2042,6 +2045,7 @@ version = "0.1.0"
 dependencies = [
  "jouleclaw-cascade",
  "jouleclaw-energy",
+ "jouleclaw-llm-cheap",
  "serde",
  "serde_json",
  "thiserror 2.0.18",

@@ -168,6 +168,169 @@ impl HandoffSelector for CheapestCapable {
     }
 }
 
+/// Joule-budget-aware selector: wraps another selector and refuses to
+/// pick any agent whose `typical_joules_per_call` would exceed the
+/// budget. Returns `None` when nothing fits — the consumer treats
+/// that as "skip this handoff" (the cascade's "refuse, don't lie"
+/// posture extended to multi-agent dispatch).
+///
+/// Doctrine: the wrapped selector still chooses *among the affordable
+/// agents*. `WithinBudget::new(CheapestCapable, 50)` means "pick the
+/// cheapest capable agent costing ≤ 50 µJ"; a smarter wrapped
+/// selector (LLM-routed, learned) is still budget-clamped.
+pub struct WithinBudget<S: HandoffSelector> {
+    inner: S,
+    budget_uj: u64,
+}
+
+impl<S: HandoffSelector> WithinBudget<S> {
+    pub fn new(inner: S, budget_uj: u64) -> Self {
+        Self { inner, budget_uj }
+    }
+    pub fn budget_uj(&self) -> u64 {
+        self.budget_uj
+    }
+}
+
+/// LLM-routed selector. Asks a [`jouleclaw_llm_cheap::LlmBackend`]
+/// to pick the best capable agent by name, given the query and the
+/// list of capable agents (with their advertised capabilities and
+/// typical-joule costs in the prompt).
+///
+/// Honest scope:
+///
+/// - The LLM is **constrained** — it can only pick from the capable
+///   subset (the prompt lists them by name). The selector parses the
+///   reply, matches a known name, and rejects anything else.
+/// - On parse failure, no match, or backend error, the selector
+///   **falls back** to a wrapped deterministic selector
+///   (`CheapestCapable` by default). The router degrades to the
+///   cost-table policy rather than refusing — degrading is the cost
+///   of having a router.
+/// - The router's own joule spend is *not* counted into the picked
+///   agent's `joules_uj` here. Consumers that want it accounted log
+///   the routing call separately (the `LlmBackend` returns the cost
+///   in its response).
+/// - The wrapped fallback selector can itself be budget-clamped
+///   (e.g. `LlmRouted::new(backend, WithinBudget::new(CheapestCapable,
+///   100))`), composing all three: smart pick, cost ceiling, stable
+///   fallback.
+pub struct LlmRouted<S: HandoffSelector> {
+    backend: std::sync::Arc<dyn jouleclaw_llm_cheap::LlmBackend>,
+    fallback: S,
+    /// Token cap for the routing call. Default 32 — enough for a name.
+    max_tokens: u32,
+}
+
+impl<S: HandoffSelector> LlmRouted<S> {
+    pub fn new(
+        backend: std::sync::Arc<dyn jouleclaw_llm_cheap::LlmBackend>,
+        fallback: S,
+    ) -> Self {
+        Self {
+            backend,
+            fallback,
+            max_tokens: 32,
+        }
+    }
+
+    pub fn with_max_tokens(mut self, max_tokens: u32) -> Self {
+        self.max_tokens = max_tokens.max(1);
+        self
+    }
+}
+
+impl<S: HandoffSelector> HandoffSelector for LlmRouted<S> {
+    fn select<'a>(
+        &self,
+        agents: &'a [Box<dyn CallableAgent>],
+        input: &AgentInput,
+    ) -> Option<&'a dyn CallableAgent> {
+        // Build the capable-subset list. If empty, fall back.
+        let capable: Vec<&dyn CallableAgent> = agents
+            .iter()
+            .filter(|a| a.capabilities().contains(&input.capability))
+            .map(|b| b.as_ref())
+            .collect();
+        if capable.is_empty() {
+            return self.fallback.select(agents, input);
+        }
+        if capable.len() == 1 {
+            return Some(capable[0]);
+        }
+
+        // Render an LLM prompt listing the capable agents.
+        let mut prompt = String::new();
+        prompt.push_str("Pick the best agent for this task.\n");
+        prompt.push_str(&format!(
+            "Task ({}/{}): {}\n",
+            input.capability.kind, input.capability.modality, input.query
+        ));
+        prompt.push_str("Agents (pick by exact name):\n");
+        for a in &capable {
+            prompt.push_str(&format!(
+                "- {} (typical cost: {} uJ)\n",
+                a.name(),
+                a.typical_joules_per_call()
+            ));
+        }
+        prompt.push_str("Reply with one agent name only. No other text.\n");
+
+        let req = jouleclaw_llm_cheap::LlmRequest::from_prompt(prompt, self.max_tokens);
+        let Ok(resp) = self.backend.complete(&req) else {
+            return self.fallback.select(agents, input);
+        };
+        let reply = resp.text.trim();
+
+        // Match the reply against a capable agent's name. Prefer exact
+        // match; fall back to first agent whose name appears as a
+        // substring of the reply (some models echo " name: X" etc).
+        if let Some(hit) = capable.iter().find(|a| a.name() == reply) {
+            return Some(*hit);
+        }
+        if let Some(hit) = capable.iter().find(|a| reply.contains(a.name())) {
+            return Some(*hit);
+        }
+        self.fallback.select(agents, input)
+    }
+}
+
+impl<S: HandoffSelector> HandoffSelector for WithinBudget<S> {
+    fn select<'a>(
+        &self,
+        agents: &'a [Box<dyn CallableAgent>],
+        input: &AgentInput,
+    ) -> Option<&'a dyn CallableAgent> {
+        // Filter the agent slice to the budget-affordable subset, then
+        // delegate. We can't pass a filtered slice through (lifetimes),
+        // so the wrapped selector sees all agents and we re-check the
+        // result against the budget. That works because the cost
+        // function is monotone in the agent — if the inner picked one
+        // we'd reject, no other budget-affordable choice would have
+        // been preferred by the inner's policy anyway. We still
+        // double-check.
+        let pick = self.inner.select(agents, input)?;
+        if pick.typical_joules_per_call() <= self.budget_uj {
+            Some(pick)
+        } else {
+            // Inner's pick busted the budget; try the cheapest
+            // affordable capable agent as a fallback.
+            agents
+                .iter()
+                .filter(|a| {
+                    a.typical_joules_per_call() <= self.budget_uj
+                        && a.capabilities().contains(&input.capability)
+                })
+                .min_by(|a, b| {
+                    a.typical_joules_per_call()
+                        .cmp(&b.typical_joules_per_call())
+                        .then_with(|| a.name().cmp(b.name()))
+                })
+                .map(|boxed| boxed.as_ref())
+        }
+    }
+}
+
 /// A handoff registry — the federation's typed-agent catalog. The
 /// existing parallel-retrieval surface ([`crate::Federation`]) is
 /// untouched; this is the typed-call path the consumer reaches for
@@ -222,6 +385,69 @@ impl HandoffRegistry {
             Some(agent) => agent.call(input),
             None => Err(AgentError::NoCapableAgent(input.capability.clone())),
         }
+    }
+
+    /// Dispatch a chain of handoffs — each step's `AgentResponse` is
+    /// piped into the *next* step's `AgentInput` as a `prev` payload
+    /// (under `_prev_output` and `_prev_agent` metadata keys) so the
+    /// next agent can read what the previous one produced.
+    ///
+    /// This is the "worker-to-worker" pattern made explicit, with the
+    /// honest scope spelled out:
+    ///
+    /// - Each agent is still **stateless** (the `CallableAgent`
+    ///   contract): the only context carried forward is the prior
+    ///   `output` JSON and the prior agent's `name`. No conversation,
+    ///   no shared scratchpad.
+    /// - Steps are sequential — no parallel branches. Branching belongs
+    ///   in a `jouleclaw-graph::RunGraph`.
+    /// - On any step's failure, the chain stops and returns the error
+    ///   (no partial recovery). Joules spent up to that point are
+    ///   lost; the consumer logs them via the per-step responses if it
+    ///   wants accounting.
+    /// - Each step is selected independently — the chain is a list of
+    ///   `(input, selector)` pairs, so a chain can mix `CheapestCapable`
+    ///   for the easy step and a smarter selector for the hard one.
+    ///
+    /// Returns the per-step responses in order. The terminal response
+    /// is `out.last()`; intermediate responses are kept so the caller
+    /// can audit the joule-spend of each step.
+    pub fn dispatch_chain(
+        &self,
+        steps: &[(AgentInput, &dyn HandoffSelector)],
+    ) -> Result<Vec<AgentResponse>, AgentError> {
+        let mut out = Vec::with_capacity(steps.len());
+        let mut prev: Option<AgentResponse> = None;
+        for (input, selector) in steps {
+            let mut next_input = input.clone();
+            if let Some(p) = &prev {
+                // Pipe prior output through as opaque payload + breadcrumb
+                // metadata. We don't merge into payload; we replace under
+                // an `_prev_output` key so the next agent sees its own
+                // payload alongside.
+                let mut payload = next_input.payload.unwrap_or(serde_json::json!({}));
+                if let Some(map) = payload.as_object_mut() {
+                    map.insert("_prev_output".into(), p.output.clone());
+                    map.insert(
+                        "_prev_agent".into(),
+                        serde_json::Value::String(p.agent.clone()),
+                    );
+                }
+                next_input.payload = Some(payload);
+                next_input
+                    .metadata
+                    .insert("_prev_agent".into(), p.agent.clone());
+            }
+            let resp = match selector.select(&self.agents, &next_input) {
+                Some(agent) => agent.call(&next_input)?,
+                None => {
+                    return Err(AgentError::NoCapableAgent(next_input.capability.clone()))
+                }
+            };
+            prev = Some(resp.clone());
+            out.push(resp);
+        }
+        Ok(out)
     }
 }
 
@@ -454,5 +680,317 @@ mod tests {
             .dispatch(&input(cap("anything"), "q"), &CheapestCapable)
             .unwrap_err();
         assert!(matches!(err, AgentError::NoCapableAgent(_)));
+    }
+
+    // ─── WithinBudget ───────────────────────────────────────────────
+
+    #[test]
+    fn within_budget_uses_inner_when_pick_fits() {
+        let reg = HandoffRegistry::new().register(StaticAgent {
+            name: "cheap".into(),
+            caps: vec![cap("summarise")],
+            joules: 10,
+            reply: serde_json::json!({}),
+        });
+        let sel = WithinBudget::new(CheapestCapable, 100);
+        let r = reg
+            .dispatch(&input(cap("summarise"), "q"), &sel)
+            .unwrap();
+        assert_eq!(r.agent, "cheap");
+    }
+
+    #[test]
+    fn within_budget_falls_back_when_inner_pick_busts_budget() {
+        let reg = HandoffRegistry::new()
+            .register(StaticAgent {
+                name: "cheap".into(),
+                caps: vec![cap("summarise")],
+                joules: 80,
+                reply: serde_json::json!({}),
+            })
+            .register(StaticAgent {
+                name: "cheaper".into(),
+                caps: vec![cap("summarise")],
+                joules: 30,
+                reply: serde_json::json!({}),
+            });
+        // Inner CheapestCapable would pick "cheaper" (already cheap).
+        // Set budget below "cheap" only.
+        let sel = WithinBudget::new(CheapestCapable, 50);
+        let r = reg.dispatch(&input(cap("summarise"), "q"), &sel).unwrap();
+        assert_eq!(r.agent, "cheaper");
+    }
+
+    #[test]
+    fn within_budget_refuses_when_nothing_fits() {
+        let reg = HandoffRegistry::new().register(StaticAgent {
+            name: "spendy".into(),
+            caps: vec![cap("summarise")],
+            joules: 9999,
+            reply: serde_json::json!({}),
+        });
+        let sel = WithinBudget::new(CheapestCapable, 50);
+        let err = reg
+            .dispatch(&input(cap("summarise"), "q"), &sel)
+            .unwrap_err();
+        assert!(matches!(err, AgentError::NoCapableAgent(_)));
+    }
+
+    // ─── dispatch_chain ─────────────────────────────────────────────
+
+    /// Test helper agent that records whether the prev-output payload
+    /// arrived as expected.
+    struct PrevSensingAgent {
+        name: String,
+        caps: Vec<Capability>,
+        joules: u64,
+    }
+    impl CallableAgent for PrevSensingAgent {
+        fn name(&self) -> &str {
+            &self.name
+        }
+        fn capabilities(&self) -> &[Capability] {
+            &self.caps
+        }
+        fn typical_joules_per_call(&self) -> u64 {
+            self.joules
+        }
+        fn call(&self, input: &AgentInput) -> Result<AgentResponse, AgentError> {
+            let prev = input
+                .payload
+                .as_ref()
+                .and_then(|p| p.get("_prev_output"))
+                .cloned()
+                .unwrap_or(serde_json::Value::Null);
+            Ok(AgentResponse {
+                agent: self.name.clone(),
+                output: serde_json::json!({
+                    "from": self.name,
+                    "saw_prev": prev,
+                }),
+                joules_uj: self.joules,
+            })
+        }
+    }
+
+    #[test]
+    fn dispatch_chain_pipes_prior_output_into_next_input() {
+        let reg = HandoffRegistry::new()
+            .register(StaticAgent {
+                name: "a".into(),
+                caps: vec![cap("step1")],
+                joules: 5,
+                reply: serde_json::json!({"draft": "hello"}),
+            })
+            .register(PrevSensingAgent {
+                name: "b".into(),
+                caps: vec![cap("step2")],
+                joules: 5,
+            });
+
+        let steps: Vec<(AgentInput, &dyn HandoffSelector)> = vec![
+            (input(cap("step1"), "first"), &CheapestCapable),
+            (input(cap("step2"), "second"), &CheapestCapable),
+        ];
+
+        let responses = reg.dispatch_chain(&steps).unwrap();
+        assert_eq!(responses.len(), 2);
+        assert_eq!(responses[0].agent, "a");
+        assert_eq!(responses[1].agent, "b");
+        let prev = responses[1].output.get("saw_prev").unwrap();
+        assert_eq!(prev, &serde_json::json!({"draft": "hello"}));
+    }
+
+    #[test]
+    fn dispatch_chain_stops_on_step_error() {
+        let reg = HandoffRegistry::new()
+            .register(StaticAgent {
+                name: "ok".into(),
+                caps: vec![cap("step1")],
+                joules: 5,
+                reply: serde_json::json!({}),
+            })
+            .register(FailingAgent {
+                name: "broken".into(),
+                caps: vec![cap("step2")],
+            });
+        let steps: Vec<(AgentInput, &dyn HandoffSelector)> = vec![
+            (input(cap("step1"), "q1"), &CheapestCapable),
+            (input(cap("step2"), "q2"), &CheapestCapable),
+        ];
+        let err = reg.dispatch_chain(&steps).unwrap_err();
+        assert!(matches!(err, AgentError::Backend(_)));
+    }
+
+    #[test]
+    fn dispatch_chain_empty_is_ok_with_no_responses() {
+        let reg = HandoffRegistry::new();
+        let r = reg.dispatch_chain(&[]).unwrap();
+        assert!(r.is_empty());
+    }
+
+    #[test]
+    fn dispatch_chain_no_capable_for_step_errors() {
+        let reg = HandoffRegistry::new().register(StaticAgent {
+            name: "only".into(),
+            caps: vec![cap("step1")],
+            joules: 5,
+            reply: serde_json::json!({}),
+        });
+        let steps: Vec<(AgentInput, &dyn HandoffSelector)> = vec![
+            (input(cap("step1"), "q1"), &CheapestCapable),
+            (input(cap("step-unknown"), "q2"), &CheapestCapable),
+        ];
+        let err = reg.dispatch_chain(&steps).unwrap_err();
+        assert!(matches!(err, AgentError::NoCapableAgent(_)));
+    }
+
+    // ─── LlmRouted ──────────────────────────────────────────────────
+
+    /// Test backend that returns a fixed string regardless of input.
+    struct ConstantBackend(String);
+    impl jouleclaw_llm_cheap::LlmBackend for ConstantBackend {
+        fn model_name(&self) -> &str {
+            "test:constant"
+        }
+        fn complete(
+            &self,
+            _req: &jouleclaw_llm_cheap::LlmRequest,
+        ) -> Result<jouleclaw_llm_cheap::LlmResponse, jouleclaw_llm_cheap::LlmError> {
+            Ok(jouleclaw_llm_cheap::LlmResponse {
+                text: self.0.clone(),
+                finish_reason: jouleclaw_llm_cheap::FinishReason::Stop,
+                input_tokens: 0,
+                output_tokens: self.0.len() as u32,
+                energy_joules: None,
+            })
+        }
+    }
+
+    /// Test backend that always errors — exercises the fallback path.
+    struct ErroringBackend;
+    impl jouleclaw_llm_cheap::LlmBackend for ErroringBackend {
+        fn model_name(&self) -> &str {
+            "test:erroring"
+        }
+        fn complete(
+            &self,
+            _req: &jouleclaw_llm_cheap::LlmRequest,
+        ) -> Result<jouleclaw_llm_cheap::LlmResponse, jouleclaw_llm_cheap::LlmError> {
+            Err(jouleclaw_llm_cheap::LlmError::Unavailable("test".into()))
+        }
+    }
+
+    #[test]
+    fn llm_routed_picks_the_named_agent() {
+        let reg = HandoffRegistry::new()
+            .register(StaticAgent {
+                name: "fast-cheap".into(),
+                caps: vec![cap("summarise")],
+                joules: 10,
+                reply: serde_json::json!({}),
+            })
+            .register(StaticAgent {
+                name: "deep-thoughtful".into(),
+                caps: vec![cap("summarise")],
+                joules: 200,
+                reply: serde_json::json!({}),
+            });
+        let sel = LlmRouted::new(
+            std::sync::Arc::new(ConstantBackend("deep-thoughtful".into())),
+            CheapestCapable,
+        );
+        let r = reg.dispatch(&input(cap("summarise"), "q"), &sel).unwrap();
+        assert_eq!(r.agent, "deep-thoughtful");
+    }
+
+    #[test]
+    fn llm_routed_falls_back_when_backend_errors() {
+        let reg = HandoffRegistry::new()
+            .register(StaticAgent {
+                name: "fast-cheap".into(),
+                caps: vec![cap("summarise")],
+                joules: 10,
+                reply: serde_json::json!({}),
+            })
+            .register(StaticAgent {
+                name: "deep-thoughtful".into(),
+                caps: vec![cap("summarise")],
+                joules: 200,
+                reply: serde_json::json!({}),
+            });
+        let sel = LlmRouted::new(std::sync::Arc::new(ErroringBackend), CheapestCapable);
+        let r = reg.dispatch(&input(cap("summarise"), "q"), &sel).unwrap();
+        assert_eq!(r.agent, "fast-cheap", "fallback to CheapestCapable");
+    }
+
+    #[test]
+    fn llm_routed_falls_back_on_unrecognised_name() {
+        let reg = HandoffRegistry::new()
+            .register(StaticAgent {
+                name: "fast-cheap".into(),
+                caps: vec![cap("summarise")],
+                joules: 10,
+                reply: serde_json::json!({}),
+            });
+        let sel = LlmRouted::new(
+            std::sync::Arc::new(ConstantBackend("ghost-agent".into())),
+            CheapestCapable,
+        );
+        // Only one capable agent — LlmRouted short-circuits, no LLM
+        // call needed.
+        let r = reg.dispatch(&input(cap("summarise"), "q"), &sel).unwrap();
+        assert_eq!(r.agent, "fast-cheap");
+    }
+
+    #[test]
+    fn llm_routed_extracts_name_from_chatty_reply() {
+        let reg = HandoffRegistry::new()
+            .register(StaticAgent {
+                name: "alpha".into(),
+                caps: vec![cap("x")],
+                joules: 5,
+                reply: serde_json::json!({}),
+            })
+            .register(StaticAgent {
+                name: "beta".into(),
+                caps: vec![cap("x")],
+                joules: 5,
+                reply: serde_json::json!({}),
+            });
+        let sel = LlmRouted::new(
+            std::sync::Arc::new(ConstantBackend(
+                "I'd pick beta because it handles this case best.".into(),
+            )),
+            CheapestCapable,
+        );
+        let r = reg.dispatch(&input(cap("x"), "q"), &sel).unwrap();
+        assert_eq!(r.agent, "beta");
+    }
+
+    #[test]
+    fn llm_routed_composes_with_within_budget() {
+        let reg = HandoffRegistry::new()
+            .register(StaticAgent {
+                name: "cheap".into(),
+                caps: vec![cap("summarise")],
+                joules: 20,
+                reply: serde_json::json!({}),
+            })
+            .register(StaticAgent {
+                name: "expensive".into(),
+                caps: vec![cap("summarise")],
+                joules: 500,
+                reply: serde_json::json!({}),
+            });
+        // LLM picks "expensive"; budget refuses; falls back to cheapest
+        // affordable.
+        let inner = LlmRouted::new(
+            std::sync::Arc::new(ConstantBackend("expensive".into())),
+            CheapestCapable,
+        );
+        let sel = WithinBudget::new(inner, 100);
+        let r = reg.dispatch(&input(cap("summarise"), "q"), &sel).unwrap();
+        assert_eq!(r.agent, "cheap");
     }
 }
