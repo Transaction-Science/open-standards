@@ -1873,6 +1873,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "jouleclaw-consolidate"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-memory",
+]
+
+[[package]]
 name = "jouleclaw-core"
 version = "0.1.0"
 
@@ -2009,6 +2016,14 @@ dependencies = [
  "sha2",
  "tokio",
  "uuid",
+]
+
+[[package]]
+name = "jouleclaw-extract"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-memory",
+ "regex",
 ]
 
 [[package]]
@@ -2300,6 +2315,15 @@ dependencies = [
  "serde_json",
  "thiserror 2.0.18",
  "uuid",
+]
+
+[[package]]
+name = "jouleclaw-recall"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-memory",
+ "jouleclaw-rerank",
+ "thiserror 2.0.18",
 ]
 
 [[package]]

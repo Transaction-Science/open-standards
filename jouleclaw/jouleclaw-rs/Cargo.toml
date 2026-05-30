@@ -134,6 +134,15 @@ members = [
     # Agent memory layer — CoALA-typed (working/episodic/semantic/procedural), content-addressed, signed-receipt-ready facts.
     "crates/jouleclaw-memory",
 
+    # L1 fact extraction — deterministic regex extractor (hashtags / mentions / quoted / key:value) that composes with jouleclaw-memory.
+    "crates/jouleclaw-extract",
+
+    # Composed recall — memory BM25 top-N → jouleclaw-rerank → top-K (the Hindsight pattern, substrate-grade).
+    "crates/jouleclaw-recall",
+
+    # Consolidation — CoALA episodic→semantic, scheduled batch. Deterministic tag-clustering reference + trait for LLM abstraction.
+    "crates/jouleclaw-consolidate",
+
     # Approval gates — pause a dispatch for review before it runs; energy-shaped (only expensive model calls gated).
     "crates/jouleclaw-approve",
 

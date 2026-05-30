@@ -1,0 +1,14 @@
+[package]
+name = "jouleclaw-recall"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Compose jouleclaw-memory recall with jouleclaw-rerank: BM25-cheap top-N → cross-encoder reorder → top-K. The Hindsight pattern, substrate-grade."
+
+[dependencies]
+jouleclaw-memory = { path = "../jouleclaw-memory" }
+jouleclaw-rerank = { path = "../jouleclaw-rerank" }
+thiserror        = { workspace = true }
