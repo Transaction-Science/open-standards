@@ -639,6 +639,119 @@ impl Critic for LlmCritic {
 }
 
 // ─────────────────────────────────────────────────────────────────────
+// MultiCritic — combine independent critics for mixed rubrics
+// ─────────────────────────────────────────────────────────────────────
+
+/// Aggregates multiple critics over the same artifact + rubric. The
+/// composition the prior commit named — `DeterministicCritic` handles
+/// `Verifier` criteria; `LlmCritic` handles `LlmOnly` criteria; a
+/// mixed rubric needs both, applied independently, with findings
+/// merged.
+///
+/// Aggregation rules:
+///
+/// - **Findings** are concatenated in critic-registration order.
+///   Duplicate findings (same `criterion` + same `severity` + same
+///   `reason`) are deduplicated — a finding that two critics catch
+///   is one finding, not two.
+/// - **Joules** sum across critics. Each critic reports its own
+///   spend (deterministic verifier cost or LLM-call estimate); the
+///   total is what the runtime accounts.
+/// - **Verdict** is the worst (`Fail > Warn > Pass`) — any blocking
+///   finding from any critic blocks promotion. This matches
+///   `overall_verdict` over the merged finding list.
+/// - **Order independence**: swap the registration order and the
+///   merged findings list comes out in a different order, but
+///   `verdict` and `joules_uj` are identical. Tests cover this.
+///
+/// Honest scope (v1):
+///
+/// - Critics run **sequentially**, not in parallel. The first
+///   critic's cost is paid even if the second returns blocking
+///   findings — cheaper-first ordering is the consumer's
+///   responsibility (e.g. register `DeterministicCritic` before
+///   `LlmCritic`, which the helper [`MultiCritic::cheapest_first`]
+///   does explicitly).
+/// - No short-circuit. Running every critic produces the full
+///   finding set the falsification pass can then refute one-by-one
+///   — short-circuiting would mean a falsifier never sees the
+///   later critics' findings, which is the wrong tradeoff for an
+///   adversarial gate.
+pub struct MultiCritic {
+    critics: Vec<Box<dyn Critic>>,
+}
+
+impl MultiCritic {
+    /// Empty multi-critic. A `critique` on this returns a clean
+    /// report with zero findings — useful only as a builder seed.
+    pub fn new() -> Self {
+        Self {
+            critics: Vec::new(),
+        }
+    }
+
+    /// Builder: append a critic. Maintain insertion order so the
+    /// finding list is predictable.
+    pub fn with<C: Critic + 'static>(mut self, critic: C) -> Self {
+        self.critics.push(Box::new(critic));
+        self
+    }
+
+    /// Convenience constructor — registers the deterministic critic
+    /// first so its cheap verifier work runs before any LLM critic.
+    /// Cheaper-first is the only ordering doctrine; consumers that
+    /// want a different order use `new().with(...)` directly.
+    pub fn cheapest_first<C: Critic + 'static>(llm: C) -> Self {
+        Self::new().with(DeterministicCritic).with(llm)
+    }
+
+    /// How many critics are registered.
+    pub fn len(&self) -> usize {
+        self.critics.len()
+    }
+
+    /// Whether no critics are registered.
+    pub fn is_empty(&self) -> bool {
+        self.critics.is_empty()
+    }
+}
+
+impl Default for MultiCritic {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl Critic for MultiCritic {
+    fn critique(&self, artifact: &Artifact, rubric: &Rubric) -> CritiqueReport {
+        let mut merged: Vec<Finding> = Vec::new();
+        let mut joules_uj: u64 = 0;
+        for c in &self.critics {
+            let report = c.critique(artifact, rubric);
+            joules_uj = joules_uj.saturating_add(report.joules_uj);
+            for f in report.findings {
+                // Dedupe on (criterion, severity, reason). Two critics
+                // catching the same problem produce one finding, not
+                // two — the finding's source is opaque on purpose.
+                if !merged.iter().any(|m| {
+                    m.criterion == f.criterion
+                        && m.severity == f.severity
+                        && m.reason == f.reason
+                }) {
+                    merged.push(f);
+                }
+            }
+        }
+        let overall = overall_verdict(&merged);
+        CritiqueReport {
+            findings: merged,
+            overall,
+            joules_uj,
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────
 // Tests
 // ─────────────────────────────────────────────────────────────────────
 
@@ -984,5 +1097,95 @@ mod tests {
         assert!(report.findings[0].falsified_attempted);
         assert!(matches!(report.overall, Verdict::Warn));
         assert!(report.is_clean(), "warn does not block promotion");
+    }
+
+    // ─── MultiCritic ─────────────────────────────────────────────────
+
+    fn mixed_rubric() -> Rubric {
+        Rubric::new()
+            .with(Criterion::verifier("exact", "must equal hi", EqVerifier::new("hi")))
+            .with(Criterion::llm_only("tone", "no hype words"))
+    }
+
+    #[test]
+    fn multi_critic_combines_deterministic_and_llm() {
+        let mc = MultiCritic::new()
+            .with(DeterministicCritic)
+            .with(LlmCritic::new(std::sync::Arc::new(ScriptedBackend(
+                r#"{"findings": [{"criterion": "tone", "severity": "fail", "reason": "hypy"}]}"#.into(),
+            ))));
+        let report = mc.critique(&Artifact::text("bye"), &mixed_rubric());
+        assert_eq!(report.findings.len(), 2, "one per critic");
+        assert!(matches!(report.overall, Verdict::Fail));
+        // Joules sum: verifier declared cost + LLM measured energy.
+        assert!(report.joules_uj > 0);
+    }
+
+    #[test]
+    fn multi_critic_dedupes_identical_findings_across_critics() {
+        // Two deterministic critics catching the same failure → one
+        // merged finding, not two.
+        let mc = MultiCritic::new()
+            .with(DeterministicCritic)
+            .with(DeterministicCritic);
+        let report = mc.critique(&Artifact::text("bye"), &mixed_rubric());
+        assert_eq!(report.findings.len(), 1, "duplicate findings dedupe");
+    }
+
+    #[test]
+    fn multi_critic_order_independent_for_verdict_and_joules() {
+        let llm = LlmCritic::new(std::sync::Arc::new(ScriptedBackend(
+            r#"{"findings": [{"criterion": "tone", "severity": "warn", "reason": "x"}]}"#.into(),
+        )));
+        let llm2 = LlmCritic::new(std::sync::Arc::new(ScriptedBackend(
+            r#"{"findings": [{"criterion": "tone", "severity": "warn", "reason": "x"}]}"#.into(),
+        )));
+        let r_dl = MultiCritic::new()
+            .with(DeterministicCritic)
+            .with(llm)
+            .critique(&Artifact::text("bye"), &mixed_rubric());
+        let r_ld = MultiCritic::new()
+            .with(llm2)
+            .with(DeterministicCritic)
+            .critique(&Artifact::text("bye"), &mixed_rubric());
+        assert_eq!(r_dl.overall, r_ld.overall);
+        assert_eq!(r_dl.joules_uj, r_ld.joules_uj);
+        assert_eq!(r_dl.findings.len(), r_ld.findings.len());
+    }
+
+    #[test]
+    fn multi_critic_empty_is_clean_pass() {
+        let mc = MultiCritic::new();
+        let report = mc.critique(&Artifact::text("anything"), &mixed_rubric());
+        assert!(matches!(report.overall, Verdict::Pass));
+        assert_eq!(report.joules_uj, 0);
+        assert!(mc.is_empty());
+    }
+
+    #[test]
+    fn multi_critic_cheapest_first_orders_deterministic_before_llm() {
+        let llm = LlmCritic::new(std::sync::Arc::new(ScriptedBackend(
+            r#"{"findings": []}"#.into(),
+        )));
+        let mc = MultiCritic::cheapest_first(llm);
+        assert_eq!(mc.len(), 2);
+        let report = mc.critique(&Artifact::text("hi"), &mixed_rubric());
+        assert!(matches!(report.overall, Verdict::Pass));
+    }
+
+    #[test]
+    fn multi_critic_composes_through_promote_if_clean() {
+        // Deterministic FAILS; LLM emits a warn. Promotion gate should reject.
+        let llm = LlmCritic::new(std::sync::Arc::new(ScriptedBackend(
+            r#"{"findings": [{"criterion": "tone", "severity": "warn", "reason": "soft"}]}"#.into(),
+        )));
+        let mc = MultiCritic::cheapest_first(llm);
+        let result = promote_if_clean(
+            &Artifact::text("bye"),
+            &mixed_rubric(),
+            &mc,
+            &NoFalsifier,
+        );
+        assert!(result.is_err(), "deterministic Fail blocks promotion");
     }
 }
