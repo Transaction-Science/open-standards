@@ -155,6 +155,13 @@ pub struct Receipt {
     /// touched no gateway-metered tools.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub tool_receipts: Vec<ToolReceipt>,
+    /// Per-token attributions, one row per non-trivial output token.
+    /// Computed by a [`TokenAttributor`] the model backend supplies;
+    /// this crate carries the data, not the algorithm. Empty when the
+    /// resolution path is deterministic / non-model (L0–L2) or when
+    /// the runtime did not run an attributor.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub token_attributions: Vec<TokenAttribution>,
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -213,6 +220,116 @@ impl Citation {
             exact_quote: exact_quote.into(),
         }
     }
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Per-token attribution (MIRAGE-class structural surface)
+// ─────────────────────────────────────────────────────────────────────
+
+/// One per-token attribution record. Says: for the output token at
+/// `token_idx` (counting from 0 in the generated sequence), the model
+/// drew on these retrieval chunks with these contribution scores.
+///
+/// Scores are unit-less and provider-defined — MIRAGE-class methods
+/// emit normalised attention/gradient saliency over chunks; consumers
+/// SHOULD treat them as ordinal, not absolute. The contract is "the
+/// non-zero scores are the chunks that mattered for this token,"
+/// not "score X means importance Y."
+///
+/// Honest scope: this crate ships only the **data type and trait**.
+/// Computing the attribution requires access to model internals
+/// (attention weights, gradient-based saliency, IRR-style internal
+/// retrieval flags) and is therefore the model backend's concern,
+/// not this crate's. The [`TokenAttributor`] trait is the seam where
+/// a model-aware implementation plugs in; the absence of a reference
+/// implementation in this open-standard repo is intentional —
+/// shipping a hard-coded one would lie about which method was used.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct TokenAttribution {
+    /// Output-token index (0-based in the generated sequence).
+    pub token_idx: u32,
+    /// Per-chunk contribution scores. Keyed by retrieval chunk id
+    /// (the same identifier carried in [`Citation::source_chunk_id`]
+    /// so a span-level citation and a token-level attribution can be
+    /// joined). Values are provider-defined; consumers SHOULD treat
+    /// the *order* (highest-first) as load-bearing and the absolute
+    /// numbers as opaque.
+    pub chunk_scores: std::collections::BTreeMap<String, f64>,
+    /// Optional opaque method tag (e.g. `"mirage:v1"`,
+    /// `"attention-rollout"`, `"grad-x-input"`) so auditors know what
+    /// produced this attribution. Different methods are NOT
+    /// comparable across rows; consumers SHOULD filter by method
+    /// before aggregating.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub method: Option<String>,
+}
+
+impl TokenAttribution {
+    /// Construct an attribution for a single output token from an
+    /// iterable of (chunk_id, score) pairs. Pairs with zero score are
+    /// dropped — they carry no signal and bloat the wire form.
+    pub fn new<I, S>(token_idx: u32, scores: I, method: Option<S>) -> Self
+    where
+        I: IntoIterator<Item = (String, f64)>,
+        S: Into<String>,
+    {
+        let chunk_scores = scores
+            .into_iter()
+            .filter(|(_, v)| *v != 0.0)
+            .collect();
+        Self {
+            token_idx,
+            chunk_scores,
+            method: method.map(|s| s.into()),
+        }
+    }
+
+    /// The chunk id with the highest score, if any. Lexically-smaller
+    /// key wins on a score tie (the same stable rule
+    /// `CheapestCapable` uses in `jouleclaw-federation`).
+    pub fn top_chunk(&self) -> Option<&str> {
+        self.chunk_scores
+            .iter()
+            .max_by(|(ak, av), (bk, bv)| {
+                // Compare scores first; on tie, the lexically-smaller
+                // key should win — so we reverse the key comparison
+                // (smaller key → "greater" in max_by's order).
+                av.partial_cmp(bv)
+                    .unwrap_or(std::cmp::Ordering::Equal)
+                    .then(bk.cmp(ak))
+            })
+            .map(|(k, _)| k.as_str())
+    }
+
+    /// Total contribution mass — sum of all per-chunk scores.
+    pub fn total_mass(&self) -> f64 {
+        self.chunk_scores.values().sum()
+    }
+}
+
+/// Computes per-token attributions for an output text given the
+/// retrieval chunks the model could draw from. The contract is
+/// intentionally narrow — implementations need access to model
+/// internals, and JouleClaw is not in the business of dictating
+/// which internals.
+///
+/// Consumers that want span-level citations + token-level attribution
+/// on the same receipt run both an attributor (this trait) and a
+/// citation builder (separately); the receipt carries both via
+/// [`ReceiptBuilder::account_citation`] and a future
+/// `account_token_attribution`.
+pub trait TokenAttributor: Send + Sync {
+    /// Compute attributions for `output_text` (token sequence the
+    /// model generated) against `chunks` (the retrieval chunks
+    /// available to it). Returns one [`TokenAttribution`] per
+    /// generated output token, in order. May return fewer rows than
+    /// tokens if the implementation only emits non-trivial rows
+    /// (e.g. tokens that are deterministic / EOS get dropped).
+    fn attribute(
+        &self,
+        output_text: &str,
+        chunks: &[(String, String)],
+    ) -> Vec<TokenAttribution>;
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -448,6 +565,7 @@ pub struct ReceiptBuilder {
     eoc_stage: Option<String>,
     citations: Vec<Citation>,
     tool_receipts: Vec<ToolReceipt>,
+    token_attributions: Vec<TokenAttribution>,
 }
 
 impl ReceiptBuilder {
@@ -517,6 +635,15 @@ impl ReceiptBuilder {
         self
     }
 
+    /// Attach a per-token [`TokenAttribution`] row. Order matters —
+    /// the seal preserves call order so `token_idx` sequencing is
+    /// auditable. The attribution itself carries no joule cost (the
+    /// attributor's spend is the model backend's accounting).
+    pub fn account_token_attribution(mut self, attr: TokenAttribution) -> Self {
+        self.token_attributions.push(attr);
+        self
+    }
+
     /// Seal the receipt. Assigns id and closed_at from the current clock.
     pub fn seal(self) -> Result<Receipt, ReceiptError> {
         let input_hash = self.input_hash.ok_or(ReceiptError::MissingField("input_hash"))?;
@@ -538,6 +665,7 @@ impl ReceiptBuilder {
             eoc_stage: self.eoc_stage,
             citations: self.citations,
             tool_receipts: self.tool_receipts,
+            token_attributions: self.token_attributions,
         })
     }
 }
@@ -799,5 +927,148 @@ mod tests {
         // Worst counter wins: Estimator < ModelBased < HwShunt by honesty.
         assert_eq!(receipt.energy_provenance, Provenance::Estimator);
         assert_eq!(receipt.tool_receipts.len(), 2);
+    }
+
+    // ─── TokenAttribution ────────────────────────────────────────────
+
+    #[test]
+    fn token_attribution_drops_zero_scores() {
+        let a = TokenAttribution::new(
+            0,
+            vec![
+                ("chunk:a".to_string(), 0.0),
+                ("chunk:b".to_string(), 0.7),
+                ("chunk:c".to_string(), 0.0),
+            ],
+            Some("mirage:v1"),
+        );
+        assert_eq!(a.chunk_scores.len(), 1);
+        assert!(a.chunk_scores.contains_key("chunk:b"));
+    }
+
+    #[test]
+    fn token_attribution_top_chunk_picks_highest_with_lexical_tiebreak() {
+        let a = TokenAttribution::new(
+            5,
+            vec![
+                ("chunk:b".to_string(), 0.5),
+                ("chunk:a".to_string(), 0.5),
+                ("chunk:c".to_string(), 0.3),
+            ],
+            None::<String>,
+        );
+        // Tie at 0.5; "chunk:a" < "chunk:b" lexically.
+        assert_eq!(a.top_chunk(), Some("chunk:a"));
+        assert!((a.total_mass() - 1.3).abs() < 1e-9);
+    }
+
+    #[test]
+    fn token_attribution_round_trips_through_json() {
+        let a = TokenAttribution::new(
+            3,
+            vec![("c1".to_string(), 0.6), ("c2".to_string(), 0.4)],
+            Some("attention-rollout"),
+        );
+        let j = serde_json::to_value(&a).unwrap();
+        assert_eq!(j["token_idx"], 3);
+        assert_eq!(j["method"], "attention-rollout");
+        let back: TokenAttribution = serde_json::from_value(j).unwrap();
+        assert_eq!(back, a);
+    }
+
+    #[test]
+    fn token_attribution_method_is_optional_on_wire() {
+        let a = TokenAttribution::new(0, vec![("c1".to_string(), 1.0)], None::<String>);
+        let j = serde_json::to_value(&a).unwrap();
+        // Optional method should be absent when None.
+        assert!(j.get("method").is_none(), "got: {j:?}");
+    }
+
+    #[test]
+    fn receipt_carries_token_attributions_through_seal_and_wire() {
+        let attr0 = TokenAttribution::new(
+            0,
+            vec![("chunk:doc-1".to_string(), 0.9)],
+            Some("mirage:v1"),
+        );
+        let attr1 = TokenAttribution::new(
+            1,
+            vec![("chunk:doc-2".to_string(), 0.55)],
+            Some("mirage:v1"),
+        );
+        let receipt = ReceiptBuilder::new()
+            .input_hash("a".repeat(64))
+            .tier(CascadeTier::L3Model)
+            .account_token_attribution(attr0.clone())
+            .account_token_attribution(attr1.clone())
+            .seal()
+            .expect("seal");
+        assert_eq!(receipt.token_attributions.len(), 2);
+        assert_eq!(receipt.token_attributions[0], attr0);
+        let j = serde_json::to_value(&receipt).unwrap();
+        assert!(j.get("token_attributions").is_some());
+        let back: Receipt = serde_json::from_value(j).unwrap();
+        assert_eq!(back.token_attributions, receipt.token_attributions);
+    }
+
+    #[test]
+    fn receipt_omits_empty_token_attributions_on_wire() {
+        let receipt = ReceiptBuilder::new()
+            .input_hash("a".repeat(64))
+            .tier(CascadeTier::L0Cache)
+            .seal()
+            .expect("seal");
+        let j = serde_json::to_string(&receipt).unwrap();
+        assert!(
+            !j.contains("token_attributions"),
+            "empty list must be skipped on wire to keep L0/L1 receipts terse: {j}"
+        );
+    }
+
+    /// Test attributor that scores chunks by simple substring overlap
+    /// with the output text. Exercises the TokenAttributor trait via a
+    /// deterministic, no-model implementation — useful for tests but
+    /// NOT a real attribution method.
+    struct OverlapAttributor;
+    impl TokenAttributor for OverlapAttributor {
+        fn attribute(
+            &self,
+            output_text: &str,
+            chunks: &[(String, String)],
+        ) -> Vec<TokenAttribution> {
+            let words: Vec<&str> = output_text.split_whitespace().collect();
+            let mut out = Vec::new();
+            for (i, w) in words.iter().enumerate() {
+                let mut scores = Vec::new();
+                for (id, text) in chunks {
+                    if text.contains(w) {
+                        scores.push((id.clone(), 1.0));
+                    }
+                }
+                if !scores.is_empty() {
+                    out.push(TokenAttribution::new(
+                        i as u32,
+                        scores,
+                        Some("test:overlap"),
+                    ));
+                }
+            }
+            out
+        }
+    }
+
+    #[test]
+    fn token_attributor_trait_is_implementable() {
+        let chunks = vec![
+            ("chunk:1".to_string(), "the sky is blue".to_string()),
+            ("chunk:2".to_string(), "grass is green".to_string()),
+        ];
+        let attrs = OverlapAttributor.attribute("sky is blue", &chunks);
+        // Three tokens: "sky", "is", "blue". "sky" + "blue" only in
+        // chunk:1; "is" in both.
+        assert_eq!(attrs.len(), 3);
+        assert_eq!(attrs[0].top_chunk(), Some("chunk:1"));
+        assert_eq!(attrs[1].chunk_scores.len(), 2);
+        assert_eq!(attrs[2].top_chunk(), Some("chunk:1"));
     }
 }
