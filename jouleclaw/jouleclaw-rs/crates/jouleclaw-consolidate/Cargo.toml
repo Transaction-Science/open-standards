@@ -9,4 +9,6 @@ authors.workspace = true
 description = "JouleClaw consolidation — the CoALA episodic→semantic transform as a scheduled batch. Deterministic tag-clustering reference + trait for LLM-driven abstraction."
 
 [dependencies]
-jouleclaw-memory = { path = "../jouleclaw-memory" }
+jouleclaw-memory    = { path = "../jouleclaw-memory" }
+jouleclaw-llm-cheap = { path = "../jouleclaw-llm-cheap" }
+serde_json          = { workspace = true }
