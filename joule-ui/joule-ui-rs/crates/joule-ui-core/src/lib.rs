@@ -430,6 +430,171 @@ pub fn is_valid(widget: &Widget, registry: &Registry) -> Result<(), Vec<Validati
 }
 
 // ─────────────────────────────────────────────────────────────────────
+// Streaming deltas
+// ─────────────────────────────────────────────────────────────────────
+
+/// A path into a widget tree, addressed by zero-based child indices
+/// from the root. `[]` is the root; `[0]` is the root's first child;
+/// `[2, 1]` is the second child of the root's third child.
+///
+/// Paths address widgets, not props — the operations that mutate
+/// props carry a `prop` key beside the path. This keeps the delta
+/// stream auditable (every op points at a single tree position) and
+/// avoids the JSON-Pointer rabbit hole.
+pub type WidgetPath = Vec<usize>;
+
+/// A streaming delta operation against a [`Widget`] tree.
+///
+/// The protocol covers AG-UI / MCP Apps / CopilotKit's converged
+/// shape with five ops — anything more elaborate decomposes into
+/// these:
+///
+/// - [`UiDelta::SetProp`] — set or replace a prop on a widget.
+/// - [`UiDelta::AppendText`] — append a string fragment to a
+///   [`PropValue::Text`] prop (the streaming token-by-token path).
+/// - [`UiDelta::ReplaceWidget`] — swap an entire subtree.
+/// - [`UiDelta::AppendChild`] — add a child to a widget's children
+///   list.
+/// - [`UiDelta::RemoveChild`] — remove a child at an index.
+///
+/// Honest scope (v1):
+///
+/// - Deltas are **applied in order** by [`apply_delta`]. There is no
+///   conflict-free CRDT layer; the consumer serialises deltas from a
+///   single stream. (Multi-source merge slots in as a follow-on.)
+/// - Out-of-bounds paths return an [`ApplyError`] instead of
+///   silently no-op'ing. A delta against a path that no longer
+///   exists is a bug, not a recovery condition.
+/// - The post-apply tree is NOT re-validated against a registry;
+///   that is the consumer's choice (call [`validate`] yourself if
+///   you need a re-check after a batch).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case", tag = "op")]
+pub enum UiDelta {
+    /// Set the `prop` on the widget at `path` to `value`.
+    SetProp {
+        path: WidgetPath,
+        prop: String,
+        value: PropValue,
+    },
+    /// Append `fragment` to a `PropValue::Text` prop. Useful for
+    /// token-by-token streaming of an LLM reply into a widget's
+    /// `body`/`text`/etc prop.
+    AppendText {
+        path: WidgetPath,
+        prop: String,
+        fragment: String,
+    },
+    /// Replace the widget at `path` with `widget`.
+    ReplaceWidget {
+        path: WidgetPath,
+        widget: Widget,
+    },
+    /// Append `child` to the children of the widget at `path`.
+    AppendChild {
+        path: WidgetPath,
+        child: Widget,
+    },
+    /// Remove the child at `index` from the widget at `path`.
+    RemoveChild {
+        path: WidgetPath,
+        index: usize,
+    },
+}
+
+/// Errors a delta can produce against a tree.
+#[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
+pub enum ApplyError {
+    /// The path addresses a widget that does not exist (intermediate
+    /// child index out of range).
+    #[error("widget path {0:?} is out of bounds at step {1}")]
+    PathOutOfBounds(WidgetPath, usize),
+    /// `AppendText` targeted a prop that is not present, or whose
+    /// current value is not [`PropValue::Text`].
+    #[error("append_text requires an existing PropValue::Text at prop {0}")]
+    NotTextProp(String),
+    /// `RemoveChild` targeted a child index past the children list.
+    #[error("remove_child index {0} out of range for widget at path {1:?}")]
+    ChildIndexOutOfRange(usize, WidgetPath),
+}
+
+/// Resolve a path to a mutable widget reference, descending child by
+/// child. Returns [`ApplyError::PathOutOfBounds`] tagged with the
+/// step that failed.
+fn descend_mut<'a>(
+    root: &'a mut Widget,
+    path: &[usize],
+) -> Result<&'a mut Widget, ApplyError> {
+    let mut cur = root;
+    for (i, &idx) in path.iter().enumerate() {
+        if idx >= cur.children.len() {
+            return Err(ApplyError::PathOutOfBounds(path.to_vec(), i));
+        }
+        cur = &mut cur.children[idx];
+    }
+    Ok(cur)
+}
+
+/// Apply a single [`UiDelta`] to `tree` in place. On error the tree
+/// is left in its pre-call state (operations that could partially
+/// succeed are written to compute their target and only mutate
+/// after validation).
+pub fn apply_delta(tree: &mut Widget, delta: &UiDelta) -> Result<(), ApplyError> {
+    match delta {
+        UiDelta::SetProp { path, prop, value } => {
+            let target = descend_mut(tree, path)?;
+            target.props.insert(prop.clone(), value.clone());
+            Ok(())
+        }
+        UiDelta::AppendText { path, prop, fragment } => {
+            let target = descend_mut(tree, path)?;
+            match target.props.get_mut(prop) {
+                Some(PropValue::Text(s)) => {
+                    s.push_str(fragment);
+                    Ok(())
+                }
+                _ => Err(ApplyError::NotTextProp(prop.clone())),
+            }
+        }
+        UiDelta::ReplaceWidget { path, widget } => {
+            let target = descend_mut(tree, path)?;
+            *target = widget.clone();
+            Ok(())
+        }
+        UiDelta::AppendChild { path, child } => {
+            let target = descend_mut(tree, path)?;
+            target.children.push(child.clone());
+            Ok(())
+        }
+        UiDelta::RemoveChild { path, index } => {
+            let target = descend_mut(tree, path)?;
+            if *index >= target.children.len() {
+                return Err(ApplyError::ChildIndexOutOfRange(*index, path.clone()));
+            }
+            target.children.remove(*index);
+            Ok(())
+        }
+    }
+}
+
+/// Apply a batch of deltas in order. Stops on the first error and
+/// returns it; deltas applied before the failure are NOT rolled back.
+/// (Rollback is the consumer's choice — clone the tree first if you
+/// need transactional semantics.)
+pub fn apply_deltas(tree: &mut Widget, deltas: &[UiDelta]) -> Result<usize, ApplyError> {
+    for (i, d) in deltas.iter().enumerate() {
+        apply_delta(tree, d).map_err(|e| {
+            // Preserve the failing index in tracing by returning the
+            // err as-is; consumers can compute "first N succeeded"
+            // from the tree itself if needed.
+            let _ = i;
+            e
+        })?;
+    }
+    Ok(deltas.len())
+}
+
+// ─────────────────────────────────────────────────────────────────────
 // Tests
 // ─────────────────────────────────────────────────────────────────────
 
@@ -691,5 +856,184 @@ mod tests {
         // Should serialise as { "type": "action", "value": { "id": "submit", "payload": null } }
         assert_eq!(j["type"], "action");
         assert_eq!(j["value"]["id"], "submit");
+    }
+
+    // ─── UiDelta ─────────────────────────────────────────────────────
+
+    fn card_tree() -> Widget {
+        Widget::leaf("Card")
+            .prop("title", PropValue::Text("Hi".into()))
+            .child(
+                Widget::leaf("Text")
+                    .prop("body", PropValue::Text("Hello".into())),
+            )
+            .child(Widget::leaf("Button").prop("label", PropValue::Text("Go".into())))
+    }
+
+    #[test]
+    fn set_prop_replaces_value_at_root() {
+        let mut t = card_tree();
+        apply_delta(
+            &mut t,
+            &UiDelta::SetProp {
+                path: vec![],
+                prop: "title".into(),
+                value: PropValue::Text("Hello".into()),
+            },
+        )
+        .unwrap();
+        assert_eq!(t.props["title"], PropValue::Text("Hello".into()));
+    }
+
+    #[test]
+    fn append_text_streams_token_fragments() {
+        let mut t = card_tree();
+        for frag in ["Hello ", "world", "!"] {
+            apply_delta(
+                &mut t,
+                &UiDelta::AppendText {
+                    path: vec![0],
+                    prop: "body".into(),
+                    fragment: frag.into(),
+                },
+            )
+            .unwrap();
+        }
+        assert_eq!(t.children[0].props["body"], PropValue::Text("HelloHello world!".into()));
+    }
+
+    #[test]
+    fn append_text_on_non_text_errors() {
+        let mut t = card_tree();
+        // 'title' is text — replace it with a Number, then try AppendText.
+        apply_delta(
+            &mut t,
+            &UiDelta::SetProp {
+                path: vec![],
+                prop: "title".into(),
+                value: PropValue::Number(7.0),
+            },
+        )
+        .unwrap();
+        let err = apply_delta(
+            &mut t,
+            &UiDelta::AppendText {
+                path: vec![],
+                prop: "title".into(),
+                fragment: "more".into(),
+            },
+        )
+        .unwrap_err();
+        assert!(matches!(err, ApplyError::NotTextProp(_)));
+    }
+
+    #[test]
+    fn replace_widget_swaps_a_subtree() {
+        let mut t = card_tree();
+        apply_delta(
+            &mut t,
+            &UiDelta::ReplaceWidget {
+                path: vec![1],
+                widget: Widget::leaf("Link").prop("href", PropValue::Text("/".into())),
+            },
+        )
+        .unwrap();
+        assert_eq!(t.children[1].name, "Link");
+    }
+
+    #[test]
+    fn append_child_adds_to_children_list() {
+        let mut t = card_tree();
+        apply_delta(
+            &mut t,
+            &UiDelta::AppendChild {
+                path: vec![],
+                child: Widget::leaf("Footer"),
+            },
+        )
+        .unwrap();
+        assert_eq!(t.children.len(), 3);
+        assert_eq!(t.children[2].name, "Footer");
+    }
+
+    #[test]
+    fn remove_child_at_index() {
+        let mut t = card_tree();
+        apply_delta(
+            &mut t,
+            &UiDelta::RemoveChild {
+                path: vec![],
+                index: 0,
+            },
+        )
+        .unwrap();
+        assert_eq!(t.children.len(), 1);
+        assert_eq!(t.children[0].name, "Button");
+    }
+
+    #[test]
+    fn out_of_bounds_path_errors() {
+        let mut t = card_tree();
+        let err = apply_delta(
+            &mut t,
+            &UiDelta::SetProp {
+                path: vec![99],
+                prop: "x".into(),
+                value: PropValue::Null,
+            },
+        )
+        .unwrap_err();
+        assert!(matches!(err, ApplyError::PathOutOfBounds(_, 0)));
+    }
+
+    #[test]
+    fn remove_child_index_out_of_range() {
+        let mut t = card_tree();
+        let err = apply_delta(
+            &mut t,
+            &UiDelta::RemoveChild {
+                path: vec![],
+                index: 99,
+            },
+        )
+        .unwrap_err();
+        assert!(matches!(err, ApplyError::ChildIndexOutOfRange(99, _)));
+    }
+
+    #[test]
+    fn apply_deltas_runs_a_batch_in_order() {
+        let mut t = card_tree();
+        let batch = vec![
+            UiDelta::SetProp {
+                path: vec![],
+                prop: "title".into(),
+                value: PropValue::Text("Hello".into()),
+            },
+            UiDelta::AppendChild {
+                path: vec![],
+                child: Widget::leaf("Footer"),
+            },
+            UiDelta::RemoveChild {
+                path: vec![],
+                index: 0,
+            },
+        ];
+        let n = apply_deltas(&mut t, &batch).unwrap();
+        assert_eq!(n, 3);
+        assert_eq!(t.props["title"], PropValue::Text("Hello".into()));
+        assert_eq!(t.children.len(), 2);
+    }
+
+    #[test]
+    fn delta_round_trips_through_json() {
+        let d = UiDelta::AppendText {
+            path: vec![0, 1],
+            prop: "body".into(),
+            fragment: "token".into(),
+        };
+        let j = serde_json::to_value(&d).unwrap();
+        assert_eq!(j["op"], "append_text");
+        let back: UiDelta = serde_json::from_value(j).unwrap();
+        assert_eq!(back, d);
     }
 }
