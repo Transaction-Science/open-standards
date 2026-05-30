@@ -594,6 +594,74 @@ pub fn apply_deltas(tree: &mut Widget, deltas: &[UiDelta]) -> Result<usize, Appl
     Ok(deltas.len())
 }
 
+/// Outcome of a checked delta apply — either the delta landed AND the
+/// post-apply tree validates against the registry (`Ok(())`), or it
+/// did not. The tree may have been mutated on the apply step before
+/// validation failed; the consumer holds the only handle, so
+/// rollback (clone-before-apply) is the consumer's choice.
+#[derive(Debug, Clone, PartialEq, thiserror::Error)]
+pub enum ValidatedApplyError {
+    /// The delta itself could not be applied.
+    #[error("apply: {0}")]
+    Apply(ApplyError),
+    /// The delta applied but the post-apply tree no longer validates
+    /// against the registry. Carries every error so the consumer can
+    /// surface the full set, not just the first.
+    #[error("post-apply validation failed: {} errors", .0.len())]
+    Validation(Vec<ValidationError>),
+}
+
+impl From<ApplyError> for ValidatedApplyError {
+    fn from(e: ApplyError) -> Self {
+        Self::Apply(e)
+    }
+}
+
+/// Apply a single delta and re-validate the tree against `registry`.
+/// Closes the "post-apply tree is NOT re-validated" v1 narrowing
+/// from the streaming-delta intro — call this when each streamed
+/// delta should be guarded against producing a malformed tree.
+///
+/// On success: returns `Ok(())`. On apply failure or post-apply
+/// validation failure: returns the appropriate
+/// [`ValidatedApplyError`] variant. The tree state on validation
+/// failure is whatever the delta produced — see
+/// [`apply_delta_validated_checked`] for the transactional variant.
+pub fn apply_delta_validated(
+    tree: &mut Widget,
+    delta: &UiDelta,
+    registry: &Registry,
+) -> Result<(), ValidatedApplyError> {
+    apply_delta(tree, delta)?;
+    let errs = validate(tree, registry);
+    if errs.is_empty() {
+        Ok(())
+    } else {
+        Err(ValidatedApplyError::Validation(errs))
+    }
+}
+
+/// Transactional variant: clone the tree first, apply the delta to
+/// the clone, validate the clone, swap on success. The caller's
+/// tree is left **unchanged** on any failure — apply error,
+/// validation error, anything. Pays a clone per call; use when the
+/// streaming consumer needs strict pre-commit guarantees and can
+/// afford the copy.
+pub fn apply_delta_validated_checked(
+    tree: &mut Widget,
+    delta: &UiDelta,
+    registry: &Registry,
+) -> Result<(), ValidatedApplyError> {
+    let mut candidate = tree.clone();
+    apply_delta(&mut candidate, delta)?;
+    let errs = validate(&candidate, registry);
+    if !errs.is_empty() {
+        return Err(ValidatedApplyError::Validation(errs));
+    }
+    *tree = candidate;
+    Ok(())
+}
+
 // ─────────────────────────────────────────────────────────────────────
 // Tests
 // ─────────────────────────────────────────────────────────────────────
@@ -1035,5 +1103,116 @@ mod tests {
         assert_eq!(j["op"], "append_text");
         let back: UiDelta = serde_json::from_value(j).unwrap();
         assert_eq!(back, d);
+    }
+
+    // ─── apply_delta_validated ───────────────────────────────────────
+
+    fn strict_registry() -> Registry {
+        Registry::new()
+            .with(
+                WidgetSchema::new("Card", "A card")
+                    .prop("title", PropSchema::required(PropType::Text))
+                    .children(AllowedChildren::Any),
+            )
+            .with(
+                WidgetSchema::new("Text", "Body text")
+                    .prop("body", PropSchema::required(PropType::Text)),
+            )
+            .with(
+                WidgetSchema::new("Button", "A button")
+                    .prop("label", PropSchema::required(PropType::Text)),
+            )
+    }
+
+    #[test]
+    fn validated_apply_ok_when_delta_keeps_tree_well_formed() {
+        let reg = strict_registry();
+        let mut t = card_tree();
+        apply_delta_validated(
+            &mut t,
+            &UiDelta::SetProp {
+                path: vec![],
+                prop: "title".into(),
+                value: PropValue::Text("Hello".into()),
+            },
+            &reg,
+        )
+        .unwrap();
+        assert_eq!(t.props["title"], PropValue::Text("Hello".into()));
+    }
+
+    #[test]
+    fn validated_apply_returns_validation_err_on_malformed_tree() {
+        let reg = strict_registry();
+        let mut t = card_tree();
+        // Replace required Text prop with a Number — schema requires Text.
+        let err = apply_delta_validated(
+            &mut t,
+            &UiDelta::SetProp {
+                path: vec![],
+                prop: "title".into(),
+                value: PropValue::Number(7.0),
+            },
+            &reg,
+        )
+        .unwrap_err();
+        assert!(matches!(err, ValidatedApplyError::Validation(_)));
+        // Tree was mutated (the non-transactional variant promises this).
+        assert_eq!(t.props["title"], PropValue::Number(7.0));
+    }
+
+    #[test]
+    fn validated_apply_returns_apply_err_for_bad_delta() {
+        let reg = strict_registry();
+        let mut t = card_tree();
+        let err = apply_delta_validated(
+            &mut t,
+            &UiDelta::SetProp {
+                path: vec![99],
+                prop: "x".into(),
+                value: PropValue::Null,
+            },
+            &reg,
+        )
+        .unwrap_err();
+        assert!(matches!(
+            err,
+            ValidatedApplyError::Apply(ApplyError::PathOutOfBounds(_, _))
+        ));
+    }
+
+    #[test]
+    fn validated_apply_checked_rolls_back_on_validation_failure() {
+        let reg = strict_registry();
+        let mut t = card_tree();
+        let before = t.clone();
+        let err = apply_delta_validated_checked(
+            &mut t,
+            &UiDelta::SetProp {
+                path: vec![],
+                prop: "title".into(),
+                value: PropValue::Number(7.0),
+            },
+            &reg,
+        )
+        .unwrap_err();
+        assert!(matches!(err, ValidatedApplyError::Validation(_)));
+        assert_eq!(t, before, "transactional variant leaves tree unchanged");
+    }
+
+    #[test]
+    fn validated_apply_checked_commits_on_success() {
+        let reg = strict_registry();
+        let mut t = card_tree();
+        apply_delta_validated_checked(
+            &mut t,
+            &UiDelta::AppendChild {
+                path: vec![],
+                child: Widget::leaf("Button").prop("label", PropValue::Text("More".into())),
+            },
+            &reg,
+        )
+        .unwrap();
+        assert_eq!(t.children.len(), 3);
     }
 }
