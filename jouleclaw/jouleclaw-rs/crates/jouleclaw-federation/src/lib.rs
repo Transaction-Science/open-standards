@@ -73,9 +73,9 @@ pub mod tier;
 
 pub use fuser::{FusedHit, FuseReport, Fuser, LinearFuser, RrfFuser};
 pub use handoff::{
-    AgentError, AgentInput, AgentResponse, CallableAgent, Capability,
-    CheapestCapable, HandoffRegistry, HandoffSelector, LlmRouted,
-    WithinBudget,
+    AgentError, AgentInput, AgentResponse, AgentStats, CallableAgent, Capability,
+    CheapestCapable, HandoffRegistry, HandoffSelector, LearnedSelector,
+    LlmRouted, WithinBudget,
 };
 pub use provider::{MockProvider, ProviderError, SearchHit, SearchProvider};
 pub use tier::{

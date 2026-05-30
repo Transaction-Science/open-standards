@@ -295,6 +295,169 @@ impl<S: HandoffSelector> HandoffSelector for LlmRouted<S> {
     }
 }
 
+/// Learned selector — tracks per-agent observed success rate and
+/// per-agent observed mean joule cost, then picks the *expected
+/// cheapest successful* agent: `mean_cost / max(success_rate,
+/// epsilon)`. The third selector kind, completing the cost / budget
+/// / learned trio Strands/CrewAI/Anthropic have all converged on.
+///
+/// Bootstrap policy (the cold-start problem):
+///
+/// - An agent with **fewer than `min_observations` recorded calls**
+///   uses its `typical_joules_per_call` as the cost estimate and
+///   `default_success_rate` as the success estimate. This avoids the
+///   degenerate "first call wins forever" trap a naive
+///   success-rate selector falls into.
+/// - Once an agent has ≥ `min_observations` calls, its observed
+///   stats take over. This is why production deployments pre-seed
+///   stats from telemetry rather than starting cold.
+///
+/// Update model — `record_outcome(agent_name, ok, joules_uj)`:
+///
+/// - Increments call count and success count (`ok = true`).
+/// - Updates running mean of joule cost via Welford-style online
+///   update (numerically stable, no overflow risk on u64 sums).
+///
+/// Honest scope (v1):
+///
+/// - **Stats are in-memory.** Persistence is the consumer's choice;
+///   serialise [`LearnedSelector::stats`] to disk and reload on the
+///   next process. Wire format is a plain `BTreeMap<String,
+///   AgentStats>` for ease of round-trip.
+/// - **Capability filter still applies.** A learned selector that
+///   has never observed an agent in a given capability is still not
+///   eligible — the picker filters by capability first, then ranks
+///   by expected cost.
+/// - **No exploration bonus.** A pure exploit policy. UCB / epsilon-
+///   greedy variants slot in via the same trait without changing
+///   this contract.
+pub struct LearnedSelector {
+    stats: std::sync::Mutex<std::collections::BTreeMap<String, AgentStats>>,
+    min_observations: u64,
+    default_success_rate: f64,
+}
+
+/// Per-agent observed statistics used by [`LearnedSelector`].
+#[derive(Debug, Clone, Copy, Default, PartialEq, Serialize, Deserialize)]
+pub struct AgentStats {
+    /// Total calls recorded for this agent.
+    pub calls: u64,
+    /// Calls that returned a non-`Refused`, non-`Backend` result.
+    pub successes: u64,
+    /// Online running mean of `joules_uj` across all recorded
+    /// calls. Welford-style update keeps this numerically stable.
+    pub mean_joules_uj: f64,
+}
+
+impl AgentStats {
+    /// Observed success rate, `successes / calls`. Returns `f64::NAN`
+    /// if no calls recorded — the caller decides how to handle
+    /// (typically by falling back to a prior).
+    pub fn success_rate(&self) -> f64 {
+        if self.calls == 0 {
+            f64::NAN
+        } else {
+            self.successes as f64 / self.calls as f64
+        }
+    }
+}
+
+impl LearnedSelector {
+    /// New selector with default warm-up policy: 3 calls minimum
+    /// before observed stats take over; 50% assumed success rate
+    /// for cold agents.
+    pub fn new() -> Self {
+        Self {
+            stats: std::sync::Mutex::new(std::collections::BTreeMap::new()),
+            min_observations: 3,
+            default_success_rate: 0.5,
+        }
+    }
+
+    /// Override the cold-start observation threshold.
+    pub fn with_min_observations(mut self, n: u64) -> Self {
+        self.min_observations = n.max(1);
+        self
+    }
+
+    /// Override the cold-start assumed success rate.
+    pub fn with_default_success_rate(mut self, p: f64) -> Self {
+        // Clamp into (0, 1] so the divisor never blows up later.
+        self.default_success_rate = p.clamp(1e-3, 1.0);
+        self
+    }
+
+    /// Record the outcome of one call. `ok` should be `true` when
+    /// the agent returned an `AgentResponse` and `false` on any
+    /// error variant.
+    pub fn record_outcome(&self, agent_name: &str, ok: bool, joules_uj: u64) {
+        let mut stats = self.stats.lock().expect("mutex");
+        let entry = stats.entry(agent_name.to_string()).or_default();
+        entry.calls += 1;
+        if ok {
+            entry.successes += 1;
+        }
+        // Welford's online mean update.
+        let n = entry.calls as f64;
+        let delta = joules_uj as f64 - entry.mean_joules_uj;
+        entry.mean_joules_uj += delta / n;
+    }
+
+    /// Snapshot the current stats for persistence / inspection.
+    pub fn stats(&self) -> std::collections::BTreeMap<String, AgentStats> {
+        self.stats.lock().expect("mutex").clone()
+    }
+
+    /// Restore stats from a prior snapshot — for warm-starting after
+    /// a process restart. Overwrites any in-memory stats.
+    pub fn load_stats(
+        &self,
+        stats: std::collections::BTreeMap<String, AgentStats>,
+    ) {
+        *self.stats.lock().expect("mutex") = stats;
+    }
+
+    fn expected_cost(&self, agent: &dyn CallableAgent) -> f64 {
+        let stats = self.stats.lock().expect("mutex");
+        let s = stats.get(agent.name()).copied().unwrap_or_default();
+        let (cost, rate) = if s.calls >= self.min_observations {
+            (s.mean_joules_uj, s.success_rate().max(1e-3))
+        } else {
+            (
+                agent.typical_joules_per_call() as f64,
+                self.default_success_rate,
+            )
+        };
+        cost / rate
+    }
+}
+
+impl Default for LearnedSelector {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl HandoffSelector for LearnedSelector {
+    fn select<'a>(
+        &self,
+        agents: &'a [Box<dyn CallableAgent>],
+        input: &AgentInput,
+    ) -> Option<&'a dyn CallableAgent> {
+        agents
+            .iter()
+            .filter(|a| a.capabilities().contains(&input.capability))
+            .min_by(|a, b| {
+                let ca = self.expected_cost(a.as_ref());
+                let cb = self.expected_cost(b.as_ref());
+                ca.partial_cmp(&cb)
+                    .unwrap_or(std::cmp::Ordering::Equal)
+                    .then_with(|| a.name().cmp(b.name()))
+            })
+            .map(|boxed| boxed.as_ref())
+    }
+}
+
 impl<S: HandoffSelector> HandoffSelector for WithinBudget<S> {
     fn select<'a>(
         &self,
@@ -992,5 +1155,139 @@ mod tests {
         let sel = WithinBudget::new(inner, 100);
         let r = reg.dispatch(&input(cap("summarise"), "q"), &sel).unwrap();
         assert_eq!(r.agent, "cheap");
+    }
+
+    // ─── LearnedSelector ────────────────────────────────────────────
+
+    fn two_capable_reg() -> HandoffRegistry {
+        HandoffRegistry::new()
+            .register(StaticAgent {
+                name: "alpha".into(),
+                caps: vec![cap("summarise")],
+                joules: 50,
+                reply: serde_json::json!({}),
+            })
+            .register(StaticAgent {
+                name: "beta".into(),
+                caps: vec![cap("summarise")],
+                joules: 50,
+                reply: serde_json::json!({}),
+            })
+    }
+
+    #[test]
+    fn learned_selector_cold_start_uses_typical_costs_and_lexical_tiebreak() {
+        let sel = LearnedSelector::new();
+        let reg = two_capable_reg();
+        // Cold start: both equal cost, both 50% success — picks
+        // lexically smaller name.
+        let r = reg.dispatch(&input(cap("summarise"), "q"), &sel).unwrap();
+        assert_eq!(r.agent, "alpha");
+    }
+
+    #[test]
+    fn learned_selector_prefers_higher_success_rate_after_warm_up() {
+        let sel = LearnedSelector::new().with_min_observations(3);
+        // Beta succeeds 5/5; alpha succeeds 1/5. Same observed cost.
+        for _ in 0..5 {
+            sel.record_outcome("beta", true, 50);
+        }
+        sel.record_outcome("alpha", true, 50);
+        for _ in 0..4 {
+            sel.record_outcome("alpha", false, 50);
+        }
+        let reg = two_capable_reg();
+        let r = reg.dispatch(&input(cap("summarise"), "q"), &sel).unwrap();
+        assert_eq!(r.agent, "beta");
+    }
+
+    #[test]
+    fn learned_selector_prefers_lower_observed_cost_when_success_equal() {
+        let sel = LearnedSelector::new().with_min_observations(3);
+        // Both perfect success; alpha runs cheaper on average.
+        for _ in 0..3 {
+            sel.record_outcome("alpha", true, 10);
+        }
+        for _ in 0..3 {
+            sel.record_outcome("beta", true, 100);
+        }
+        let reg = two_capable_reg();
+        let r = reg.dispatch(&input(cap("summarise"), "q"), &sel).unwrap();
+        assert_eq!(r.agent, "alpha");
+    }
+
+    #[test]
+    fn learned_selector_capability_filter_still_applies() {
+        let sel = LearnedSelector::new();
+        for _ in 0..10 {
+            // Stats for an agent that doesn't advertise the wanted
+            // capability — should be ignored regardless.
+            sel.record_outcome("alpha", true, 5);
+        }
+        let reg = HandoffRegistry::new().register(StaticAgent {
+            name: "alpha".into(),
+            caps: vec![cap("translate")],
+            joules: 5,
+            reply: serde_json::json!({}),
+        });
+        let err = reg
+            .dispatch(&input(cap("summarise"), "q"), &sel)
+            .unwrap_err();
+        assert!(matches!(err, AgentError::NoCapableAgent(_)));
+    }
+
+    #[test]
+    fn learned_selector_stats_round_trip_for_persistence() {
+        let sel = LearnedSelector::new();
+        sel.record_outcome("alpha", true, 10);
+        sel.record_outcome("alpha", false, 30);
+        let snap = sel.stats();
+        let alpha = snap.get("alpha").copied().unwrap_or_default();
+        assert_eq!(alpha.calls, 2);
+        assert_eq!(alpha.successes, 1);
+        assert!((alpha.mean_joules_uj - 20.0).abs() < 1e-9);
+        // Serialise → deserialise round-trip.
+        let bytes = serde_json::to_vec(&snap).unwrap();
+        let back: std::collections::BTreeMap<String, AgentStats> =
+            serde_json::from_slice(&bytes).unwrap();
+        let restored = LearnedSelector::new();
+        restored.load_stats(back);
+        assert_eq!(restored.stats(), snap);
+    }
+
+    #[test]
+    fn learned_selector_composes_with_within_budget() {
+        let sel = LearnedSelector::new().with_min_observations(1);
+        // Beta has perfect success but expensive observed cost.
+        // Alpha has high failure rate but cheap observed cost.
+        // WithinBudget cap should rule out beta even though the
+        // learned selector would otherwise prefer it.
+        sel.record_outcome("alpha", true, 5);
+        sel.record_outcome("alpha", false, 5);
+        sel.record_outcome("beta", true, 9999);
+        let reg = HandoffRegistry::new()
+            .register(StaticAgent {
+                name: "alpha".into(),
+                caps: vec![cap("summarise")],
+                joules: 5,
+                reply: serde_json::json!({}),
+            })
+            .register(StaticAgent {
+                name: "beta".into(),
+                caps: vec![cap("summarise")],
+                joules: 9999,
+                reply: serde_json::json!({}),
+            });
+        let budgeted = WithinBudget::new(sel, 100);
+        let r = reg
+            .dispatch(&input(cap("summarise"), "q"), &budgeted)
+            .unwrap();
+        assert_eq!(r.agent, "alpha");
+    }
+
+    #[test]
+    fn agent_stats_success_rate_is_nan_when_uncalled() {
+        let s = AgentStats::default();
+        assert!(s.success_rate().is_nan());
     }
 }
