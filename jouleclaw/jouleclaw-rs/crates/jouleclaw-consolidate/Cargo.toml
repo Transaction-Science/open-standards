@@ -1,0 +1,12 @@
+[package]
+name = "jouleclaw-consolidate"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "JouleClaw consolidation — the CoALA episodic→semantic transform as a scheduled batch. Deterministic tag-clustering reference + trait for LLM-driven abstraction."
+
+[dependencies]
+jouleclaw-memory = { path = "../jouleclaw-memory" }
