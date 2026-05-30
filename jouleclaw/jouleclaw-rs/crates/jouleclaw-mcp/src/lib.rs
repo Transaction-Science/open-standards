@@ -367,6 +367,187 @@ impl TaskStore for InMemoryTaskStore {
     }
 }
 
+/// File-backed [`TaskStore`] — one JSON snapshot per task under a base
+/// directory. The reason for picking file-per-task over a single log
+/// or db: a long-running tool that crashes only loses the in-flight
+/// task's snapshot, never the population.
+///
+/// Atomicity: each mutation writes to `{task_id}.json.tmp`, then
+/// renames into place. A crash mid-write leaves the previous
+/// `{task_id}.json` intact.
+///
+/// On open the store scans the directory for existing `task-N.json`
+/// files and resumes the monotonic counter from the highest N seen —
+/// so a restarted host doesn't recycle ids the previous process
+/// already issued.
+///
+/// `slot` (the integration hint that maps a task back to a
+/// `jouleclaw-graph` node) round-trips through the snapshot file so
+/// resuming a process can still wire completed tasks to their graph
+/// nodes.
+#[derive(Debug, Clone)]
+pub struct FileTaskStore {
+    dir: std::path::PathBuf,
+    counter: u64,
+}
+
+impl FileTaskStore {
+    /// Open (or create) a file-backed store under `dir`. Creates the
+    /// directory if missing, then scans for existing `task-N.json`
+    /// files and resumes the monotonic counter at `max(N) + 1`.
+    pub fn open(
+        dir: impl Into<std::path::PathBuf>,
+    ) -> std::io::Result<Self> {
+        let dir = dir.into();
+        std::fs::create_dir_all(&dir)?;
+
+        let mut highest: u64 = 0;
+        if let Ok(entries) = std::fs::read_dir(&dir) {
+            for e in entries.flatten() {
+                let name = e.file_name();
+                let s = name.to_string_lossy();
+                let Some(stem) = s.strip_suffix(".json") else {
+                    continue;
+                };
+                let Some(rest) = stem.strip_prefix("task-") else {
+                    continue;
+                };
+                if let Ok(n) = rest.parse::<u64>() {
+                    if n > highest {
+                        highest = n;
+                    }
+                }
+            }
+        }
+
+        Ok(Self {
+            dir,
+            counter: highest,
+        })
+    }
+
+    /// Where the store reads and writes.
+    pub fn dir(&self) -> &std::path::Path {
+        &self.dir
+    }
+
+    fn task_path(&self, id: &TaskId) -> std::path::PathBuf {
+        self.dir.join(format!("{}.json", id.0))
+    }
+
+    fn write_snapshot(&self, snap: &TaskSnapshot) {
+        let Ok(bytes) = serde_json::to_vec(snap) else {
+            return;
+        };
+        let final_path = self.task_path(&snap.id);
+        let tmp_path = final_path.with_extension("json.tmp");
+        if std::fs::write(&tmp_path, &bytes).is_err() {
+            return;
+        }
+        let _ = std::fs::rename(&tmp_path, &final_path);
+    }
+
+    fn read_snapshot(&self, id: &TaskId) -> Option<TaskSnapshot> {
+        let bytes = std::fs::read(self.task_path(id)).ok()?;
+        serde_json::from_slice(&bytes).ok()
+    }
+
+    fn mutate<F>(&mut self, id: &TaskId, f: F) -> Result<(), TaskError>
+    where
+        F: FnOnce(&mut TaskSnapshot) -> Result<(), TaskError>,
+    {
+        let mut snap = self
+            .read_snapshot(id)
+            .ok_or_else(|| TaskError::Unknown(id.clone()))?;
+        f(&mut snap)?;
+        self.write_snapshot(&snap);
+        Ok(())
+    }
+}
+
+impl TaskStore for FileTaskStore {
+    fn create(&mut self, tool_id: impl Into<String>, slot: Option<&str>) -> TaskId
+    where
+        Self: Sized,
+    {
+        self.counter += 1;
+        let id = TaskId(format!("task-{}", self.counter));
+        let snap = TaskSnapshot {
+            id: id.clone(),
+            tool_id: tool_id.into(),
+            status: TaskStatusKind::Pending,
+            slot: slot.map(String::from),
+            result: None,
+            error: None,
+        };
+        self.write_snapshot(&snap);
+        id
+    }
+
+    fn mark_running(&mut self, id: &TaskId) -> Result<(), TaskError> {
+        self.mutate(id, |t| {
+            if !matches!(t.status, TaskStatusKind::Pending) {
+                return Err(TaskError::NotInProgress(id.clone()));
+            }
+            t.status = TaskStatusKind::Running;
+            Ok(())
+        })
+    }
+
+    fn mark_completed(&mut self, id: &TaskId, result: ToolResponse) -> Result<(), TaskError> {
+        self.mutate(id, |t| {
+            if !matches!(t.status, TaskStatusKind::Pending | TaskStatusKind::Running) {
+                return Err(TaskError::NotInProgress(id.clone()));
+            }
+            t.status = TaskStatusKind::Completed;
+            t.result = Some(result);
+            Ok(())
+        })
+    }
+
+    fn mark_failed(&mut self, id: &TaskId, reason: impl Into<String>) -> Result<(), TaskError>
+    where
+        Self: Sized,
+    {
+        let reason = reason.into();
+        self.mutate(id, |t| {
+            if !matches!(t.status, TaskStatusKind::Pending | TaskStatusKind::Running) {
+                return Err(TaskError::NotInProgress(id.clone()));
+            }
+            t.status = TaskStatusKind::Failed;
+            t.error = Some(reason);
+            Ok(())
+        })
+    }
+
+    fn snapshot(&self, id: &TaskId) -> Option<TaskSnapshot> {
+        self.read_snapshot(id)
+    }
+
+    fn list(&self) -> Vec<TaskId> {
+        let Ok(entries) = std::fs::read_dir(&self.dir) else {
+            return Vec::new();
+        };
+        let mut ids: Vec<TaskId> = entries
+            .flatten()
+            .filter_map(|e| {
+                let name = e.file_name();
+                let s = name.to_string_lossy();
+                let stem = s.strip_suffix(".json")?;
+                Some(TaskId(stem.to_string()))
+            })
+            .collect();
+        // Numeric sort on the trailing -N so list order matches the
+        // in-memory store's insertion order.
+        ids.sort_by_key(|id| {
+            id.0.strip_prefix("task-")
+                .and_then(|n| n.parse::<u64>().ok())
+                .unwrap_or(u64::MAX)
+        });
+        ids
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -548,5 +729,107 @@ mod tests {
         let bytes = serde_json::to_vec(&snap).unwrap();
         let back: TaskSnapshot = serde_json::from_slice(&bytes).unwrap();
         assert_eq!(back, snap);
+    }
+
+    // ─── FileTaskStore ──────────────────────────────────────────────
+
+    fn tmpdir(label: &str) -> std::path::PathBuf {
+        use std::sync::atomic::{AtomicU64, Ordering};
+        static N: AtomicU64 = AtomicU64::new(0);
+        let n = N.fetch_add(1, Ordering::Relaxed);
+        let pid = std::process::id();
+        let p = std::env::temp_dir().join(format!("jouleclaw-mcp-test-{label}-{pid}-{n}"));
+        let _ = std::fs::remove_dir_all(&p);
+        p
+    }
+
+    #[test]
+    fn file_task_store_persists_through_full_lifecycle() {
+        let dir = tmpdir("lifecycle");
+        let mut store = FileTaskStore::open(&dir).unwrap();
+        let id = store.create("mcp:slow-tool", Some("graph:n3"));
+        assert!(dir.join("task-1.json").exists());
+        store.mark_running(&id).unwrap();
+        store
+            .mark_completed(&id, ToolResponse::Text("done".into()))
+            .unwrap();
+        let snap = store.snapshot(&id).unwrap();
+        assert!(matches!(snap.status, TaskStatusKind::Completed));
+        assert_eq!(snap.slot.as_deref(), Some("graph:n3"));
+        match snap.result {
+            Some(ToolResponse::Text(s)) => assert_eq!(s, "done"),
+            other => panic!("expected Text result, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn file_task_store_resumes_counter_from_disk() {
+        let dir = tmpdir("counter-resume");
+        {
+            let mut store = FileTaskStore::open(&dir).unwrap();
+            let _ = store.create("a", None);
+            let _ = store.create("b", None);
+            let _ = store.create("c", None);
+        }
+        let mut store2 = FileTaskStore::open(&dir).unwrap();
+        let id4 = store2.create("d", None);
+        assert_eq!(id4.0, "task-4", "counter must not recycle ids");
+    }
+
+    #[test]
+    fn file_task_store_rejects_invalid_transitions() {
+        let dir = tmpdir("transitions");
+        let mut store = FileTaskStore::open(&dir).unwrap();
+        let id = store.create("x", None);
+        store
+            .mark_completed(&id, ToolResponse::Text("ok".into()))
+            .unwrap();
+        assert!(matches!(
+            store
+                .mark_completed(&id, ToolResponse::Text("again".into()))
+                .unwrap_err(),
+            TaskError::NotInProgress(_)
+        ));
+        assert!(matches!(
+            store.mark_failed(&id, "no").unwrap_err(),
+            TaskError::NotInProgress(_)
+        ));
+    }
+
+    #[test]
+    fn file_task_store_unknown_id_errors() {
+        let dir = tmpdir("unknown");
+        let mut store = FileTaskStore::open(&dir).unwrap();
+        let fake = TaskId("task-99".into());
+        assert!(matches!(
+            store.mark_running(&fake).unwrap_err(),
+            TaskError::Unknown(_)
+        ));
+        assert!(store.snapshot(&fake).is_none());
+    }
+
+    #[test]
+    fn file_task_store_lists_in_numeric_order() {
+        let dir = tmpdir("list");
+        let mut store = FileTaskStore::open(&dir).unwrap();
+        for _ in 0..12 {
+            let _ = store.create("x", None);
+        }
+        let listed: Vec<String> = store.list().into_iter().map(|t| t.0).collect();
+        let expected: Vec<String> = (1..=12).map(|n| format!("task-{n}")).collect();
+        assert_eq!(listed, expected);
+    }
+
+    #[test]
+    fn file_task_store_failure_persists_reason() {
+        let dir = tmpdir("failure");
+        let mut store = FileTaskStore::open(&dir).unwrap();
+        let id = store.create("flaky", None);
+        store.mark_failed(&id, "upstream timeout").unwrap();
+        drop(store);
+        let store2 = FileTaskStore::open(&dir).unwrap();
+        let snap = store2.snapshot(&id).unwrap();
+        assert!(matches!(snap.status, TaskStatusKind::Failed));
+        assert_eq!(snap.error.as_deref(), Some("upstream timeout"));
     }
 }
