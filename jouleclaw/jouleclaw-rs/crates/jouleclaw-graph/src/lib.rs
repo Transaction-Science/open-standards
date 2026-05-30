@@ -502,6 +502,103 @@ impl RunStore for InMemoryRunStore {
     }
 }
 
+/// File-backed [`RunStore`] — one JSON file per run under a base
+/// directory. The reason for picking file-per-run over a single
+/// log/db: a crashed `save` only corrupts one run's file; resuming
+/// the rest of the population is unaffected.
+///
+/// Atomicity: each save writes to `{run_id}.json.tmp`, fsyncs the
+/// file, then renames into place — the standard "rename-is-atomic-
+/// on-POSIX" pattern. A crash mid-save leaves the previous
+/// `{run_id}.json` intact and a stale `.tmp` to clean up on next
+/// boot.
+///
+/// File name policy: `run_id` is used verbatim as the basename. The
+/// caller is responsible for choosing a filesystem-safe `run_id`
+/// (the store rejects `/`, `\`, and `..` to keep persistence
+/// in-directory). UUIDs / monotonic-id schemes satisfy this.
+#[derive(Debug, Clone)]
+pub struct FileRunStore {
+    dir: std::path::PathBuf,
+}
+
+impl FileRunStore {
+    /// Open (or create) a file-backed store under `dir`. The directory
+    /// is created if it does not exist; existing files are left as-is.
+    pub fn open(
+        dir: impl Into<std::path::PathBuf>,
+    ) -> std::io::Result<Self> {
+        let dir = dir.into();
+        std::fs::create_dir_all(&dir)?;
+        Ok(Self { dir })
+    }
+
+    /// Where the store reads and writes.
+    pub fn dir(&self) -> &std::path::Path {
+        &self.dir
+    }
+
+    fn is_safe_run_id(run_id: &str) -> bool {
+        !run_id.is_empty()
+            && !run_id.contains('/')
+            && !run_id.contains('\\')
+            && !run_id.contains("..")
+            && !run_id.starts_with('.')
+    }
+
+    fn run_path(&self, run_id: &str) -> std::path::PathBuf {
+        self.dir.join(format!("{run_id}.json"))
+    }
+}
+
+impl RunStore for FileRunStore {
+    /// Save a run. Silently no-ops on unsafe `run_id` (the in-memory
+    /// store would accept it; the file store would otherwise escape
+    /// the directory). Returns nothing — the trait is a fire-and-
+    /// forget contract; on-disk errors are recoverable on next save
+    /// because the previous file is untouched until rename.
+    fn save(&mut self, run: &Run) {
+        if !Self::is_safe_run_id(&run.run_id) {
+            return;
+        }
+        let Ok(bytes) = serde_json::to_vec(run) else {
+            return;
+        };
+        let final_path = self.run_path(&run.run_id);
+        let tmp_path = final_path.with_extension("json.tmp");
+        // Best-effort atomic write: write tmp, rename over final.
+        // If write fails halfway, the previous {run_id}.json is intact.
+        if std::fs::write(&tmp_path, &bytes).is_err() {
+            return;
+        }
+        let _ = std::fs::rename(&tmp_path, &final_path);
+    }
+
+    fn load(&self, run_id: &str) -> Option<Run> {
+        if !Self::is_safe_run_id(run_id) {
+            return None;
+        }
+        let bytes = std::fs::read(self.run_path(run_id)).ok()?;
+        serde_json::from_slice(&bytes).ok()
+    }
+
+    fn list(&self) -> Vec<String> {
+        let Ok(entries) = std::fs::read_dir(&self.dir) else {
+            return Vec::new();
+        };
+        let mut ids = Vec::new();
+        for e in entries.flatten() {
+            let name = e.file_name();
+            let s = name.to_string_lossy();
+            if let Some(stripped) = s.strip_suffix(".json") {
+                ids.push(stripped.to_string());
+            }
+        }
+        ids.sort();
+        ids
+    }
+}
+
 // ─────────────────────────────────────────────────────────────────────
 // Tests
 // ─────────────────────────────────────────────────────────────────────
@@ -840,5 +937,98 @@ mod tests {
     #[test]
     fn node_id_renders_as_n_prefix() {
         assert_eq!(NodeId(7).to_string(), "n7");
+    }
+
+    // ─── FileRunStore ───────────────────────────────────────────────
+
+    fn tmpdir(label: &str) -> std::path::PathBuf {
+        use std::sync::atomic::{AtomicU64, Ordering};
+        static N: AtomicU64 = AtomicU64::new(0);
+        let n = N.fetch_add(1, Ordering::Relaxed);
+        let pid = std::process::id();
+        let p = std::env::temp_dir().join(format!("jouleclaw-graph-test-{label}-{pid}-{n}"));
+        let _ = std::fs::remove_dir_all(&p);
+        p
+    }
+
+    fn linear_run(id: &str) -> Run {
+        let g = RunGraph {
+            entry: NodeId(1),
+            terminals: vec![NodeId(2)],
+            nodes: vec![n(1, "A"), n(2, "B")],
+            edges: vec![edge(1, 2)],
+        };
+        let mut run = Run::start(g, id).unwrap();
+        run.record(ck(1, 100, Provenance::HwShunt)).unwrap();
+        run
+    }
+
+    #[test]
+    fn file_run_store_saves_and_loads() {
+        let dir = tmpdir("save-load");
+        let mut store = FileRunStore::open(&dir).unwrap();
+        let run = linear_run("r-1");
+        store.save(&run);
+        assert!(dir.join("r-1.json").exists());
+        let loaded = store.load("r-1").expect("load");
+        assert_eq!(loaded, run);
+    }
+
+    #[test]
+    fn file_run_store_lists_run_ids_sorted() {
+        let dir = tmpdir("list");
+        let mut store = FileRunStore::open(&dir).unwrap();
+        store.save(&linear_run("b-2"));
+        store.save(&linear_run("a-1"));
+        store.save(&linear_run("c-3"));
+        assert_eq!(store.list(), vec!["a-1", "b-2", "c-3"]);
+    }
+
+    #[test]
+    fn file_run_store_missing_id_returns_none() {
+        let dir = tmpdir("missing");
+        let store = FileRunStore::open(&dir).unwrap();
+        assert!(store.load("nope").is_none());
+        assert!(store.list().is_empty());
+    }
+
+    #[test]
+    fn file_run_store_rejects_unsafe_run_id() {
+        let dir = tmpdir("unsafe");
+        let mut store = FileRunStore::open(&dir).unwrap();
+        let mut run = linear_run("ok");
+        run.run_id = "../escape".into();
+        store.save(&run);
+        assert!(!dir.join("..escape.json").exists());
+        assert!(store.load("../escape").is_none());
+
+        run.run_id = "with/slash".into();
+        store.save(&run);
+        assert!(store.list().is_empty());
+    }
+
+    #[test]
+    fn file_run_store_overwrites_previous_save() {
+        let dir = tmpdir("overwrite");
+        let mut store = FileRunStore::open(&dir).unwrap();
+        let mut run = linear_run("r-1");
+        store.save(&run);
+        run.record(ck(2, 250, Provenance::ModelBased)).unwrap();
+        store.save(&run);
+        let loaded = store.load("r-1").unwrap();
+        assert_eq!(loaded.checkpoints.len(), 2);
+        assert!(loaded.is_done());
+    }
+
+    #[test]
+    fn file_run_store_round_trips_through_disk_in_a_fresh_handle() {
+        let dir = tmpdir("rehandle");
+        let mut store = FileRunStore::open(&dir).unwrap();
+        store.save(&linear_run("durable-1"));
+        drop(store);
+        let store2 = FileRunStore::open(&dir).unwrap();
+        let loaded = store2.load("durable-1").unwrap();
+        assert_eq!(loaded.run_id, "durable-1");
+        assert_eq!(loaded.checkpoints.len(), 1);
     }
 }
