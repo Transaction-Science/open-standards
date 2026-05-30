@@ -460,6 +460,111 @@ impl SkillInducer for ConstantSkillInducer {
     }
 }
 
+/// A **generalizing** inducer, guided by a library of query-class templates.
+///
+/// Where [`ConstantSkillInducer`] freezes one exact answer (and so is
+/// shadowed by an L0 cache for repeats), `PatternInducer` compiles a
+/// *parameterized* skill from a single resolution, so the whole class
+/// resolves without the model — including instances never seen before.
+///
+/// ## How it generalizes from one example
+///
+/// The caller supplies the query *shapes* worth compiling (e.g.
+/// `"greet {name}"`, `"convert {n} celsius"`). When a resolved query matches
+/// a shape, the inducer binds the holes and then **rewrites the answer**,
+/// replacing each bound hole value with its `{hole}` placeholder, to
+/// synthesize a [`Procedure::Format`]. For `"greet Alice" → "Hello, Alice!"`
+/// under shape `"greet {name}"`, it emits `Format("Hello, {name}!")`, which
+/// resolves `"greet Bob" → "Hello, Bob!"`.
+///
+/// ## Honest scope and safety
+///
+/// This is sound exactly when the answer is a literal function of the holes
+/// (greetings, labels, formatted lookups). It is *conservative*: if any
+/// hole's bound value does not appear verbatim in the answer, the inducer
+/// declines that shape (returns nothing for it) rather than emit a skill
+/// that would drop the parameter and answer constantly across the class.
+/// Because a wrong generalization would poison the deterministic surface,
+/// induce only from **verified** resolutions (the agent gates on
+/// confidence; pair with a verifier for high-stakes use). This is not a
+/// general program synthesizer — it is template-guided substitution
+/// induction, which is the honest, useful middle between exact-match and
+/// full trace synthesis.
+pub struct PatternInducer {
+    shapes: Vec<Template>,
+}
+
+impl PatternInducer {
+    /// Build an inducer over a library of query-class templates, tried in
+    /// order (first faithful match wins).
+    pub fn new(shapes: Vec<Template>) -> Self {
+        Self { shapes }
+    }
+
+    /// Convenience: parse `{hole}` patterns into templates, skipping any
+    /// that fail to parse.
+    pub fn from_patterns<I, P>(patterns: I) -> Self
+    where
+        I: IntoIterator<Item = P>,
+        P: AsRef<str>,
+    {
+        let shapes = patterns
+            .into_iter()
+            .filter_map(|p| Template::parse(p.as_ref()).ok())
+            .collect();
+        Self { shapes }
+    }
+}
+
+impl SkillInducer for PatternInducer {
+    fn induce(&self, query_text: &str, answer_text: &str, origin: TierId) -> Option<Skill> {
+        for shape in &self.shapes {
+            let Some(bindings) = shape.match_text(query_text) else {
+                continue;
+            };
+            // Rewrite the answer into a format string: each bound hole value
+            // becomes its `{hole}` placeholder. Decline (try the next shape)
+            // unless every hole's value is present, so the procedure
+            // faithfully parameterizes the class.
+            let mut fmt = answer_text.to_string();
+            let mut faithful = true;
+            for hole in shape.holes() {
+                let val = &bindings[hole];
+                if val.is_empty() || !fmt.contains(val.as_str()) {
+                    faithful = false;
+                    break;
+                }
+                fmt = fmt.replace(val.as_str(), &format!("{{{hole}}}"));
+            }
+            if !faithful {
+                continue;
+            }
+            let inputs: Vec<_> = shape
+                .holes()
+                .iter()
+                .map(|h| jouleclaw_program::Field::text(h.clone(), "bound template hole"))
+                .collect();
+            let signature = Signature::new(
+                "pattern",
+                "parameterized skill induced from one resolution",
+                inputs,
+                vec![jouleclaw_program::Field::text(
+                    "output",
+                    "the formatted output",
+                )],
+            );
+            return Some(Skill::new(
+                format!("pattern:{}", shape.pattern()),
+                signature,
+                shape.clone(),
+                Procedure::Format(fmt),
+                origin,
+            ));
+        }
+        None
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -615,5 +720,48 @@ mod tests {
         // Exact-match only — does not generalize.
         assert!(skill.resolve("what is the meaning of death").is_none());
         assert!(inducer.induce("   ", "x", TierId::L3(L3ModelId(0))).is_none());
+    }
+
+    #[test]
+    fn pattern_inducer_generalizes_from_one_example() {
+        // From ONE resolution, compile a skill that resolves the whole class.
+        let inducer = PatternInducer::from_patterns(["greet {name}"]);
+        let skill = inducer
+            .induce("greet Alice", "Hello, Alice!", TierId::L3(L3ModelId(0)))
+            .expect("matches the shape and generalizes faithfully");
+        // Instances never seen during induction now resolve deterministically.
+        assert_eq!(skill.resolve("greet Bob").unwrap(), "Hello, Bob!");
+        assert_eq!(skill.resolve("greet the whole team").unwrap(), "Hello, the whole team!");
+        assert!(skill.resolve("dismiss Alice").is_none());
+    }
+
+    #[test]
+    fn pattern_inducer_handles_multiple_holes() {
+        let inducer = PatternInducer::from_patterns(["{a} plus {b}"]);
+        let skill = inducer
+            .induce("2 plus 3", "2 + 3 = 5", TierId::L3(L3ModelId(0)))
+            .unwrap();
+        // Both holes parameterize; the literal "= 5" is class-constant here
+        // (single-example limit), but the holes track.
+        assert_eq!(skill.resolve("7 plus 8").unwrap(), "7 + 8 = 5");
+    }
+
+    #[test]
+    fn pattern_inducer_declines_when_hole_value_absent_from_answer() {
+        // The answer does not contain the bound value "Alice", so a Format
+        // skill would drop the parameter — the inducer conservatively
+        // declines rather than emit a constant-answer skill for the class.
+        let inducer = PatternInducer::from_patterns(["greet {name}"]);
+        assert!(inducer
+            .induce("greet Alice", "Greetings, friend!", TierId::L3(L3ModelId(0)))
+            .is_none());
+    }
+
+    #[test]
+    fn pattern_inducer_returns_none_when_no_shape_matches() {
+        let inducer = PatternInducer::from_patterns(["convert {n} celsius"]);
+        assert!(inducer
+            .induce("what is the capital of france", "Paris", TierId::L3(L3ModelId(0)))
+            .is_none());
     }
 }

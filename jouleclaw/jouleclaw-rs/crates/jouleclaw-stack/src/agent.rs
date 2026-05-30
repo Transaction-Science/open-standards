@@ -265,4 +265,36 @@ mod tests {
         // the model (one induction) → exactly one new skill.
         assert_eq!(stack.skill_store.lock().unwrap().len(), start + 1);
     }
+
+    #[test]
+    fn shipped_pattern_inducer_generalizes_through_the_agent() {
+        use jouleclaw_skill::PatternInducer;
+        let mut stack = JouleClawStack::with_defaults().with_promote_confidence(0.0);
+        let inducer = PatternInducer::from_patterns(["echo {x}"]);
+
+        // Solve ONE instance agentically — the model answers "echo: foo",
+        // and the pattern inducer compiles `echo: {x}` from it.
+        let _ = stack.answer_agentic_with(q("echo foo"), &inducer).unwrap();
+        assert_eq!(stack.skill_store.lock().unwrap().len(), 1);
+
+        // A *never-seen* instance (not in the L0 cache, never sent to the
+        // model) now resolves at the front SkillTier — the cache-distinct,
+        // per-class win that exact-match induction cannot give. The induced
+        // procedure parameterizes on `{x}`, so the fresh argument flows
+        // through (exact phrasing depends on the backend's echo format).
+        let ans = stack.runtime.answer(q("echo bar")).unwrap();
+        match ans.output {
+            AnswerOutput::Text(t) => assert!(
+                t.contains("bar"),
+                "fresh argument `bar` should flow through the induced skill, got {t:?}"
+            ),
+            other => panic!("expected a skill-formatted text answer, got {other:?}"),
+        }
+        assert_eq!(
+            ans.tier_used,
+            jouleclaw_cascade::types::TierId::L0_5ToolCompute,
+            "resolved by the SkillTier, not the model"
+        );
+        assert!(ans.joules_spent < 1e-6, "resolved at lookup energy");
+    }
 }
