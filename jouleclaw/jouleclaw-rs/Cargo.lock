@@ -2083,6 +2083,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "jouleclaw-graph"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-energy",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "jouleclaw-graph-rag"
 version = "0.1.0"
 dependencies = [

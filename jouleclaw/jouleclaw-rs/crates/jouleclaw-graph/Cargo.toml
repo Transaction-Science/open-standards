@@ -1,0 +1,15 @@
+[package]
+name = "jouleclaw-graph"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "JouleClaw persisted run-state — durable typed DAG for multi-step resolutions: nodes are tiers/agents/stages, edges are typed handoffs, checkpoints are joule-stamped. v1 linear + branch + join (AllRequired / AnyOne)."
+
+[dependencies]
+jouleclaw-energy = { path = "../jouleclaw-energy" }
+serde            = { workspace = true }
+serde_json       = { workspace = true }
+thiserror        = { workspace = true }

@@ -146,6 +146,9 @@ members = [
     # Writer-critic pattern — fresh-context adversarial gate over (artifact, rubric) with a falsification pass. Builds on jouleclaw-verify.
     "crates/jouleclaw-critic",
 
+    # Persisted run-state — durable typed DAG for multi-step resolutions (linear + branch + join), joule-stamped checkpoints, RunStore trait.
+    "crates/jouleclaw-graph",
+
     # Approval gates — pause a dispatch for review before it runs; energy-shaped (only expensive model calls gated).
     "crates/jouleclaw-approve",
 
