@@ -179,6 +179,194 @@ pub fn decode<T: for<'de> Deserialize<'de>>(bytes: &[u8], wire: WireEncoding) ->
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────
+// MCP Apps + async Tasks
+// ─────────────────────────────────────────────────────────────────────
+
+/// A tool's response shape — the MCP Apps extension over plain bytes.
+///
+/// Existing [`MeteredTool`] consumers return `Vec<u8>` (free-form). The
+/// `ToolResponse` envelope lets a tool emit *typed* responses the host
+/// can route: plain text, structured JSON, or a `joule-ui` widget tree.
+/// The widget tree is carried as `serde_json::Value` so this crate has
+/// no path dependency on `joule-ui-core` — the wire shape is the
+/// contract, the typed parse is the consumer's responsibility.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case", tag = "kind", content = "value")]
+pub enum ToolResponse {
+    /// A plain text response.
+    Text(String),
+    /// A structured response — JSON of any shape the tool agreed on
+    /// out-of-band with its caller.
+    Structured(serde_json::Value),
+    /// A `joule-ui` widget tree (SEP-1865 / A2UI shape). The host
+    /// validates and renders; this crate only round-trips the wire form.
+    UiWidget(serde_json::Value),
+}
+
+/// Opaque identifier for an async [`Task`]. Stable within a store; the
+/// wire form is a plain string so it round-trips through any transport.
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize,
+)]
+#[serde(transparent)]
+pub struct TaskId(pub String);
+
+impl std::fmt::Display for TaskId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+/// The state a task is in.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize,
+)]
+#[serde(rename_all = "snake_case")]
+pub enum TaskStatusKind {
+    /// Created, not yet picked up by a worker.
+    #[default]
+    Pending,
+    /// A worker is executing.
+    Running,
+    /// The worker finished and stored a result.
+    Completed,
+    /// The worker failed; `error` carries the reason.
+    Failed,
+}
+
+/// A point-in-time view of a task — what a caller polling
+/// [`InMemoryTaskStore::snapshot`] receives.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct TaskSnapshot {
+    pub id: TaskId,
+    /// The MCP tool that owns this task (e.g. `"mcp:long-running"`).
+    pub tool_id: String,
+    pub status: TaskStatusKind,
+    /// Caller-supplied integration hint — typically a stable reference
+    /// to a `jouleclaw-graph` node (`"graph:node-3"`) the consumer
+    /// uses to map task completion back into a run. Opaque to this
+    /// crate; round-trips through the wire form unchanged.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub slot: Option<String>,
+    /// Set on transition to [`TaskStatusKind::Completed`].
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub result: Option<ToolResponse>,
+    /// Set on transition to [`TaskStatusKind::Failed`].
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub error: Option<String>,
+}
+
+/// Errors from the async-task lifecycle.
+#[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
+pub enum TaskError {
+    #[error("unknown task id {0}")]
+    Unknown(TaskId),
+    #[error("task {0} is not in progress; cannot transition")]
+    NotInProgress(TaskId),
+}
+
+/// The persistence contract for async tasks. The "call-now / fetch-later"
+/// primitive every long-running MCP tool now exposes: the tool
+/// `create`s a task and returns its id immediately; a worker
+/// `mark_running` then `mark_completed`/`mark_failed`; the caller polls
+/// `snapshot` until status is terminal.
+pub trait TaskStore: Send {
+    /// Create a new task. Returns its id. `slot` is an opaque
+    /// integration hint for the caller's run graph.
+    fn create(&mut self, tool_id: impl Into<String>, slot: Option<&str>) -> TaskId
+    where
+        Self: Sized;
+    fn mark_running(&mut self, id: &TaskId) -> Result<(), TaskError>;
+    fn mark_completed(&mut self, id: &TaskId, result: ToolResponse) -> Result<(), TaskError>;
+    fn mark_failed(&mut self, id: &TaskId, reason: impl Into<String>) -> Result<(), TaskError>
+    where
+        Self: Sized;
+    fn snapshot(&self, id: &TaskId) -> Option<TaskSnapshot>;
+    fn list(&self) -> Vec<TaskId>;
+}
+
+/// In-memory reference [`TaskStore`]. Ids are formatted `task-N` where
+/// N is a per-store monotonic counter — deterministic for tests, and
+/// the list ordering is stable by insertion.
+#[derive(Debug, Default)]
+pub struct InMemoryTaskStore {
+    tasks: std::collections::BTreeMap<TaskId, TaskSnapshot>,
+    counter: u64,
+}
+
+impl InMemoryTaskStore {
+    pub fn new() -> Self {
+        Self::default()
+    }
+}
+
+impl TaskStore for InMemoryTaskStore {
+    fn create(&mut self, tool_id: impl Into<String>, slot: Option<&str>) -> TaskId
+    where
+        Self: Sized,
+    {
+        self.counter += 1;
+        let id = TaskId(format!("task-{}", self.counter));
+        let snap = TaskSnapshot {
+            id: id.clone(),
+            tool_id: tool_id.into(),
+            status: TaskStatusKind::Pending,
+            slot: slot.map(String::from),
+            result: None,
+            error: None,
+        };
+        self.tasks.insert(id.clone(), snap);
+        id
+    }
+
+    fn mark_running(&mut self, id: &TaskId) -> Result<(), TaskError> {
+        let Some(t) = self.tasks.get_mut(id) else {
+            return Err(TaskError::Unknown(id.clone()));
+        };
+        if !matches!(t.status, TaskStatusKind::Pending) {
+            return Err(TaskError::NotInProgress(id.clone()));
+        }
+        t.status = TaskStatusKind::Running;
+        Ok(())
+    }
+
+    fn mark_completed(&mut self, id: &TaskId, result: ToolResponse) -> Result<(), TaskError> {
+        let Some(t) = self.tasks.get_mut(id) else {
+            return Err(TaskError::Unknown(id.clone()));
+        };
+        if !matches!(t.status, TaskStatusKind::Pending | TaskStatusKind::Running) {
+            return Err(TaskError::NotInProgress(id.clone()));
+        }
+        t.status = TaskStatusKind::Completed;
+        t.result = Some(result);
+        Ok(())
+    }
+
+    fn mark_failed(&mut self, id: &TaskId, reason: impl Into<String>) -> Result<(), TaskError>
+    where
+        Self: Sized,
+    {
+        let Some(t) = self.tasks.get_mut(id) else {
+            return Err(TaskError::Unknown(id.clone()));
+        };
+        if !matches!(t.status, TaskStatusKind::Pending | TaskStatusKind::Running) {
+            return Err(TaskError::NotInProgress(id.clone()));
+        }
+        t.status = TaskStatusKind::Failed;
+        t.error = Some(reason.into());
+        Ok(())
+    }
+
+    fn snapshot(&self, id: &TaskId) -> Option<TaskSnapshot> {
+        self.tasks.get(id).cloned()
+    }
+
+    fn list(&self) -> Vec<TaskId> {
+        self.tasks.keys().cloned().collect()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -256,5 +444,109 @@ mod tests {
         assert_eq!(touch.tool_id, "test:echo");
         assert_eq!(touch.joules_uj, 100);
         assert_eq!(touch.energy_provenance, Provenance::HwShunt);
+    }
+
+    // ─── MCP Apps + async Tasks ───────────────────────────────────
+
+    #[test]
+    fn tool_response_round_trips_through_json() {
+        let t = ToolResponse::Text("hello".into());
+        let j = serde_json::to_string(&t).unwrap();
+        let back: ToolResponse = serde_json::from_str(&j).unwrap();
+        assert_eq!(back, t);
+
+        let ui = ToolResponse::UiWidget(serde_json::json!({
+            "name": "Card",
+            "props": { "title": { "type": "text", "value": "hi" } }
+        }));
+        let j = serde_json::to_string(&ui).unwrap();
+        let back: ToolResponse = serde_json::from_str(&j).unwrap();
+        assert_eq!(back, ui);
+    }
+
+    #[test]
+    fn task_store_create_returns_pending_task() {
+        let mut store = InMemoryTaskStore::new();
+        let id = store.create("mcp:long-running", Some("graph:node-3"));
+        let snap = store.snapshot(&id).expect("snapshot");
+        assert_eq!(snap.status, TaskStatusKind::Pending);
+        assert_eq!(snap.tool_id, "mcp:long-running");
+        assert_eq!(snap.slot.as_deref(), Some("graph:node-3"));
+        assert!(snap.result.is_none());
+    }
+
+    #[test]
+    fn task_store_marks_running_then_completed() {
+        let mut store = InMemoryTaskStore::new();
+        let id = store.create("mcp:long-running", None);
+        store.mark_running(&id).unwrap();
+        assert_eq!(
+            store.snapshot(&id).unwrap().status,
+            TaskStatusKind::Running
+        );
+        store
+            .mark_completed(&id, ToolResponse::Text("done".into()))
+            .unwrap();
+        let snap = store.snapshot(&id).unwrap();
+        assert_eq!(snap.status, TaskStatusKind::Completed);
+        match snap.result {
+            Some(ToolResponse::Text(t)) => assert_eq!(t, "done"),
+            other => panic!("expected Text result, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn task_store_marks_failed_with_reason() {
+        let mut store = InMemoryTaskStore::new();
+        let id = store.create("mcp:long-running", None);
+        store.mark_failed(&id, "upstream gateway timeout").unwrap();
+        let snap = store.snapshot(&id).unwrap();
+        assert_eq!(snap.status, TaskStatusKind::Failed);
+        assert_eq!(snap.error.as_deref(), Some("upstream gateway timeout"));
+    }
+
+    #[test]
+    fn task_store_rejects_invalid_transitions() {
+        let mut store = InMemoryTaskStore::new();
+        let id = store.create("mcp:t", None);
+        store.mark_running(&id).unwrap();
+        store.mark_completed(&id, ToolResponse::Text("x".into())).unwrap();
+        let err = store
+            .mark_completed(&id, ToolResponse::Text("y".into()))
+            .unwrap_err();
+        assert!(matches!(err, TaskError::NotInProgress(_)));
+    }
+
+    #[test]
+    fn task_store_returns_none_for_unknown_id() {
+        let store = InMemoryTaskStore::new();
+        assert!(store.snapshot(&TaskId("missing".into())).is_none());
+    }
+
+    #[test]
+    fn task_id_is_monotonic_within_store() {
+        let mut store = InMemoryTaskStore::new();
+        let a = store.create("t", None);
+        let b = store.create("t", None);
+        let c = store.create("t", None);
+        assert_ne!(a, b);
+        assert_ne!(b, c);
+        assert_eq!(store.list().len(), 3);
+    }
+
+    #[test]
+    fn task_snapshot_round_trips_through_json() {
+        let mut store = InMemoryTaskStore::new();
+        let id = store.create("mcp:demo", Some("slot-a"));
+        store
+            .mark_completed(
+                &id,
+                ToolResponse::UiWidget(serde_json::json!({ "name": "Text" })),
+            )
+            .unwrap();
+        let snap = store.snapshot(&id).unwrap();
+        let bytes = serde_json::to_vec(&snap).unwrap();
+        let back: TaskSnapshot = serde_json::from_slice(&bytes).unwrap();
+        assert_eq!(back, snap);
     }
 }
