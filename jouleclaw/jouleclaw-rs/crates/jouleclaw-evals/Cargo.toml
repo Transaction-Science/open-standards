@@ -1,0 +1,16 @@
+[package]
+name = "jouleclaw-evals"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Eval-driven skill engineering with Executor/Grader/Comparator; energy as a first-class pass criterion (EnergyBudgetGrader)."
+
+[dependencies]
+jouleclaw-critic = { path = "../jouleclaw-critic" }
+jouleclaw-energy = { path = "../jouleclaw-energy" }
+serde            = { workspace = true }
+serde_json       = { workspace = true }
+thiserror        = { workspace = true }
