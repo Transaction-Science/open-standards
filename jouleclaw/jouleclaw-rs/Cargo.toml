@@ -157,6 +157,18 @@ members = [
 
     # Session tree — energy-attributed, branchable log of resolutions (Pi-style --fork).
     "crates/jouleclaw-session",
+
+    # AGENTS.md / CLAUDE.md hierarchical discovery, joule-stamped per file read.
+    "crates/jouleclaw-agents-md",
+
+    # Progressive-disclosure 3-tier loading (Anthropic Skills-shape); per-tier joule cost is first-class.
+    "crates/jouleclaw-disclosure",
+
+    # Eval-driven skill engineering — Executor/Grader/Comparator with energy-as-pass-criterion (EnergyBudgetGrader).
+    "crates/jouleclaw-evals",
+
+    # Runtime-enforced control-flow gates over a Run, including EnergyBudgetGate (physics-grounded refusal).
+    "crates/jouleclaw-gate",
 ]
 
 [workspace.package]

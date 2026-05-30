@@ -1,0 +1,15 @@
+[package]
+name = "jouleclaw-agents-md"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "AGENTS.md / CLAUDE.md hierarchical discovery — joule-stamped per file read; emits a typed DiscoveryReport the consumer feeds into a prompt. Convention from the Linux Foundation Agentic AI Foundation."
+
+[dependencies]
+jouleclaw-energy = { path = "../jouleclaw-energy" }
+serde            = { workspace = true }
+serde_json       = { workspace = true }
+thiserror        = { workspace = true }

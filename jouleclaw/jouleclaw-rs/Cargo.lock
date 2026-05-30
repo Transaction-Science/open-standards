@@ -1799,6 +1799,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "jouleclaw-agents-md"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-energy",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "jouleclaw-approve"
 version = "0.1.0"
 dependencies = [
@@ -1947,6 +1957,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "jouleclaw-disclosure"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-energy",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "jouleclaw-dispatch"
 version = "0.1.0"
 dependencies = [
@@ -2016,6 +2036,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "jouleclaw-evals"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-critic",
+ "jouleclaw-energy",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "jouleclaw-execute"
 version = "0.1.0"
 dependencies = [
@@ -2078,6 +2109,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "jouleclaw-gate"
+version = "0.1.0"
+dependencies = [
+ "jouleclaw-energy",
+ "jouleclaw-graph",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "jouleclaw-governor"
 version = "0.1.0"
 dependencies = [
@@ -2090,6 +2132,7 @@ dependencies = [
 name = "jouleclaw-graph"
 version = "0.1.0"
 dependencies = [
+ "blake3",
  "jouleclaw-energy",
  "serde",
  "serde_json",
@@ -2356,6 +2399,8 @@ name = "jouleclaw-reflection"
 version = "0.1.0"
 dependencies = [
  "jouleclaw-cascade",
+ "jouleclaw-energy",
+ "jouleclaw-graph",
  "serde",
  "serde_json",
  "thiserror 2.0.18",
