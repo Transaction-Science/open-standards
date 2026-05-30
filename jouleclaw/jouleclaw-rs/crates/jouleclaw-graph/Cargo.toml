@@ -10,6 +10,7 @@ description = "JouleClaw persisted run-state — durable typed DAG for multi-ste
 
 [dependencies]
 jouleclaw-energy = { path = "../jouleclaw-energy" }
+blake3           = { workspace = true }
 serde            = { workspace = true }
 serde_json       = { workspace = true }
 thiserror        = { workspace = true }
