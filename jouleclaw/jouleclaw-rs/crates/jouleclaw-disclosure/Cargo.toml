@@ -1,0 +1,17 @@
+[package]
+name = "jouleclaw-disclosure"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Three-tier progressive-disclosure loading (Anthropic Skills-shape) — joule-cost first-class per tier."
+
+[dependencies]
+jouleclaw-energy = { path = "../jouleclaw-energy" }
+serde            = { workspace = true }
+thiserror        = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }
