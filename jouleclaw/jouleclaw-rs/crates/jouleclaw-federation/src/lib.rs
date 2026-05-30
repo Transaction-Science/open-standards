@@ -67,10 +67,15 @@
 #![warn(missing_docs)]
 
 pub mod fuser;
+pub mod handoff;
 pub mod provider;
 pub mod tier;
 
 pub use fuser::{FusedHit, FuseReport, Fuser, LinearFuser, RrfFuser};
+pub use handoff::{
+    AgentError, AgentInput, AgentResponse, CallableAgent, Capability,
+    CheapestCapable, HandoffRegistry, HandoffSelector,
+};
 pub use provider::{MockProvider, ProviderError, SearchHit, SearchProvider};
 pub use tier::{
     Federation, FederationError, FederationOutput, FederationProviderReport,
