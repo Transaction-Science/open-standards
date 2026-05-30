@@ -1,0 +1,19 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/joule-ui-core",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.95"
+license = "Apache-2.0"
+repository = "https://github.com/Transaction-Science/open-standards"
+authors = ["joule-ui Contributors"]
+description = "joule-ui — typed declarative protocol for agent-emitted user interfaces. Apache-2.0 Rust reference implementation."
+
+[workspace.dependencies]
+serde      = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror  = "2"
