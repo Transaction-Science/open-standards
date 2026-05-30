@@ -10,6 +10,8 @@ description = "JouleClaw L7 reflection — offline meta-cognitive learning over 
 
 [dependencies]
 jouleclaw-cascade = { path = "../jouleclaw-cascade" }
+jouleclaw-graph   = { path = "../jouleclaw-graph" }
+jouleclaw-energy  = { path = "../jouleclaw-energy" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
