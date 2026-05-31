@@ -1,0 +1,18 @@
+[package]
+name = "jouleclaw-drift"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Drift detection: Page-Hinkley (cumulative-change low-overhead detector) paired with DDSketch p99 tail-aware detector. The two-detector convention distinguishes systematic drift from heavy-tailed noise, the canonical failure mode of single-statistic drift alerts."
+
+[dependencies]
+jouleclaw-bounded  = { path = "../jouleclaw-bounded" }
+jouleclaw-quantile = { path = "../jouleclaw-quantile" }
+serde              = { workspace = true }
+thiserror          = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }
