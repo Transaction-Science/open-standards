@@ -1,0 +1,19 @@
+[package]
+name = "jouleclaw-integrity"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Two-tier integrity primitive: CRC32C (Castagnoli) fast-path + blake3 tamper-evident strong-path. The Postgres-18 / RocksDB / Pebble doctrine — random-corruption detection at hardware speed plus a cryptographic ledger layer."
+
+[dependencies]
+jouleclaw-bounded = { path = "../jouleclaw-bounded" }
+crc32c            = { workspace = true }
+blake3            = { workspace = true }
+serde             = { workspace = true }
+thiserror         = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }
