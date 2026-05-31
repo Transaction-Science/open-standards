@@ -1,0 +1,18 @@
+[package]
+name = "jouleclaw-cognitive"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "SonarSource Cognitive Complexity (Campbell 2017/2018) reimplementation over `syn`. Per-function complexity score plus codebase-level percentile-rank — never a binary pass/fail gate. Clippy's `cognitive_complexity` lint is explicitly NOT used (clippy authors self-deprecated it as unsound)."
+
+[dependencies]
+jouleclaw-bounded = { path = "../jouleclaw-bounded" }
+syn               = { workspace = true }
+serde             = { workspace = true }
+thiserror         = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }
