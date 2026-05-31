@@ -1,0 +1,20 @@
+[package]
+name = "jouleclaw-quantile"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Streaming quantile sketches with bounded relative error. DDSketch (Masson 2019) default — α-relative-error guarantee, fully mergeable across shards. HDR (Tene) opt-in for JVM-interop. The 2026 SOTA pick over t-digest, which fails on heavy-tailed distributions."
+
+[features]
+default = []
+hdr     = ["dep:hdrhistogram"]
+
+[dependencies]
+jouleclaw-bounded = { path = "../jouleclaw-bounded" }
+sketches-ddsketch = { workspace = true }
+hdrhistogram      = { workspace = true, optional = true }
+serde             = { workspace = true }
+thiserror         = { workspace = true }
