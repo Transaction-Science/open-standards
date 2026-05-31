@@ -1,0 +1,16 @@
+[package]
+name = "jouleclaw-bounded"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Doctrine traits for jouleclaw's verification primitives — (ε, δ)-bounded approximation, fast-path + tamper-evident two-tier evidence, and score+explanation (never boolean) for no-ground-truth detectors. The shape the field has converged on."
+
+[dependencies]
+serde     = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }

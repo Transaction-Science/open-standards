@@ -169,12 +169,36 @@ members = [
 
     # Runtime-enforced control-flow gates over a Run, including EnergyBudgetGate (physics-grounded refusal).
     "crates/jouleclaw-gate",
+
+    # Doctrine traits — BoundedError + FastStrong + Scored. The (ε,δ), fast-path-vs-strong, and score+explanation patterns.
+    "crates/jouleclaw-bounded",
+
+    # ai-verify port: Bolero/Kani/MIRI/Loom orchestration; joule-stamped ProofReport.
+    "crates/jouleclaw-audit",
+
+    # SonarSource cognitive-complexity reimpl over `syn` AST. Percentile-rank only, never threshold.
+    "crates/jouleclaw-cognitive",
+
+    # DDSketch quantile sketches with α-relative-error bounds; HDR opt-in for JVM interop.
+    "crates/jouleclaw-quantile",
+
+    # Probabilistic sketches: Count-Min, HyperLogLog++, BinaryFuse8 — all with (ε,δ) introspection.
+    "crates/jouleclaw-sketch",
+
+    # Drift detection: Page-Hinkley + DDSketch p99 two-detector. Distinguishes systematic drift from tail noise.
+    "crates/jouleclaw-drift",
+
+    # Geometric outlier detection: Tukey fences + Isolation Forest. Score + explanation, never boolean.
+    "crates/jouleclaw-outlier",
+
+    # Two-tier integrity: CRC32C (Castagnoli) fast-path + blake3 tamper-evident. Postgres 18 / RocksDB doctrine.
+    "crates/jouleclaw-integrity",
 ]
 
 [workspace.package]
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.95"
+rust-version = "1.96"
 license = "Apache-2.0"
 repository = "https://github.com/Transaction-Science/open-standards"
 authors = ["JouleClaw Contributors"]
@@ -189,8 +213,17 @@ serde_yml = "0.0.12"
 toml = "0.8"
 thiserror = "2"
 blake3 = "1"
-sha2 = "0.10"
+sha2 = "0.11"
 base64 = "0.22"
+
+# DB-grade verification + error tracking primitives (wave-4 ingest)
+crc32c = "0.6"                                    # Castagnoli CRC32C — Postgres 18 / RocksDB default
+sketches-ddsketch = "0.3"                         # α-relative-error quantile sketches (Masson 2019)
+hdrhistogram = "7"                                # JVM-interop opt-in (Gil Tene)
+cardinality-estimator = "1"                       # HLL++ with sparse representation
+probabilistic-collections = "0.7"                 # Count-Min Sketch reference
+xorf = "0.12"                                     # BinaryFuse{8,16,32} static membership
+syn = { version = "2", features = ["full", "visit"] }  # AST walk for cognitive complexity
 regex = "1"
 chrono = { version = "0.4", default-features = false, features = ["clock", "serde", "std"] }
 uuid = { version = "1", features = ["v4", "v5", "v7", "serde"] }
