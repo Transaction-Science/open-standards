@@ -1,0 +1,17 @@
+[package]
+name = "jouleclaw-sketch"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Probabilistic sketches with proven (ε, δ) error bounds: Count-Min Sketch (frequency), HyperLogLog++ (cardinality), Binary Fuse 8 (static membership). The 2026 SOTA trio — Bloom dropped in favour of BinaryFuse for static sets."
+
+[dependencies]
+jouleclaw-bounded         = { path = "../jouleclaw-bounded" }
+probabilistic-collections = { workspace = true }
+cardinality-estimator     = { workspace = true }
+xorf                      = { workspace = true }
+serde                     = { workspace = true }
+thiserror                 = { workspace = true }
