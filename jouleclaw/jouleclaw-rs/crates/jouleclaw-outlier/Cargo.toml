@@ -1,0 +1,17 @@
+[package]
+name = "jouleclaw-outlier"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Geometric outlier detection with score + explanation (never boolean): Tukey fences (cheap default, Tukey 1977) + Isolation Forest (Liu 2008, structured fallback for high-D + concept drift). LOF dropped per wave-4 SOTA brief (degrades in high dimensions)."
+
+[dependencies]
+jouleclaw-bounded = { path = "../jouleclaw-bounded" }
+serde             = { workspace = true }
+thiserror         = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }
